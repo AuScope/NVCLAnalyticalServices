@@ -1,0 +1,25 @@
+# NVCL Analytical services configuration file.
+# fill in all values enclosed in < >
+# sysadmin.email will be used as the from address when sending file download links
+sysadmin.email=<SYSADMIN EMAIL>
+# webapp.url is the externally resolvable url of the NVCLAnalyticalServices
+webapp.url=http://<HOSTNAME>/NVCLAnalyticalServices/
+# msgTimetoLiveDays is the number of days data files will remain in cache before being cleaned up.
+msgTimetoLiveDays=30
+# smtp.enabled enables email notifications when data files are prepared.
+smtp.enabled=true
+# smtp.host is your email server's host name
+smtp.host=<email hostname>
+smtp.port=25
+smtp.username=<email username>
+smtp.password=<email password>
+# smtp.useauth enables authentication on the email server.
+smtp.useauth=false
+# smtp.enabledebug turns on email debuging, this can help with email server configuration issues
+smtp.enabledebug=true
+activemq.brokerurl= tcp://<HOSTNAME>:<HOSTPORT>
+queue.submit=<queue submit>
+queue.status=<queue status>
+queue.result=<queue result>
+# geoserver.url is the internally resolvable url of your geoserver instance and usually should remain as localhost:8080...
+geoserver.url=http://localhost:8080/geoserver/wfs
