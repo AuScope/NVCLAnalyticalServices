@@ -19,6 +19,7 @@ import org.auscope.portal.core.services.responses.ows.OWSExceptionParser;
 import org.auscope.portal.core.util.DOMUtil;
 import org.auscope.nvcl.server.http.NVCLDataServiceMethodMaker;
 import org.auscope.nvcl.server.http.NVCLNamespaceContext;
+import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
@@ -140,7 +141,7 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
         System.out.println("Thread:getBoreholeList:in:" + this.serviceUrls);
         HttpPost method = null;
         for (String serviceUrl : this.serviceUrlsList) {
-        String serviceHost = getHost(serviceUrl);
+        String serviceHost = Utility.getHost(serviceUrl);
         String servicePathOfData;
         if (serviceUrls.contains("auscope.dpi.nsw.gov.au")) {
             servicePathOfData = "NVCLDownloadServices/";
@@ -376,36 +377,11 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
         // TODO Auto-generated method stub
         return true;
     }
+    
     public AnalyticalJobResultVo getJobResult() {
         return jobResultVo;
     }
-/**
- * Will take a url such as http://www.stackoverflow.com/abc/efg.html and return http://www.stackoverflow.com/
- * 
- * @param url
- * @return
- */    
-    private String getHost(String url) {
 
-        if (url == null || url.length() == 0)
-            return "";
-
-        int doubleslash = url.indexOf("//");
-        if (doubleslash == -1)
-            doubleslash = 0;
-        else
-            doubleslash += 2;
-
-        int end = url.indexOf('/', doubleslash);
-        end = end >= 0 ? end : url.length();
-
-        int port = url.indexOf(':', doubleslash);
-        end = (port > 0 && port < end) ? port : end;
-        
-        String host = url.substring(0, end) + '/';
-        return host;
-
-    }
     public String getAnalyticalServiceUrl() {
         return analyticalServiceUrl;
     }
