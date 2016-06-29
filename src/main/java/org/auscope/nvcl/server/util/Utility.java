@@ -9,9 +9,11 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+
 /**
  * This utility program provides useful method for validating the URL parameters
  *
+ * @author Lingbo Jiang
  * @author Florence Tan
  * @author Peter Warren (CSIRO Earth Science and Resource Engineering)
  *
@@ -101,7 +103,23 @@ public class Utility {
     	return true;
 
     }
-
+    /**
+     * Basic validation used for algorithmOutputIDs
+     * @param   algorithmOutputIDs    input String "701,702,703"
+     * @return  boolean return true if the input String is not null or empty and contains only numbers.
+     */    
+    public static boolean checkAlgoutiIDs (String algorithmOutputIDs) {
+        if(Utility.stringIsBlankorNull(algorithmOutputIDs)) return false;
+        String[] stringArray = algorithmOutputIDs.split(",");
+        if (stringArray.length < 1) return false;
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        for (int i = 0; i < stringArray.length; i++) {
+           String numberAsString = stringArray[i];
+           Matcher matcher = pattern.matcher(numberAsString);
+           if (!matcher.matches()) return false;           
+        }
+        return true;
+    }
     
     public static String floatArrayToString(float[] fltarray)
     {

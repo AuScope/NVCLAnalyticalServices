@@ -101,7 +101,12 @@ public class RestMenuController {
             String errMsg = "jobid="+jobid +": you has to provide either logName or algorithmOutputID.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
-            
+        
+        if ( algorithmOutputID !=null && !Utility.checkAlgoutiIDs(algorithmOutputID)) {
+            String errMsg = "your algorithmOutputID="+algorithmOutputID +" is in wrong format.";
+            return  new AnalyticalJobResponse("ERROR" , errMsg);            
+        }
+        
         if (filter == null || filter.isEmpty()) {
             filter ="<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }

@@ -1,5 +1,7 @@
 package org.auscope.nvcl.server.service;
 
+import static org.junit.Assert.*;
+
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.junit.Test;
@@ -117,5 +119,16 @@ public class NVCLAnalyticalJobProcessorTest {
         System.out.println("OK:processorManager.processRequest");
     }
     
+    @Test
+    public void testCheckAlgoutiIDs()
+    {
+        assertFalse("This will be False.", Utility.checkAlgoutiIDs(""));
+        assertFalse("This will be False.", Utility.checkAlgoutiIDs(","));
+        assertFalse("This will be False.", Utility.checkAlgoutiIDs("a,123,b"));
+        assertFalse("This will be False.", Utility.checkAlgoutiIDs(",123"));
+        assertTrue("This will be true.", Utility.checkAlgoutiIDs("123,"));        
+        assertTrue("This will be true.", Utility.checkAlgoutiIDs("123"));
+        assertTrue("This will be true.", Utility.checkAlgoutiIDs("1,2,3"));
+    }
     
 }
