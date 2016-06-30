@@ -96,6 +96,13 @@ public class RestMenuController {
             String errMsg = "jobid="+jobid +": holeidentifier is not valid.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
+        if (Utility.ValidateEmail(email)) {
+            String errMsg = "jobid="+jobid +": email is not valid.";
+            return  new AnalyticalJobResponse("ERROR" , errMsg);
+        } else {
+            email = email.toLowerCase();
+        }
+        
         if ((algorithmOutputID == null && logName == null) || 
                 (algorithmOutputID !=null && logName != null)) {
             String errMsg = "jobid="+jobid +": you has to provide either logName or algorithmOutputID.";
@@ -187,7 +194,7 @@ public class RestMenuController {
 //                System.out.println("status : " + jmsMsgVo.getStatus() + " jobid: " + jmsMsgVo.getJobid() + " jobdescription:" + jmsMsgVo.getJobDescription() + " joburl:" + jmsMsgVo.getJoburl());
 //            }
 //        }
-
+        email = email.toLowerCase();
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
         //List<AnalyticalJobVo> reqMsgList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueMessages(email, reqDestination);
