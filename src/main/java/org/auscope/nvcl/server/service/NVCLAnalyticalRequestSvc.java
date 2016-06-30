@@ -138,6 +138,9 @@ public class NVCLAnalyticalRequestSvc {
 	private void sendResultEmail(AnalyticalJobResultVo messageVo, String jobResultUrl) {
 	    
 	    SimpleMailMessage msg = new SimpleMailMessage();
+	    //http://auscope-portal-dev.arrc.csiro.au/gmap.html?nvclanid=8f664b74ed93bd5892307a0b4fb20dee&nvclanemail=Josh.Vote@csiro.au
+	    String jobResultVisualUrl = config.getPortalURL() + "?nvclanid=" + messageVo.getJobid() + "&nvclanemail=" + messageVo.getEmail();
+	    
 	    try {
 	        msg.setTo(messageVo.getEmail());
 	        
@@ -147,8 +150,10 @@ public class NVCLAnalyticalRequestSvc {
 	        	+ messageVo.getJobDescription() 
 	        	+ " is ready for collect.\n  "
 	        	+ "The result link is :\n"
-	        	+  jobResultUrl
-	        	+"\nThis link will remain available for download for "
+	        	+  jobResultUrl + "\n"
+	        	+ "The visualization result link is :\n"
+	        	+ jobResultVisualUrl + "\n"
+	        	+"This link will remain available for download for "
 	        	+ this.config.getMsgTimetoLiveDays() +" days.\n\nTo view the content of these files you will need a json reader.";
 	        	msgtext+="\n\n If you have any comments, suggestions or issues with the result please reply to this email.";
 	        	msg.setText(msgtext);

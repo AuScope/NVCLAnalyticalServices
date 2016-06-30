@@ -15,6 +15,7 @@ public class ConfigVo {
     private String sysAdminEmail;
     private String downloadURL;
     private String webappURL;
+    private String portalURL;
     public void displayConfig() {
 
         //System.out.println("sysadmin.email=" + this.sysadmin_email);
@@ -50,5 +51,11 @@ public class ConfigVo {
     }
     public void setWebappURL(String webappURL) {
         this.webappURL = webappURL;
+    }
+    public String getPortalURL() {        
+        return portalURL;
+    }
+    public void setPortalURL(String portalURL) {
+        this.portalURL = portalURL;
     }
 }

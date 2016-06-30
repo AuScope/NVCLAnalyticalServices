@@ -96,7 +96,7 @@ public class RestMenuController {
             String errMsg = "jobid="+jobid +": holeidentifier is not valid.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
-        if (Utility.ValidateEmail(email)) {
+        if (!Utility.ValidateEmail(email)) {
             String errMsg = "jobid="+jobid +": email is not valid.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         } else {
