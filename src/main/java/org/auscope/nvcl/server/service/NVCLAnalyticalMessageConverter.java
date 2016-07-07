@@ -117,6 +117,8 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
             message.setString("units", messageVo.getUnits());
             message.setFloat("value",  messageVo.getValue());
             message.setString("logicalOp",  messageVo.getLogicalOp());          
+            message.setString("joburl", messageVo.getJoburl());
+            message.setString("message", messageVo.getMessage());            
             return message;
 		} else if (object instanceof AnalyticalJobStatusVo){
 			//creating status message

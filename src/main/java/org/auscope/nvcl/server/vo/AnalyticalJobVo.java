@@ -37,7 +37,10 @@ package org.auscope.nvcl.server.vo;
 //</wfs:GetFeature>"
 
 public class AnalyticalJobVo {
-
+        private String JMSTimestamp;
+        private String JMSMsgID;
+        private String JMSCorrelationID;
+    
         //Spring will populate these fields through Dependency Injection.
         private String jobid;
         private String jobDescription;
@@ -54,7 +57,9 @@ public class AnalyticalJobVo {
         private float value;
         private String logicalOp;
         private String status;        
-        private String requestType;        
+        private String requestType;      
+        private String joburl;        
+        private String message;              
 
         public AnalyticalJobVo(AnalyticalJobVo messageVo) {
             this.jobid = messageVo.getJobid();
@@ -73,6 +78,8 @@ public class AnalyticalJobVo {
             this.logicalOp = messageVo.getLogicalOp();
             this.status = messageVo.getStatus();
             this.requestType = messageVo.getRequestType();       
+            this.joburl = messageVo.getJoburl();
+            this.message = messageVo.getMessage();                   
         }
 
         public AnalyticalJobVo() {
@@ -94,6 +101,8 @@ public class AnalyticalJobVo {
             toString += "units=" + units;
             toString += "value=" + value;
             toString += "logicalOp=" + logicalOp;
+            toString += "joburl=" + joburl;
+            toString += "message=" + message;            
             return toString;
         }
 
@@ -274,6 +283,46 @@ public class AnalyticalJobVo {
 
         public void setLogName(String logName) {
             this.logName = logName;
+        }
+
+        public String getJoburl() {
+            return joburl;
+        }
+
+        public void setJoburl(String joburl) {
+            this.joburl = joburl;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getJMSTimestamp() {
+            return JMSTimestamp;
+        }
+
+        public void setJMSTimestamp(String jMSTimestamp) {
+            JMSTimestamp = jMSTimestamp;
+        }
+
+        public String getJMSMsgID() {
+            return JMSMsgID;
+        }
+
+        public void setJMSMsgID(String jMSMsgID) {
+            JMSMsgID = jMSMsgID;
+        }
+
+        public String getJMSCorrelationID() {
+            return JMSCorrelationID;
+        }
+
+        public void setJMSCorrelationID(String jMSCorrelationID) {
+            JMSCorrelationID = jMSCorrelationID;
         }
 
 }

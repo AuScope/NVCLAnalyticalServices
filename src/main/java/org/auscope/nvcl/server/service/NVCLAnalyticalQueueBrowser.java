@@ -4,7 +4,9 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -39,7 +41,28 @@ public class NVCLAnalyticalQueueBrowser {
 
     private static final Logger logger = LogManager.getLogger(NVCLAnalyticalQueueBrowser.class);
     
-    
+    /**
+     * Browse queue message(s) from both request and reply queue and set them
+     * to a Map.
+     * 
+     * @param  email   Requestor's email, use as key for retrieving
+     *                 queue message(s)  
+     * @return Map     Returning a map that consists of two lists : 
+     *                 a) a list of request message(s)
+     *                 b) a list of reply message(s)            
+     */
+    public Map<String, Object> browseMessage(String email, JmsTemplate jmsTemplate, 
+            Destination reqDestination, Destination repDestination) {
+        
+        Map<String, Object> msgMap = new HashMap<String, Object>();
+//        NVCLDownloadQueueBrowser nvclDownloadQueueBrowser = new NVCLDownloadQueueBrowser();
+//        nvclDownloadQueueBrowser.setJmsTemplate(jmsTemplate);
+//        List<JMSMessageVo> reqMsgList = (ArrayList<JMSMessageVo>) nvclDownloadQueueBrowser.browseQueueMessages(email,reqDestination);
+//        List<JMSMessageVo> repMsgList = (ArrayList<JMSMessageVo>) nvclDownloadQueueBrowser.browseQueueMessages(email,repDestination);
+//        msgMap.put("request",reqMsgList);
+//        msgMap.put("reply",repMsgList);
+        return msgMap;
+    }    
     public List<AnalyticalJobVo> browseQueueSubmit(final String email, final Destination destination) {
         List<AnalyticalJobVo> msgList = (ArrayList<AnalyticalJobVo>) this.jmsTemplate.execute(new SessionCallback<List<AnalyticalJobVo>>() {
 
@@ -57,6 +80,15 @@ public class NVCLAnalyticalQueueBrowser {
                     // logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;   
+                        // convert long to date
+                        long timestamp = mapMessage.getJMSTimestamp();
+                        Date date = new Date(timestamp);
+                        DateFormat df = DateFormat.getDateTimeInstance();
+                        String newtimestamp = df.format(date);
+                        jmsMsgVo.setJMSTimestamp(newtimestamp);
+                        jmsMsgVo.setJMSMsgID(mapMessage.getJMSMessageID());
+                        jmsMsgVo.setJMSCorrelationID(mapMessage.getJMSCorrelationID());
+                        
                         jmsMsgVo.setRequestType(mapMessage.getString("requestType"));      
                         jmsMsgVo.setEmail(mapMessage.getString("email"));                        
                         jmsMsgVo.setStatus(mapMessage.getString("status"));
@@ -65,11 +97,10 @@ public class NVCLAnalyticalQueueBrowser {
                         jmsMsgVo.setServiceUrls(mapMessage.getString("serviceUrls"));
                         jmsMsgVo.setFilter(mapMessage.getString("filter"));
                         jmsMsgVo.setStartDepth(mapMessage.getInt("startDepth"));
-                        jmsMsgVo.setEndDepth(mapMessage.getInt("jobDescription"));                        
+                        jmsMsgVo.setEndDepth(mapMessage.getInt("endDepth"));                        
                         jmsMsgVo.setLogName(mapMessage.getString("logName"));                        
                         jmsMsgVo.setClassification(mapMessage.getString("classification"));       
                         jmsMsgVo.setAlgorithmOutputID(mapMessage.getString("algorithmOutputID"));       
-                        jmsMsgVo.setLogName(mapMessage.getString("logName"));       
                         jmsMsgVo.setSpan(mapMessage.getFloat("span"));                             
                         jmsMsgVo.setUnits(mapMessage.getString("units"));   
                         jmsMsgVo.setValue(mapMessage.getFloat("value"));   
@@ -88,13 +119,13 @@ public class NVCLAnalyticalQueueBrowser {
         return msgList;
     }   
 
-    public List<AnalyticalJobStatusVo> browseQueueStatus(final String email, final Destination destination) {
+    public List<AnalyticalJobVo> browseQueueStatus(final String email, final Destination destination) {
 
-        List<AnalyticalJobStatusVo> msgList = (ArrayList<AnalyticalJobStatusVo>) this.jmsTemplate.execute(new SessionCallback<List<AnalyticalJobStatusVo>>() {
+        List<AnalyticalJobVo> msgList = (ArrayList<AnalyticalJobVo>) this.jmsTemplate.execute(new SessionCallback<List<AnalyticalJobVo>>() {
 
-            public List<AnalyticalJobStatusVo> doInJms(Session session) throws JMSException {
+            public List<AnalyticalJobVo> doInJms(Session session) throws JMSException {
                 int count = 0;
-                List<AnalyticalJobStatusVo> msgList = new ArrayList<AnalyticalJobStatusVo>();
+                List<AnalyticalJobVo> msgList = new ArrayList<AnalyticalJobVo>();
                 logger.debug("browse message in : " + destination);
                 // QueueBrowser browser = session.createBrowser((Queue)
                 // destination);
@@ -104,7 +135,7 @@ public class NVCLAnalyticalQueueBrowser {
                 QueueBrowser browser = session.createBrowser((Queue) destination, msgSelector);
                 Enumeration<?> messages = browser.getEnumeration();
                 while (messages.hasMoreElements()) {
-                    AnalyticalJobStatusVo jmsMsgVo = new AnalyticalJobStatusVo();
+                    AnalyticalJobVo jmsMsgVo = new AnalyticalJobVo();
                     count++;
                     Message message = (Message) messages.nextElement();
                     // logger.debug("Message " + count + " : " + message);
@@ -123,6 +154,19 @@ public class NVCLAnalyticalQueueBrowser {
                         jmsMsgVo.setJobDescription(mapMessage.getString("jobDescription"));        
                         jmsMsgVo.setEmail(mapMessage.getString("email"));         
                         jmsMsgVo.setJoburl(mapMessage.getString("joburl"));         
+                        
+                        jmsMsgVo.setRequestType(mapMessage.getString("requestType"));    
+                        jmsMsgVo.setServiceUrls(mapMessage.getString("serviceUrls"));
+                        jmsMsgVo.setFilter(mapMessage.getString("filter"));
+                        jmsMsgVo.setStartDepth(mapMessage.getInt("startDepth"));
+                        jmsMsgVo.setEndDepth(mapMessage.getInt("endDepth"));                        
+                        jmsMsgVo.setLogName(mapMessage.getString("logName"));                        
+                        jmsMsgVo.setClassification(mapMessage.getString("classification"));       
+                        jmsMsgVo.setAlgorithmOutputID(mapMessage.getString("algorithmOutputID"));     
+                        jmsMsgVo.setSpan(mapMessage.getFloat("span"));                             
+                        jmsMsgVo.setUnits(mapMessage.getString("units"));   
+                        jmsMsgVo.setValue(mapMessage.getFloat("value"));   
+                        jmsMsgVo.setLogicalOp(mapMessage.getString("logicalOp"));                             
 
                     }
                     msgList.add(0, jmsMsgVo);

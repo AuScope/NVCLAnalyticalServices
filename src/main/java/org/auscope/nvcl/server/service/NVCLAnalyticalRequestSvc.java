@@ -41,13 +41,13 @@ public class NVCLAnalyticalRequestSvc {
 
 	public void processRequest(AnalyticalJobVo messageVo) {
 		logger.debug("in NVCLAnalyticalRequestSvc.processRequest...");
-		String jobid = messageVo.getJobid();
-		String jobDescription = messageVo.getJobDescription();
-		AnalyticalJobStatusVo jobStatusVo = new AnalyticalJobStatusVo();
-		jobStatusVo.setEmail(messageVo.getEmail());
-		jobStatusVo.setJMSCorrelationID(messageVo.getEmail());
-		jobStatusVo.setJobDescription(jobDescription);
-		jobStatusVo.setJobid(jobid);
+//		String jobid = messageVo.getJobid();
+//		String jobDescription = messageVo.getJobDescription();
+//		AnalyticalJobStatusVo jobStatusVo = new AnalyticalJobStatusVo();
+//		jobStatusVo.setEmail(messageVo.getEmail());
+//		jobStatusVo.setJMSCorrelationID(messageVo.getEmail());
+//		jobStatusVo.setJobDescription(jobDescription);
+//		jobStatusVo.setJobid(jobid);
 		
 	    
 //	    
@@ -75,13 +75,14 @@ public class NVCLAnalyticalRequestSvc {
 //          }     
         NVCLAnalyticalJobProcessorManager processorManager = new NVCLAnalyticalJobProcessorManager();
         if( processorManager.processRequest(messageVo)) {            
-            jobStatusVo.setStatus("Success");
-            jobStatusVo.setMessage("Success:job finished" );
-            String jobResultUrl = config.getWebappURL() + "getNVCLAnalyticalJobResult.do?jobid=" + jobStatusVo.getJobid();
-            jobStatusVo.setJoburl(jobResultUrl);
+            messageVo.setStatus("Success");
+            messageVo.setMessage("Success:job finished" );
+            String jobResultUrl = config.getWebappURL() + "getNVCLAnalyticalJobResult.do?jobid=" + messageVo.getJobid();
+            messageVo.setJoburl(jobResultUrl);
         } else {
-            jobStatusVo.setStatus("Failed");
-            jobStatusVo.setMessage("Failed:processor.processStage4");            
+            messageVo.setStatus("Failed");
+            messageVo.setMessage("Failed:processor.processStage4");      
+            messageVo.setJoburl("Failed");
             logger.debug("Failed:processor.processStage4");     
         }
 
@@ -90,14 +91,14 @@ public class NVCLAnalyticalRequestSvc {
 			
 		AnalyticalJobResultVo jobResultVo = processorManager.getSumJobResultVo();
 		//finally, create reply message
-		// create another message in the nvcl.reply.queue with correlation id
+		// create another message in the nvcl.status.queue with correlation id
 		// same as the request message id
 		try {			
 	        ReferenceHolderMessagePostProcessor messagePostProcessor = new ReferenceHolderMessagePostProcessor();
 	        int msgTTL = Integer.parseInt(this.config.getMsgTimetoLiveDays());//days.
 	        this.jmsTemplate.setTimeToLive(((long)msgTTL)*86400000);
 	        this.jmsTemplate.setExplicitQosEnabled(true);
-	        this.jmsTemplate.convertAndSend(this.status, jobStatusVo, messagePostProcessor);
+	        this.jmsTemplate.convertAndSend(this.status, messageVo, messagePostProcessor);
 		    Message sentMessage = messagePostProcessor.getSentMessage();		    
 		    logger.debug("Generated JMSMessageID" + sentMessage.getJMSMessageID());
 		    logger.debug("Generated JMSCorrelationID" + sentMessage.getJMSCorrelationID());
@@ -109,7 +110,7 @@ public class NVCLAnalyticalRequestSvc {
 		}
 		
 	  if (config.getSendEmails()==true)
-	      sendResultEmail(jobResultVo,jobStatusVo.getJoburl());
+	      sendResultEmail(jobResultVo,messageVo.getJoburl());
 	  else 
 	      logger.debug("Notification emails disabled, skipping email step.");
 	}

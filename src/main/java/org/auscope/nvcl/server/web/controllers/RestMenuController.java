@@ -4,13 +4,13 @@ import java.awt.Menu;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.jms.Destination;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.util.Utility;
-import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.ConfigVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
@@ -135,6 +134,7 @@ public class RestMenuController {
         jobVo.setUnits(units);
         jobVo.setValue(value);
         jobVo.setLogicalOp(logicalOp);
+        jobVo.setStatus("Processing");
         logger.debug("Get a job request ..." + jobVo.printVo());
         System.out.println(jobVo.printVo());
 
@@ -174,64 +174,56 @@ public class RestMenuController {
 //        List<AnalyticalJobVo> jobList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueSubmit(email, nvclSubmitDestination);
 //        return jobList;
 //    }
-    
-    @RequestMapping("/checkNVCLAnalyticalJobStatus.do")
-    public List < AnalyticalJobStatusVo > checkNVCLJobStatus(@RequestParam(value="email") String email ) 
+    /**
+     * Browse queue message(s) from both submit and status queue and merge them
+     * to a AnalyticalJobVo List.
+     * 
+     * @param  email   Requestor's email, use as key for retrieving
+     *                 queue message(s)  
+     * @return List     Returning a list that consists of two lists : 
+     *                 a) a list of submit message(s)
+     *                 b) a list of status message(s)            
+     */
+    @RequestMapping("/checkNVCLAnalyticalJobStatus.do")    
+    public List < AnalyticalJobVo >  checkNVCLJobStatus(@RequestParam(value="email") String email ) 
             throws ServletException,IOException {     
-        // Retrieve messages from request and reply JMS queue
-//        List<AnalyticalJobStatusVo> jobStatusList = new ArrayList<AnalyticalJobStatusVo> ();
-//        NVCLAnalyticalSvc nvclAnalyticalSvc = new NVCLAnalyticalSvc();
-//        Map<String, Object> msgMap = nvclAnalyticalSvc.browseStatus(email,jmsTemplate,nvclStatusDestination);
-//        ArrayList<?> statusMsgList = (ArrayList<?>) msgMap.get("status");
-//
-//        if (statusMsgList == null) {
-//            logger.info("status queue is null");
-//        } else {
-//            System.out.println("status queue is ****************");
-//            for (Iterator<?> it1 = statusMsgList.iterator(); it1.hasNext();) {
-//                AnalyticalJobStatusVo jmsMsgVo = (AnalyticalJobStatusVo) it1.next();
-//                jobStatusList.add(jmsMsgVo);
-//                System.out.println("status : " + jmsMsgVo.getStatus() + " jobid: " + jmsMsgVo.getJobid() + " jobdescription:" + jmsMsgVo.getJobDescription() + " joburl:" + jmsMsgVo.getJoburl());
-//            }
-//        }
+        logger.debug("in browseMessage...");
+        logger.debug("email : " + email);
+        logger.debug("jmsTemplate" + jmsTemplate);
+        logger.debug("nvclSubmitDestination : " + nvclSubmitDestination);
+        logger.debug("nvclStatusDestination : " + nvclStatusDestination);     
+    
         email = email.toLowerCase();
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
-        //List<AnalyticalJobVo> reqMsgList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueMessages(email, reqDestination);
-        List<AnalyticalJobStatusVo> jobStatusList = (ArrayList<AnalyticalJobStatusVo>) nvclAnalyticalQueueBrowser.browseQueueStatus(email, nvclStatusDestination);        
+        List<AnalyticalJobVo> jobSubmitList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueSubmit(email, nvclSubmitDestination);
+        List<AnalyticalJobVo> jobStatusList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueStatus(email, nvclStatusDestination);   
+        if (jobSubmitList != null) { //Merge the submit and status queue together. 
+            for (AnalyticalJobVo jobVo : jobSubmitList) {
+                jobStatusList.add(0,jobVo);
+            }
+        }
         return jobStatusList;
-    }
+    }    
+
     @RequestMapping("/getNVCLAnalyticalJobResult.do")
     public String getNVCLAnalyticalJobResult( @RequestParam(value="jobid", defaultValue="028c68636c05586c2985476dd7d7b069") String jobID ) throws ServletException,
             IOException {
-//        NVCLAnalyticalSvc nvclAnalyticalSvc = new NVCLAnalyticalSvc();
-//        Map<String, Object> msgMap = nvclAnalyticalSvc.browseResult(jobID,jmsTemplate,nvclResultDestination);
-//        AnalyticalJobResultVo jmsMsgVo = null;
-//        ArrayList<?> resultMsgList = (ArrayList<?>) msgMap.get("result");
-//        if (resultMsgList == null) {
-//            logger.info("result queue is null");
-//        } else {
-//            System.out.println("result queue is ****************");
-//            for (Iterator<?> it1 = resultMsgList.iterator(); it1.hasNext();) {
-//                jmsMsgVo = (AnalyticalJobResultVo) it1.next();
-// //             System.out.println("jobid: " + jmsMsgVo.getJobid() + "jobdescription: " + jmsMsgVo.getJobDescription() + "boreholes : " + jmsMsgVo.getBoreholes() + "failedBoreholes:" + jmsMsgVo.getFailedBoreholes() + "errorBoreholes:" + jmsMsgVo.getErrorBoreholes());
-//            }
-//        }
 
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
-        List<AnalyticalJobResultVo> resultMsgList = (ArrayList<AnalyticalJobResultVo>) nvclAnalyticalQueueBrowser.browseQueueResult(jobID, nvclResultDestination);
-        AnalyticalJobResultVo jmsMsgVo = null;
-        if (resultMsgList == null) {
+        List<AnalyticalJobResultVo> jobResultList = (ArrayList<AnalyticalJobResultVo>) nvclAnalyticalQueueBrowser.browseQueueResult(jobID, nvclResultDestination);
+        AnalyticalJobResultVo jobResultVo = null;
+        if (jobResultList == null) {
             logger.info("result queue is null");
         } else {
             System.out.println("result queue is ****************");
-            for (Iterator<?> it1 = resultMsgList.iterator(); it1.hasNext();) {
-                jmsMsgVo = (AnalyticalJobResultVo) it1.next();
+            for (Iterator<?> it1 = jobResultList.iterator(); it1.hasNext();) {
+                jobResultVo = (AnalyticalJobResultVo) it1.next();
             }
         }      
         Gson gson = new Gson();
-        return gson.toJson(jmsMsgVo);
+        return gson.toJson(jobResultVo);
     }
     
 }
