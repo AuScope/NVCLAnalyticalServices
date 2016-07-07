@@ -197,7 +197,9 @@ public class RestMenuController {
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
         List<AnalyticalJobVo> jobSubmitList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueSubmit(email, nvclSubmitDestination);
-        List<AnalyticalJobVo> jobStatusList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueStatus(email, nvclStatusDestination);   
+        List<AnalyticalJobVo> jobStatusList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueStatus(email, nvclStatusDestination);
+        if (jobStatusList == null) 
+            jobStatusList = new ArrayList<AnalyticalJobVo>();
         if (jobSubmitList != null) { //Merge the submit and status queue together. 
             for (AnalyticalJobVo jobVo : jobSubmitList) {
                 jobStatusList.add(0,jobVo);
