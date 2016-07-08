@@ -52,7 +52,7 @@ public class NVCLAnalyticalGatewayTest {
      */
     @Test
     public void testSendNVCLAnalyticalJob() throws Exception {
-        http://localhost:8080/NVCLAnalyticalServices/submitNVCLAnalyticalJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=test001&algorithmoutputid=108&logname=Min1%20uTSAS&classification=Muscovite&startdepth=0&enddepth=999999&logicalop=gt&value=50&units=pct&span=1&filter=%3Cogc%3AFilter%3E%3CPropertyIsEqualTo%3E%3CPropertyName%3Egsmlp%3AnvclCollection%3C%2FPropertyName%3E%3CLiteral%3Etrue%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2Fogc%3AFilter%3E
+        //http://localhost:8080/NVCLAnalyticalServices/submitNVCLAnalyticalJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=test001&algorithmoutputid=108&logname=Min1%20uTSAS&classification=Muscovite&startdepth=0&enddepth=999999&logicalop=gt&value=50&units=pct&span=1&filter=%3Cogc%3AFilter%3E%3CPropertyIsEqualTo%3E%3CPropertyName%3Egsmlp%3AnvclCollection%3C%2FPropertyName%3E%3CLiteral%3Etrue%3C%2FLiteral%3E%3C%2FPropertyIsEqualTo%3E%3C%2Fogc%3AFilter%3E
         logger.info("send message to nvcl.request.queue testing start....");
         // create new message
         ConfigVo configVo = (ConfigVo) ctx.getBean("createConfig");
@@ -83,12 +83,12 @@ public class NVCLAnalyticalGatewayTest {
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
         //List<AnalyticalJobVo> reqMsgList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueMessages(email, reqDestination);
         Destination nvclStatusDestination = (Destination) ctx.getBean("nvclStatusDestination");
-        List<AnalyticalJobStatusVo> jobStatusList = (ArrayList<AnalyticalJobStatusVo>) nvclAnalyticalQueueBrowser.browseQueueStatus("lingbo.jiang@csiro.au", nvclStatusDestination);        
+        List<AnalyticalJobVo> jobStatusList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueStatus("lingbo.jiang@csiro.au", nvclStatusDestination);        
 
         if (jobStatusList == null) {
             logger.info("status queue is null");
         } else {
-            for (AnalyticalJobStatusVo jobStatusVo : jobStatusList) {
+            for (AnalyticalJobVo jobStatusVo : jobStatusList) {
                 logger.info("-------------------------------------------------");
                 logger.info("timestamp : " + jobStatusVo.getJMSTimestamp());
                 logger.info("job id : " + jobStatusVo.getJMSMsgID());
