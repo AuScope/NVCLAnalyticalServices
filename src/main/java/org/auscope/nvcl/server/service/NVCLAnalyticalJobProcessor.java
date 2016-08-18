@@ -61,6 +61,7 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
     private String logicalOp;
     private String layerName;    
     private String analyticalServiceUrl; 
+    private boolean isdecimalTypeScalar;
     private List<BoreholeVo> boreholeList = new ArrayList<BoreholeVo>(); 
 //    private String serviceHost;//"http://nvclwebservices.vm.csiro.au/";//"http://geology.data.nt.gov.au/";//
 //    private String servicePathOfData;
@@ -116,6 +117,9 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
         this.httpServiceCaller = new HttpServiceCaller(90000);
         this.wfsMethodMaker = new WFSGetFeatureMethodMaker();
         this.nvclMethodMaker = new NVCLDataServiceMethodMaker();
+        
+        
+        this.isdecimalTypeScalar = false;
 
     }
     public void run()
@@ -208,6 +212,7 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                     String strLogName = eleLogName.getFirstChild().getNodeValue(); 
                     Element eleLogType = (Element) exprLogType.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strLogType = eleLogType.getFirstChild().getNodeValue(); 
+
                     Element eleAlgorithmoutID = (Element) exprAlgorithmoutID.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strAlgorithmoutID = eleAlgorithmoutID.getFirstChild().getNodeValue();
                     int     intAlgorithmoutID = Integer.parseInt(strAlgorithmoutID);                    
@@ -217,6 +222,7 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                         if (strLogName.equalsIgnoreCase(logName)) {
                             boreholeVo.logidList.add(strLogID);
                             //System.out.println("add LogID:" + strLogID + "from borehole:" + holeIdentifier);
+                            checkDecimalTypeScalar(strLogType);
                             isError = false;
                             totalLogids++;
                             break;
@@ -225,14 +231,13 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                         if (strIsPublic.equalsIgnoreCase("true")) {
                             if (algoutidList.contains(intAlgorithmoutID)) {
                                 boreholeVo.logidList.add(strLogID);
+                                checkDecimalTypeScalar(strLogType);
                                 isError = false;
                                 totalLogids++;
                                 //System.out.println("add LogID:" + strLogID + "from borehole:" + holeIdentifier);
                             }
                         }
                     }
-                    
-                    
                    // System.out.println("exprLogID:" + strLogID + ":" + strLogName + ":" + strLogType + ":" + strAlgorithmoutID);                        
                 }
                 if (isError) {
@@ -255,7 +260,20 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
         return true;
     }
     
-
+    public void checkDecimalTypeScalar(String strLogType) {
+        if (Utility.tryParseInt(strLogType)) {  
+            // We now know that it's safe to parse
+            int intLogType = Integer.parseInt(strLogType); 
+            if (intLogType == 2)
+            {
+                this.classification = "averageValue";
+                this.units = "count";
+                this.isdecimalTypeScalar = true;
+            }
+            System.out.println("!!!!!!!-intLogType:" + intLogType);
+        }
+        return;
+    }
     public boolean getDownSampledData() {
         //A sample for getDownSampledData request:
         //http://nvclwebservices.vm.csiro.au/NVCLDataServices/getDownsampledData.html?logid=14b146e6-bcdf-43e1-ae53-c007b6f28d3&interval=1.0&startdepth=0&enddepth=99999&outputformat=csv
@@ -280,16 +298,24 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                     method.releaseConnection();                    
                     String csvLine;
                     BufferedReader csvBuffer = new BufferedReader(new StringReader(responseString)); 
-                    TreeMap<String, Integer> depthMap = new TreeMap<String, Integer>(); //depth:countSum;
-                    TreeMap<String, Integer> depthClassificationMap = new TreeMap<String, Integer>();  
+                    TreeMap<String, Float> depthMap = new TreeMap<String, Float>(); //depth:countSum;
+                    TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
                     
                     csvLine = csvBuffer.readLine();//skip the header
                     while ((csvLine = csvBuffer.readLine()) != null) {
                         List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
                         String depth = cells.get(0);
-                        Integer count = Integer.parseInt(cells.get(3));
-                        String csvClassfication = cells.get(1);
-                        Integer countSum = 0 ;
+                        Float count =  0.0f;
+                        String csvClassfication;
+                        if (this.isdecimalTypeScalar == false) {
+                            count = Float.parseFloat(cells.get(3));
+                            csvClassfication = cells.get(1);
+                        } else {
+                            count = Float.parseFloat(cells.get(1));
+                            csvClassfication="averageValue";
+                            //get the float;
+                        }
+                        Float countSum = 0.0f ;
                         if (depthMap.get(depth) != null) {
                             countSum= depthMap.get(depth) + count;
                         } else {
@@ -298,18 +324,18 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                         depthMap.put(depth, countSum);
                         if (csvClassfication.equalsIgnoreCase(classification)) {
                             depthClassificationMap.put(depth, count);
-                        }
+                        } 
                     }
                     String depthKey;
-                    Integer count = 0;
-                    Integer countSum;
+                    Float count = 0.0f;
+                    Float countSum;
                     float ratio = (float) 0.0;
                     /* Now, iterate over the map's contents, sorted by key. */
-                    for (Entry<String, Integer> entry : depthClassificationMap.entrySet()) {
+                    for (Entry<String, Float> entry : depthClassificationMap.entrySet()) {
                         depthKey = entry.getKey();
                         count = entry.getValue();
                         countSum = depthMap.get(depthKey);
-                        ratio = (float) count*100/countSum;
+                        if (countSum!=0) ratio = (float) count*100/countSum;
                         //System.out.println("count:"+count+":countSum"+countSum+":ratio:"+ratio);
                       if (units.equalsIgnoreCase("pct")) {
                           if (logicalOp.equalsIgnoreCase("gt")) {

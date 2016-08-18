@@ -168,4 +168,18 @@ public class Utility {
         return host;
 
     }
+    /**
+     * Will try parse a string to integer/
+     * 
+     * @param string of integer
+     * @return true for integer false for wrong number format.
+     */     
+    public static boolean tryParseInt(String value) {  
+        try {  
+            Integer.parseInt(value);  
+            return true;  
+         } catch (NumberFormatException e) {  
+            return false;  
+         }  
+   }    
 }
