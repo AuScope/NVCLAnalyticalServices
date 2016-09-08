@@ -126,18 +126,16 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
     {
         System.out.println("Thread:start:" + this.serviceUrls);
         if (! getBoreholeList()) {
-            System.out.println("Failed:processor.processStage1");
+            System.out.println("Failed:processor.getBoreholeList");
           }
           if (!getDataCollection()) {
   
-              System.out.println("Failed:processor.processStage2");
+              System.out.println("Failed:processor.getDataCollection");
             }
           if (!getDownSampledData()) {
-              System.out.println("Failed:processor.processStage3");            
+              System.out.println("Failed:processor.getDownSampledData");            
           }
-          if (!processStage4()) {          
-              System.out.println("Failed:processor.processStage4");
-           }     
+   
           System.out.println("Thread:end:" + this.serviceUrls);
     }
     public boolean getBoreholeList() {
@@ -252,8 +250,11 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                 }
                 method.releaseConnection();
             }catch (Exception ex) {
+                // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
-                return false;
+                String resultMsg = "Error:unknow exception:" + ex.toString();
+                boreholeVo.setStatus(1); //error status;
+                jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
         }
         System.out.println("Total Logids:" + totalLogids + ":" + this.serviceUrls);
@@ -269,8 +270,9 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                 this.classification = "averageValue";
                 this.units = "count";
                 this.isdecimalTypeScalar = true;
+                System.out.println("!!!!!!!-decimalLogType:");
             }
-            System.out.println("!!!!!!!-intLogType:" + intLogType);
+            //System.out.println("!!!!!!!-intLogType:" + intLogType);
         }
         return;
     }
@@ -297,12 +299,15 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                     String responseString = httpServiceCaller.getMethodResponseAsString(method);
                     method.releaseConnection();                    
                     String csvLine;
+
                     BufferedReader csvBuffer = new BufferedReader(new StringReader(responseString)); 
                     TreeMap<String, Float> depthMap = new TreeMap<String, Float>(); //depth:countSum;
                     TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
-                    
                     csvLine = csvBuffer.readLine();//skip the header
+                    //System.out.println("csv:" + csvLine);
+                    int linesread=0;
                     while ((csvLine = csvBuffer.readLine()) != null) {
+                        linesread++;
                         List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
                         String depth = cells.get(0);
                         Float count =  0.0f;
@@ -326,6 +331,7 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                             depthClassificationMap.put(depth, count);
                         } 
                     }
+                    //System.out.println("lines read " +linesread);
                     String depthKey;
                     Float count = 0.0f;
                     Float countSum;
@@ -378,29 +384,26 @@ public class NVCLAnalyticalJobProcessor  extends Thread{
                             resultMsg = "Hitted by " + this.classification + " with value " + String.valueOf(units.equalsIgnoreCase("pct")?ratio:count) + " " + logicalOp + " than threshhole " + String.valueOf(value) + " " +units;
                             boreholeVo.setStatus(2); //hitted status;
                             jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
-                            System.out.println("*****************hitted****************");
+                            System.out.println("*****************hitted:" +boreholeVo.getHoleIdentifier());
                             break;
                         
                     }
                 }catch (Exception ex) {
-                    System.out.println("*****************error:exception at 380****************");
+                    //if exception happened, let it continue for next logid
+                    System.out.println("*****************Exception: at 394****************");
                     log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier,logid));
-                    return false;
+                    //return false;
                 } 
             } //logid loop
             if(!isHit) {
                 resultMsg = "Failed by " + this.classification + " with no value " + logicalOp + " than threshhold " + String.valueOf(value)+ " " +units;
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
-                System.out.println("*****************failed****************");
+                System.out.println("*****************failed:" +boreholeVo.getHoleIdentifier());
             }            
         }//borehole loop  
         System.out.println("total Processed Logid:" + totalProcessedLogid);   
         System.out.println("Stage 3:OK:" + this.serviceUrls);
-        return true;
-    }
-    public boolean processStage4() {
-        // TODO Auto-generated method stub
         return true;
     }
     
