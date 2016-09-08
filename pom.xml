@@ -49,6 +49,19 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+        <repository>
+            <id>cgsrv8.arrc.csiro.au</id>
+            <name>AuScope Nexus - PortalRepo</name>
+            <url>http://cgsrv8.arrc.csiro.au/nexus/content/groups/PortalRepository/</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>        
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
