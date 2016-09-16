@@ -67,8 +67,8 @@ public class NVCLDataServiceMethodMaker extends AbstractMethodMaker {
         //set all of the parameters
         builder.setParameter("logid", logid);
         builder.setParameter("interval", Float.toString(interval));
-        builder.setParameter("startdepth", Integer.toBinaryString(startDepth));
-        builder.setParameter("enddepth", Integer.toBinaryString(endDepth));
+        builder.setParameter("startdepth", Integer.toString(startDepth));
+        builder.setParameter("enddepth", Integer.toString(endDepth));
         builder.setParameter("outputformat", outputFormat);        
         method.setURI(builder.build());
         return method;
