@@ -132,7 +132,7 @@ public class TSGModJobProcessor  extends Thread{
   
               System.out.println("Failed:processor.getDataCollection");
             }
-          if (!getDownSampledData()) {
+          if (!getSpectralData()) {
               System.out.println("Failed:processor.getDownSampledData");            
           }
    
@@ -298,7 +298,8 @@ public class TSGModJobProcessor  extends Thread{
                 //System.out.println("Stage3:process:borehole:" + holeIdentifier + "  logid:" + logid);
                 try {
                     //LJ sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
-                    HttpRequestBase method = //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
+                    HttpRequestBase method =nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid); 
+                            //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
                             //nvclMethodMaker.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
                     String responseString = httpServiceCaller.getMethodResponseAsString(method);
                     method.releaseConnection();                    

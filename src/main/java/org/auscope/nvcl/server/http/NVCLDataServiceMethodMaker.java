@@ -50,6 +50,29 @@ public class NVCLDataServiceMethodMaker extends AbstractMethodMaker {
 
         return method;
     }
+    
+    //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
+    /**
+     * Generates a method for making request for all NVCL DataSets that belong to a particular borehole
+     * 
+     * @param serviceUrl
+     *            The URL of the NVCLDataService
+     * @param logid
+     *            The logID of the borehole to query
+     * @throws URISyntaxException
+     */
+    public HttpRequestBase getSpectralDataMethod(String serviceUrl, String logid)
+            throws URISyntaxException {
+        HttpGet method = new HttpGet();
+        URIBuilder builder = new URIBuilder(urlPathConcat(serviceUrl, "getspectraldata.html"));
+
+        //set all of the parameters
+        builder.setParameter("speclogid", logid);
+        method.setURI(builder.build());
+        return method;
+    }    
+    
+    
     /**
      * Generates a method for making request for all NVCL DataSets that belong to a particular borehole
      * 
