@@ -118,6 +118,44 @@ public class NVCLAnalyticalJobProcessorTest {
         }        
         System.out.println("OK:processorManager.processRequest");
     }
+    /*
+     * test process AnalyticalJob request
+     * Search Garnet with all Thermal TSA group (regardless of version) Garnet over 2% of entire dataset
+     */
+    @Test
+    public void testTsgModJob() throws Exception {
+
+        AnalyticalJobVo jobVo = new AnalyticalJobVo();
+        jobVo.setRequestType("ANALYTICAL");
+        jobVo.setJobid("test-" + Utility.getHashValue());
+        jobVo.setJobDescription("TSGMod script");
+        //https://sarigdata.pir.sa.gov.au/nvcl/geoserver/wfs,http://geossdi.dmp.wa.gov.au:80/services/wfs,
+        jobVo.setServiceUrls("http://geossdi.dmp.wa.gov.au:80/services/wfs");
+        jobVo.setEmail("lingbo.jiang@csiro.au");
+        jobVo.setLogName("Min1 uTSAS");
+        jobVo.setFilter("<ogc:Filter><PropertyIsEqualTo><PropertyName>gsmlp:nvclCollection</PropertyName><Literal>true</Literal></PropertyIsEqualTo></ogc:Filter>");
+        jobVo.setStartDepth(0);
+        jobVo.setEndDepth(99999);
+        jobVo.setClassification("Muscovite");
+        jobVo.setSpan((float) 1.0);
+        jobVo.setUnits("pct");
+        jobVo.setValue(20);
+        jobVo.setLogicalOp("gt");
+
+        TSGModJobProcessor processor = new TSGModJobProcessor();
+        processor.setAnalyticalJob(jobVo);
+        if (!processor.getBoreholeList()) {
+            return;
+        }
+        if (!processor.getDataCollection()) {
+            return;
+        }
+        if (!processor.getSpectralData()) {
+            return;
+        }
+        System.out.println("\nStage Finished:OK");
+        
+    }
     
     @Test
     public void testCheckAlgoutiIDs()
