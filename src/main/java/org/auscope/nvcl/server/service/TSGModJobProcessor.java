@@ -3,6 +3,8 @@ package org.auscope.nvcl.server.service;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,17 +15,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.auscope.portal.core.server.http.HttpServiceCaller;
+//import org.auscope.portal.core.server.http.HttpServiceCaller;
 import org.auscope.portal.core.services.methodmakers.WFSGetFeatureMethodMaker;
+import org.auscope.nvcl.server.http.HttpServiceCaller;
+
 import org.auscope.portal.core.services.responses.ows.OWSExceptionParser;
 import org.auscope.portal.core.util.DOMUtil;
 import org.auscope.nvcl.server.http.NVCLDataServiceMethodMaker;
 import org.auscope.nvcl.server.http.NVCLNamespaceContext;
+import org.auscope.nvcl.server.util.TsgMod;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.BoreholeVo;
+import org.auscope.nvcl.server.vo.SpectralLogVo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -38,7 +44,7 @@ import javax.xml.xpath.XPathExpression;
  * @author Peter Warren
  */
 
-public class TSGModJobProcessor  extends Thread{
+public class TSGModJobProcessor  extends IJobProcessor{
     private final Log log = LogFactory.getLog(getClass());  
     
     protected HttpServiceCaller httpServiceCaller;
@@ -63,6 +69,7 @@ public class TSGModJobProcessor  extends Thread{
     private String analyticalServiceUrl; 
     private boolean isdecimalTypeScalar;
     private List<BoreholeVo> boreholeList = new ArrayList<BoreholeVo>(); 
+    private TsgMod tsgMod = new TsgMod();
 //    private String serviceHost;//"http://nvclwebservices.vm.csiro.au/";//"http://geology.data.nt.gov.au/";//
 //    private String servicePathOfData;
 
@@ -195,13 +202,13 @@ public class TSGModJobProcessor  extends Thread{
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
                 String responseString = httpServiceCaller.getMethodResponseAsString(method);
                 Document responseDoc = DOMUtil.buildDomFromString(responseString);
-                XPathExpression expr = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");
+                System.out.println(responseString);
+                XPathExpression expr = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
-                XPathExpression exprLogID = DOMUtil.compileXPathExpr("LogID");
+                XPathExpression exprLogID = DOMUtil.compileXPathExpr("logID");
                 XPathExpression exprLogName = DOMUtil.compileXPathExpr("logName");
-                XPathExpression exprLogType = DOMUtil.compileXPathExpr("logType");
-                XPathExpression exprAlgorithmoutID = DOMUtil.compileXPathExpr("algorithmoutID");                
-                XPathExpression exprIsPublic = DOMUtil.compileXPathExpr("ispublic");                                
+                XPathExpression exprSampleCount = DOMUtil.compileXPathExpr("sampleCount");
+                XPathExpression exprWavelengths = DOMUtil.compileXPathExpr("wavelengths");
                 boolean isError = true;
                 //logName=Reflectance  logID (sampleCount>0) wavelengths
                 // assume "Reflectance" pass it to the process in the swir/vnir parameter
@@ -210,43 +217,25 @@ public class TSGModJobProcessor  extends Thread{
                     String strLogID = eleLogID.getFirstChild().getNodeValue(); 
                     Element eleLogName = (Element) exprLogName.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strLogName = eleLogName.getFirstChild().getNodeValue(); 
-                    Element eleLogType = (Element) exprLogType.evaluate(nodeList.item(i), XPathConstants.NODE);
-                    String strLogType = eleLogType.getFirstChild().getNodeValue(); 
-
-                    Element eleAlgorithmoutID = (Element) exprAlgorithmoutID.evaluate(nodeList.item(i), XPathConstants.NODE);
-                    String strAlgorithmoutID = eleAlgorithmoutID.getFirstChild().getNodeValue();
-                    int     intAlgorithmoutID = Integer.parseInt(strAlgorithmoutID);                    
-                    Element eleIsPublic = (Element) exprIsPublic.evaluate(nodeList.item(i), XPathConstants.NODE);
-                    String strIsPublic = eleIsPublic.getFirstChild().getNodeValue();                     
-                    if (logName != null && logName.length() > 0) {
-                        if (strLogName.equalsIgnoreCase(logName)) {
-                            boreholeVo.logidList.add(strLogID);
-                            //System.out.println("add LogID:" + strLogID + "from borehole:" + holeIdentifier);
-                            checkDecimalTypeScalar(strLogType);
-                            isError = false;
-                            totalLogids++;
-                            break;
-                        }
+                    Element eleSampleCount = (Element) exprSampleCount.evaluate(nodeList.item(i), XPathConstants.NODE);
+                    String strSampleCount = eleSampleCount.getFirstChild().getNodeValue(); 
+                    int intSampleCount = Integer.parseInt(strSampleCount);
+                    Element eleWavelengths = (Element) exprWavelengths.evaluate(nodeList.item(i), XPathConstants.NODE);
+                    String strWavelengths = eleWavelengths.getFirstChild().getNodeValue();
+                    
+                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {                        
+                        boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
+                        isError = false;
+                        totalLogids++;                        
+                        System.out.println("Reflectance:LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
                     } else {
-                        if (strIsPublic.equalsIgnoreCase("true")) {
-                            if (algoutidList.contains(intAlgorithmoutID)) {
-                                boreholeVo.logidList.add(strLogID);
-                                checkDecimalTypeScalar(strLogType);
-                                isError = false;
-                                totalLogids++;
-                                //System.out.println("add LogID:" + strLogID + "from borehole:" + holeIdentifier);
-                            }
-                        }
+                        System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
                     }
                    // System.out.println("exprLogID:" + strLogID + ":" + strLogName + ":" + strLogType + ":" + strAlgorithmoutID);                        
                 }
                 if (isError) {
                     String resultMsg;
-                    if (logName != null && logName.length() > 0) {
-                        resultMsg = "Error by with no logName of " + this.logName + " exist";
-                    } else {
-                        resultMsg = "Error by with no algorithmoutid of \"" + this.algorithmOutputID + "\" exist";
-                    }
+                    resultMsg = "Error by with SampleCountZero";
                     boreholeVo.setStatus(1); //error status;
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
@@ -258,8 +247,11 @@ public class TSGModJobProcessor  extends Thread{
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
+            //For debug purpose only
+//            if (totalLogids > 0)
+//                break;
         }
-        System.out.println("Total Logids:" + totalLogids + ":" + this.serviceUrls);
+        System.out.println("Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
         return true;
     }
     
@@ -290,22 +282,90 @@ public class TSGModJobProcessor  extends Thread{
                 //System.out.println("skip: error borehole:" + boreholeVo.getHoleIdentifier() + ":status:" + boreholeVo.getStatus());
                 continue;
             }
-            String holeIdentifier = boreholeVo.getHoleIdentifier();                    boreholeVo.setStatus(1); //error status;
+            String holeIdentifier = boreholeVo.getHoleIdentifier();                    
+            boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
-            for(String logid : boreholeVo.logidList) {
+
+            
+            for(SpectralLogVo spectralLog : boreholeVo.spectralLogList) {
+
                 totalProcessedLogid++;
+                String logid =  spectralLog.getLogID();
+                int sampleCount = spectralLog.getSampleCount();
+                float[] wvl = spectralLog.getWvl();
+                int waveLengthCount = wvl.length;
+                byte[] spectralData = new byte[sampleCount*waveLengthCount*4];
+                ByteBuffer target = ByteBuffer.wrap(spectralData);            
+                System.out.println("getSpectralData:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
                 //System.out.println("Stage3:process:borehole:" + holeIdentifier + "  logid:" + logid);
                 try {
+                    int step = 4000;
+                    for (int i=0;i<sampleCount;i=i+step) {
                     //LJ sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
-                    HttpRequestBase method =nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid); 
+                        int start = i;
+                        int end = (i+step > sampleCount)? sampleCount-1:i+step-1;
+                        int count = end - start +1;
+                        HttpRequestBase methodSpectralData =nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl,logid,start, end);
+                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData,Utility.getProxyHttpClient("130.116.24.73",3128)));
+                        methodSpectralData.releaseConnection();  
+                        System.out.println("tsgProcessed:start:" + start + ":end:" + end + ":count:" + count);
+                    //tsgMod.parseOneScalarMethod(null, wvl, waveLengthCount , Utility.getFloatspectraldata(spectralData),sampleCount);                    
+                    }
+                    tsgMod.parseOneScalarMethod(null, wvl, waveLengthCount , Utility.getFloatSpectralData(spectralData),sampleCount);   
+                    
+                    
                             //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
                             //nvclMethodMaker.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
-                    String responseString = httpServiceCaller.getMethodResponseAsString(method);
-                    method.releaseConnection();                    
+
+                    HttpRequestBase methodMask =nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, logid);
+                    String strMask = "";//httpServiceCaller.getMethodResponseAsString(methodMask);
+                    methodMask.releaseConnection();                    
+                    //String spectralData = httpServiceCaller.getMethodResponseAsString(methodSpectralData);
+
+                    
+                    //String strFloat[] = spectralData.split("(?<=\\G....)");
+                    
+                    
+//                    float:-1.174494E29
+//                    float:-0.09371766
+//                    float:-1.174494E29
+//                    float:-1.174494E29
+//                    float:-0.09371778
+//                    float:7.1685425E24
+//                    float:-1.174494E29
+//                    float:0.18270138
+//                    float:0.18979286
+//                    float:7.5167616E30
+//                    float:0.20169362
+//                    float:1.5374046E-25
+//                    float:6.5197514E12
+//                    float:1.04316023E14
+//                    float:4.17264092E14
+//                    float:1.66905637E15
+//                    float:-5.891011E28
+//                    float:1.4664491E-31
+//                    float:1.06819608E17
+//                    float:1.06819608E17
+//                    float:2.2914148E-33
+//                    float:6.8364549E18
+//                    float:-5.8917293E28
+//                    float:2.734582E19
+//                    float:-5.8919446E28
+                    
+                    
+//                    for (String s:strFloat){
+//                        byte[] bytes = s.getBytes("UTF-8");
+//                        Float f = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+//                        System.out.println("float:" + f);                        
+//                    }
+                    
+                    
+                    
                     String csvLine;
 
-                    BufferedReader csvBuffer = new BufferedReader(new StringReader(responseString)); 
+                    BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask)); 
+                    //startDepth, endDepth, final_mask(could be null)
                     TreeMap<String, Float> depthMap = new TreeMap<String, Float>(); //depth:countSum;
                     TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
                     csvLine = csvBuffer.readLine();//skip the header
@@ -317,76 +377,13 @@ public class TSGModJobProcessor  extends Thread{
                         String depth = cells.get(0);
                         Float count =  0.0f;
                         String csvClassfication;
-                        if (this.isdecimalTypeScalar == false) {
-                            count = Float.parseFloat(cells.get(3));
-                            csvClassfication = cells.get(1);
-                        } else {
-                            count = Float.parseFloat(cells.get(1));
-                            csvClassfication="averageValue";
-                            //get the float;
-                        }
-                        Float countSum = 0.0f ;
-                        if (depthMap.get(depth) != null) {
-                            countSum= depthMap.get(depth) + count;
-                        } else {
-                            countSum = 0 + count;
-                        }
-                        depthMap.put(depth, countSum);
-                        if (csvClassfication.equalsIgnoreCase(classification)) {
-                            depthClassificationMap.put(depth, count);
-                        } 
-                    }
-                    //System.out.println("lines read " +linesread);
-                    String depthKey;
-                    Float count = 0.0f;
-                    Float countSum;
-                    float ratio = (float) 0.0;
-                    /* Now, iterate over the map's contents, sorted by key. */
-                    for (Entry<String, Float> entry : depthClassificationMap.entrySet()) {
-                        depthKey = entry.getKey();
-                        count = entry.getValue();
-                        countSum = depthMap.get(depthKey);
-                        if (countSum!=0) ratio = (float) count*100/countSum;
-                        //System.out.println("count:"+count+":countSum"+countSum+":ratio:"+ratio);
-                      if (units.equalsIgnoreCase("pct")) {
-                          if (logicalOp.equalsIgnoreCase("gt")) {
-                              if (ratio > value) {
-                                  isHit = true;
-                                  break;
-                              }
-                          } else if (logicalOp.equalsIgnoreCase("lt")){
-                              if (ratio < value) {
-                                  isHit = true;
-                                  break;
-                              }
-                          } else if (logicalOp.equalsIgnoreCase("eq")){
-                              if (Math.abs(ratio - value) < 1.0) { //float equal when abs < 1%
-                                  isHit = true;
-                                  break;
-                              }
-                          }
-                          
-                      } else {
-                          if (logicalOp.equalsIgnoreCase("gt")) {                      
-                              if (count > value) {
-                                  isHit = true;
-                                  break;                          
-                              }
-                          } else if (logicalOp.equalsIgnoreCase("lt")) {
-                              if (count < value) {
-                                  isHit = true;
-                                  break;
-                              }
-                          } else if (logicalOp.equalsIgnoreCase("eq")){
-                              if (Math.abs(count - value) < 1.0) { //float equal when abs < 1
-                                  isHit = true;
-                                  break;
-                              }
-                          }
-                      }
-                    }
+                        //count = Float.parseFloat(cells.get(1));
+                         //   csvClassfication="averageValue";
+
+                     }
+                    System.out.println("lines read " +linesread);
                     if (isHit) {
-                            resultMsg = "Hitted by " + this.classification + " with value " + String.valueOf(units.equalsIgnoreCase("pct")?ratio:count) + " " + logicalOp + " than threshhole " + String.valueOf(value) + " " +units;
+                            resultMsg = "Hitted by " + this.classification + " with value " ;
                             boreholeVo.setStatus(2); //hitted status;
                             jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                             System.out.println("*****************hitted:" +boreholeVo.getHoleIdentifier());
