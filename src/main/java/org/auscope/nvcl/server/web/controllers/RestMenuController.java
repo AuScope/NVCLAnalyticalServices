@@ -1,6 +1,9 @@
 package org.auscope.nvcl.server.web.controllers;
 
 import java.awt.Menu;
+
+import org.auscope.nvcl.server.util.TsgMod;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -227,5 +230,16 @@ public class RestMenuController {
         Gson gson = new Gson();
         return gson.toJson(jobResultVo);
     }
-    
+    @RequestMapping("/doTSGMod.do")
+    public String doTSGMod( @RequestParam(value="jobid", defaultValue="028c68636c05586c2985476dd7d7b069") String jobID ) throws ServletException,
+            IOException {
+
+        System.out.println("start");
+        TsgMod tsgMod = new TsgMod();
+        System.out.println("1");        
+        //tsgMod.parseOneScalarMethod();
+        System.out.println("end");        
+        Gson gson = new Gson();
+        return gson.toJson(tsgMod);
+    }    
 }

@@ -17,6 +17,7 @@ public class BoreholeVo {
     private String holeUrl;
     private int status = 0; //0-wait4process,1-error,2-hit,3-fail
     public List<String> logidList = new ArrayList<String> ();
+    public List<SpectralLogVo> spectralLogList = new ArrayList<SpectralLogVo>();
   
     public BoreholeVo(String holeIdentifier, String holeUrl, String serviceUrl, String serviceHost, String servicePathOfData) {
         this.holeIdentifier = holeIdentifier;
