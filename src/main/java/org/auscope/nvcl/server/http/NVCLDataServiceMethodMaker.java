@@ -61,16 +61,41 @@ public class NVCLDataServiceMethodMaker extends AbstractMethodMaker {
      *            The logID of the borehole to query
      * @throws URISyntaxException
      */
-    public HttpRequestBase getSpectralDataMethod(String serviceUrl, String logid)
+    public HttpRequestBase getSpectralDataMethod(String serviceUrl, String logid, int startsampleno,int endsampleno)
             throws URISyntaxException {
         HttpGet method = new HttpGet();
         URIBuilder builder = new URIBuilder(urlPathConcat(serviceUrl, "getspectraldata.html"));
 
         //set all of the parameters
         builder.setParameter("speclogid", logid);
+        if (startsampleno >= 0 && endsampleno>=0) {
+            builder.setParameter("startsampleno", Integer.toString(startsampleno));
+            builder.setParameter("endsampleno", Integer.toString(endsampleno));
+        }
         method.setURI(builder.build());
         return method;
     }    
+    
+    //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
+    /**
+     * Generates a method for making request for all NVCL DataSets that belong to a particular borehole
+     * 
+     * @param serviceUrl
+     *            The URL of the NVCLDataService
+     * @param logid
+     *            The logID of the borehole to query
+     * @throws URISyntaxException
+     */
+    public HttpRequestBase getDownloadScalarsMethod(String serviceUrl, String logid)
+            throws URISyntaxException {
+        HttpGet method = new HttpGet();
+        URIBuilder builder = new URIBuilder(urlPathConcat(serviceUrl, "downloadscalars.html"));
+
+        //set all of the parameters
+        builder.setParameter("logid", logid);
+        method.setURI(builder.build());
+        return method;
+    } 
     
     
     /**
@@ -409,4 +434,6 @@ public class NVCLDataServiceMethodMaker extends AbstractMethodMaker {
 
         return method;
     }
+
+
 }
