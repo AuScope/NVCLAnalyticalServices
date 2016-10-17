@@ -55,7 +55,10 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
 		}
 		MapMessage mapMessage = (MapMessage) message;
 		AnalyticalJobVo messageVo = new AnalyticalJobVo();
-		if ( mapMessage.getString("requestType").equals("ANALYTICAL") ) {
+		if ( mapMessage.getString("requestType").equals("ANALYTICAL") ||
+		     mapMessage.getString("requestType").equals("TSGMOD")  ) {
+		    messageVo.setRequestType(mapMessage.getString("requestType"));
+            messageVo.setTsgScript(mapMessage.getString("tsgScript"));		    
             messageVo.setJobid(mapMessage.getString("jobid"));
             messageVo.setJobDescription(mapMessage.getString("jobDescription"));
             messageVo.setEmail(mapMessage.getString("email"));
@@ -118,7 +121,8 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
             message.setFloat("value",  messageVo.getValue());
             message.setString("logicalOp",  messageVo.getLogicalOp());          
             message.setString("joburl", messageVo.getJoburl());
-            message.setString("message", messageVo.getMessage());            
+            message.setString("message", messageVo.getMessage());       
+            message.setString("tsgScript", messageVo.getTsgScript());              
             return message;
 		} else if (object instanceof AnalyticalJobStatusVo){
 			//creating status message

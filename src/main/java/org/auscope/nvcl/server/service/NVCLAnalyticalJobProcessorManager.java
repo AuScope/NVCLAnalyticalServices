@@ -9,13 +9,14 @@ import org.auscope.nvcl.server.vo.BoreholeResultVo;
 
 
 public class NVCLAnalyticalJobProcessorManager{
-    private List<NVCLAnalyticalJobProcessor> processorList = new ArrayList<NVCLAnalyticalJobProcessor>();
+    private List<IJobProcessor> processorList = new ArrayList<IJobProcessor>();
     private AnalyticalJobResultVo sumJobResultVo = new AnalyticalJobResultVo();
     public AnalyticalJobResultVo getSumJobResultVo() {
         return this.sumJobResultVo;
     }
     public boolean processRequest(AnalyticalJobVo messageVo) {
         String serviceUrls = messageVo.getServiceUrls(); //"http://nvclwebservices.vm.csiro.au/geoserverBH/wfs";//"http://geology.data.nt.gov.au/geoserver/wfs"; //
+        String requestType = messageVo.getRequestType();
         if (serviceUrls == null)
             return false;
         String[] serviceUrlArray = serviceUrls.split(",");
@@ -25,15 +26,25 @@ public class NVCLAnalyticalJobProcessorManager{
         
         for (String serviceUrl : serviceUrlArray) {
             AnalyticalJobVo jobVo = new AnalyticalJobVo(messageVo);
+            IJobProcessor processor = null;
             jobVo.setServiceUrls(serviceUrl);
-            NVCLAnalyticalJobProcessor processor = new NVCLAnalyticalJobProcessor();
+            switch (requestType) {
+            case "ANALYTICAL":
+                processor = new NVCLAnalyticalJobProcessor();
+                break;
+            case "TSGMOD":
+                processor = new TSGModJobProcessor();                
+                break;
+            default:
+                break;
+            }
             processor.setAnalyticalJob(jobVo);
             processorList.add(processor);
             processor.start();
         }
         try
         {
-            for (NVCLAnalyticalJobProcessor processor : processorList) {
+            for (IJobProcessor processor : processorList) {
                 processor.join();
                 AnalyticalJobResultVo jobResultVo = processor.getJobResult();
                 for ( BoreholeResultVo boreholeResultVo : jobResultVo.boreholes) {

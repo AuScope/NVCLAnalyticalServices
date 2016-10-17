@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -18,7 +19,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 //import org.auscope.portal.core.server.http.HttpServiceCaller;
 import org.auscope.portal.core.services.methodmakers.WFSGetFeatureMethodMaker;
 import org.auscope.nvcl.server.http.HttpServiceCaller;
-
 import org.auscope.portal.core.services.responses.ows.OWSExceptionParser;
 import org.auscope.portal.core.util.DOMUtil;
 import org.auscope.nvcl.server.http.NVCLDataServiceMethodMaker;
@@ -45,88 +45,15 @@ import javax.xml.xpath.XPathExpression;
  */
 
 public class TSGModJobProcessor  extends IJobProcessor{
-    private final Log log = LogFactory.getLog(getClass());  
-    
-    protected HttpServiceCaller httpServiceCaller;
-    private NVCLDataServiceMethodMaker nvclMethodMaker;    
-    protected WFSGetFeatureMethodMaker wfsMethodMaker;    
-    private AnalyticalJobResultVo jobResultVo;
-
-    private String serviceUrls;
-    private List<String> serviceUrlsList = new ArrayList<String>();
-    private String filter;
-    private int startDepth;
-    private int endDepth;    
-    private String logName;
-    private String classification;
-    private String algorithmOutputID;//"128,12,34" string of integer array
-    private List<Integer> algoutidList = new ArrayList<Integer>();
-    private float span;
-    private String units;
-    private float value;
-    private String logicalOp;
-    private String layerName;    
-    private String analyticalServiceUrl; 
-    private boolean isdecimalTypeScalar;
-    private List<BoreholeVo> boreholeList = new ArrayList<BoreholeVo>(); 
-    private TsgMod tsgMod = new TsgMod();
-//    private String serviceHost;//"http://nvclwebservices.vm.csiro.au/";//"http://geology.data.nt.gov.au/";//
-//    private String servicePathOfData;
-
-    private void setAlgoutidList (String algorithmOutputID) {
-        if (algorithmOutputID == null)
-            return;
-        String[] stringArray = algorithmOutputID.split(",");
-        algoutidList.clear();
-        for (int i = 0; i < stringArray.length; i++) {
-           String numberAsString = stringArray[i];
-           algoutidList.add(Integer.parseInt(numberAsString));
-        }
-    }
-    private void setServiceUrls (String serviceUrls) {
-        if (serviceUrls == null)
-            return;
-        String[] serviceUrlArray = serviceUrls.split(",");
-        serviceUrlsList.clear();
-        for (int i = 0; i < serviceUrlArray.length; i++) {
-           serviceUrlsList.add(serviceUrlArray[i]);
-        }
-        return;
-    }
-    public void setAnalyticalJob(AnalyticalJobVo messageVo) {
-        this.jobResultVo.setJobid(messageVo.getJobid());
-        this.jobResultVo.setJobDescription(messageVo.getJobDescription());        
-        this.jobResultVo.setEmail(messageVo.getEmail());
-        
-        this.serviceUrls = messageVo.getServiceUrls(); //"http://nvclwebservices.vm.csiro.au/geoserverBH/wfs";//"http://geology.data.nt.gov.au/geoserver/wfs"; //
-        setServiceUrls(serviceUrls);
-        this.algorithmOutputID = messageVo.getAlgorithmOutputID();
-        setAlgoutidList(algorithmOutputID);
-        this.classification = messageVo.getClassification();
-        this.logName = messageVo.getLogName();
-        this.startDepth = messageVo.getStartDepth();
-        this.endDepth = messageVo.getEndDepth();
-        this.logicalOp = messageVo.getLogicalOp();
-        this.value = messageVo.getValue();
-        this.units = messageVo.getUnits();
-        this.span = messageVo.getSpan();
-        this.filter = messageVo.getFilter();        
-        //this.servicePathOfData = "NVCLDataServices/";
-        this.layerName = "gsmlp:BoreholeView";        
-    }     
-        
+    private final Log log = LogFactory.getLog(getClass());      
+    private TsgMod tsgMod = new TsgMod(); 
+    private String tsgScript;
     /**
      * Constructor Construct all the member variables.
      * 
      */    
     public TSGModJobProcessor() {
-        this.jobResultVo = new AnalyticalJobResultVo();        
-        this.httpServiceCaller = new HttpServiceCaller(90000);
-        this.wfsMethodMaker = new WFSGetFeatureMethodMaker();
-        this.nvclMethodMaker = new NVCLDataServiceMethodMaker();
         
-        
-        this.isdecimalTypeScalar = false;
 
     }
     public void run()
@@ -145,52 +72,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
    
           System.out.println("Thread:end:" + this.serviceUrls);
     }
-    public boolean getBoreholeList() {
-        //if (true) return true;
-        System.out.println("Thread:getBoreholeList:in:" + this.serviceUrls);
-        HttpPost method = null;
-        for (String serviceUrl : this.serviceUrlsList) {
-        String serviceHost = Utility.getHost(serviceUrl);
-        String servicePathOfData;
-        if (serviceUrls.contains("auscope.dpi.nsw.gov.au")) {
-            servicePathOfData = "NVCLDownloadServices/";
-            //nsw has no nvclCollection ready, so use brokenhill bbox as an example.
-            //this.filter = "<ogc:filter><ogc:BBOX><ogc:PropertyName>gsmlp:shape</ogc:PropertyName><gml:Envelope srsName=\"EPSG:4326\"><gml:lowerCorner>141.00 -32.1</gml:lowerCorner><gml:upperCorner>141.2 -32.0</gml:upperCorner></gml:Envelope></ogc:BBOX></ogc:filter>";
-        }
-        else {
-            servicePathOfData = "NVCLDataServices/";
-        }        
-        try {
-            method = (HttpPost) this.wfsMethodMaker.makePostMethod(serviceUrl, this.layerName, this.filter, 0);
-            String responseString = httpServiceCaller.getMethodResponseAsString(method);
-            //System.out.println("response=" + responseString);
-            Document responseDoc = DOMUtil.buildDomFromString(responseString);
-            OWSExceptionParser.checkForExceptionResponse(responseDoc);
-            NVCLNamespaceContext nc = new NVCLNamespaceContext();
-            XPathExpression exp = DOMUtil.compileXPathExpr("/wfs:FeatureCollection/gml:featureMembers/gsmlp:BoreholeView/gsmlp:identifier",nc);///
-            NodeList publishedDatasets = (NodeList) exp.evaluate(responseDoc, XPathConstants.NODESET);
-            for (int i = 0; i < publishedDatasets.getLength(); i++) {
-                Element eleHoleUrl = (Element) publishedDatasets.item(i);
-                String holeUrl = eleHoleUrl.getFirstChild().getNodeValue();
-                if (holeUrl != null) {
-                    String[] urnBlocks = holeUrl.split("/");
-                    if (urnBlocks.length > 1) {
-                        String holeIdentifier = urnBlocks[urnBlocks.length-1];
-                        boreholeList.add(new BoreholeVo(holeIdentifier,holeUrl,serviceUrl,serviceHost,servicePathOfData));
-                    }
-                }
-
-            }
-        }catch (Exception ex) {
-            log.warn(String.format("NVCLAnalyticalJobProcessor::processStage1 for '%s' failed", serviceUrl));         
-        } finally {
-            if (method != null) {
-                method.releaseConnection();
-            }
-        } 
-        }
-        System.out.println("Thread:getBoreholeList:out:" + boreholeList.size() + ":" +  this.serviceUrls);
-        return true;
+    public void setAnalyticalJob(AnalyticalJobVo messageVo) {
+        byte[] byteTsgScript = Base64.getDecoder().decode(messageVo.getTsgScript());
+        this.tsgScript = new String(byteTsgScript);
+//              System.out.println("Base64 decoded String (Basic) :" + decodedTsgScript);messageVo.getTsgScript();
+        super.setAnalyticalJob(messageVo);
     }
     public boolean getDataCollection() {
 
@@ -202,7 +88,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
                 String responseString = httpServiceCaller.getMethodResponseAsString(method);
                 Document responseDoc = DOMUtil.buildDomFromString(responseString);
-                System.out.println(responseString);
+                //System.out.println(responseString);
                 XPathExpression expr = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
                 XPathExpression exprLogID = DOMUtil.compileXPathExpr("logID");
@@ -229,7 +115,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         totalLogids++;                        
                         System.out.println("Reflectance:LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
                     } else {
-                        System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
+                        //System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
                     }
                    // System.out.println("exprLogID:" + strLogID + ":" + strLogName + ":" + strLogType + ":" + strAlgorithmoutID);                        
                 }
@@ -255,21 +141,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
         return true;
     }
     
-    public void checkDecimalTypeScalar(String strLogType) {
-        if (Utility.tryParseInt(strLogType)) {  
-            // We now know that it's safe to parse
-            int intLogType = Integer.parseInt(strLogType); 
-            if (intLogType == 2)
-            {
-                this.classification = "averageValue";
-                this.units = "count";
-                this.isdecimalTypeScalar = true;
-                System.out.println("!!!!!!!-decimalLogType:");
-            }
-            //System.out.println("!!!!!!!-intLogType:" + intLogType);
-        }
-        return;
-    }
     public boolean getSpectralData() {
         //A sample for getDownSampledData request:
         //http://nvclwebservices.vm.csiro.au/NVCLDataServices/getDownsampledData.html?logid=14b146e6-bcdf-43e1-ae53-c007b6f28d3&interval=1.0&startdepth=0&enddepth=99999&outputformat=csv
@@ -312,56 +183,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         System.out.println("tsgProcessed:start:" + start + ":end:" + end + ":count:" + count);
                     //tsgMod.parseOneScalarMethod(null, wvl, waveLengthCount , Utility.getFloatspectraldata(spectralData),sampleCount);                    
                     }
-                    tsgMod.parseOneScalarMethod(null, wvl, waveLengthCount , Utility.getFloatSpectralData(spectralData),sampleCount);   
+                    tsgMod.parseOneScalarMethod(this.tsgScript, wvl, waveLengthCount , Utility.getFloatSpectralData(spectralData),sampleCount);   
                     
-                    
-                            //getspectraldata (logid) -> binary stream of numberofwvls*samplecount*4 bytes   ->java float array
-                            //nvclMethodMaker.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
 
                     HttpRequestBase methodMask =nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, logid);
                     String strMask = "";//httpServiceCaller.getMethodResponseAsString(methodMask);
                     methodMask.releaseConnection();                    
-                    //String spectralData = httpServiceCaller.getMethodResponseAsString(methodSpectralData);
 
-                    
-                    //String strFloat[] = spectralData.split("(?<=\\G....)");
-                    
-                    
-//                    float:-1.174494E29
-//                    float:-0.09371766
-//                    float:-1.174494E29
-//                    float:-1.174494E29
-//                    float:-0.09371778
-//                    float:7.1685425E24
-//                    float:-1.174494E29
-//                    float:0.18270138
-//                    float:0.18979286
-//                    float:7.5167616E30
-//                    float:0.20169362
-//                    float:1.5374046E-25
-//                    float:6.5197514E12
-//                    float:1.04316023E14
-//                    float:4.17264092E14
-//                    float:1.66905637E15
-//                    float:-5.891011E28
-//                    float:1.4664491E-31
-//                    float:1.06819608E17
-//                    float:1.06819608E17
-//                    float:2.2914148E-33
-//                    float:6.8364549E18
-//                    float:-5.8917293E28
-//                    float:2.734582E19
-//                    float:-5.8919446E28
-                    
-                    
-//                    for (String s:strFloat){
-//                        byte[] bytes = s.getBytes("UTF-8");
-//                        Float f = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-//                        System.out.println("float:" + f);                        
-//                    }
-                    
-                    
-                    
                     String csvLine;
 
                     BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask)); 
@@ -369,7 +197,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     TreeMap<String, Float> depthMap = new TreeMap<String, Float>(); //depth:countSum;
                     TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
                     csvLine = csvBuffer.readLine();//skip the header
-                    //System.out.println("csv:" + csvLine);
+                    System.out.println("csv:" + csvLine);
                     int linesread=0;
                     while ((csvLine = csvBuffer.readLine()) != null) {
                         linesread++;
@@ -408,16 +236,4 @@ public class TSGModJobProcessor  extends IJobProcessor{
         System.out.println("Stage 3:OK:" + this.serviceUrls);
         return true;
     }
-    
-    public AnalyticalJobResultVo getJobResult() {
-        return jobResultVo;
-    }
-
-    public String getAnalyticalServiceUrl() {
-        return analyticalServiceUrl;
-    }
-    public void setAnalyticalServiceUrl(String analyticalServiceUrl) {
-        this.analyticalServiceUrl = analyticalServiceUrl;
-    }
-   
 }
