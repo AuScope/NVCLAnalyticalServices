@@ -59,7 +59,8 @@ public class AnalyticalJobVo {
         private String status;        
         private String requestType;      
         private String joburl;        
-        private String message;              
+        private String message;    
+        private String tsgScript; //For TsgModJob only
 
         public AnalyticalJobVo(AnalyticalJobVo messageVo) {
             this.jobid = messageVo.getJobid();
@@ -78,6 +79,7 @@ public class AnalyticalJobVo {
             this.logicalOp = messageVo.getLogicalOp();
             this.status = messageVo.getStatus();
             this.requestType = messageVo.getRequestType();       
+            this.tsgScript = messageVo.getTsgScript();       
             this.joburl = messageVo.getJoburl();
             this.message = messageVo.getMessage();                   
         }
@@ -102,7 +104,8 @@ public class AnalyticalJobVo {
             toString += "value=" + value;
             toString += "logicalOp=" + logicalOp;
             toString += "joburl=" + joburl;
-            toString += "message=" + message;            
+            toString += "message=" + message;
+            toString += "tsgScript=" + tsgScript;     
             return toString;
         }
 
@@ -323,6 +326,14 @@ public class AnalyticalJobVo {
 
         public void setJMSCorrelationID(String jMSCorrelationID) {
             JMSCorrelationID = jMSCorrelationID;
+        }
+
+        public String getTsgScript() {
+            return tsgScript;
+        }
+
+        public void setTsgScript(String tsgScript) {
+            this.tsgScript = tsgScript;
         }
 
 }
