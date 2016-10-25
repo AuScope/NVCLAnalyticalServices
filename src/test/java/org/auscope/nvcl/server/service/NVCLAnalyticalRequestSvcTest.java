@@ -1,5 +1,7 @@
 package org.auscope.nvcl.server.service;
 
+import java.util.Base64;
+
 import javax.jms.Destination;
 
 import org.auscope.nvcl.server.util.Utility;
@@ -51,9 +53,22 @@ public class NVCLAnalyticalRequestSvcTest {
 		Destination status = (Destination) ctx.getBean("nvclStatusDestination");
         Destination result = (Destination) ctx.getBean("nvclResultDestination");		
 		ConfigVo configVo = (ConfigVo) ctx.getBean("createConfig");
-
+        String tsgScript = "name = Hematite-goethite_distr, 9\n" +
+                    "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +
+                    "p2= profile, layer=ref, stat=mean, wcentre=1650, wradius=0\n"+
+                    "p3= profile, layer=ref, stat=mean, wcentre=450, wradius=0\n"+
+                    "p4= expr, param1=p3, param2=p2, arithop=div\n"+
+                    "p5 = expr, param1=p4, const2=1, arithop=lle, nullhandling=out\n"+
+                    "p6= expr, param1=p5, param2=p1, arithop=mult\n"+
+                    "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
+                    "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
+                    "return=expr, param1=p8, param2=p7, arithop=mult ";
+        // Encode using basic encoder
+        String base64TsgScript = Base64.getEncoder().encodeToString(tsgScript.getBytes("utf-8"));
+        
 		AnalyticalJobVo jobVo = new AnalyticalJobVo();
         jobVo.setRequestType("ANALYTICAL");        
+        jobVo.setTsgScript(base64TsgScript);
         jobVo.setJobid("test-" + Utility.getHashValue());
         jobVo.setJobDescription("Analytical test job 003");  
         jobVo.setServiceUrls("http://nvclwebservices.vm.csiro.au/geoserverBH/wfs");

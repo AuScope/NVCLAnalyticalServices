@@ -3,6 +3,7 @@ package org.auscope.nvcl.server.service;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 
 /*
  * TSGModJobProcessor will process a analytical job by using tsgMod.
@@ -78,6 +80,72 @@ public class TSGModJobProcessor  extends IJobProcessor{
 //              System.out.println("Base64 decoded String (Basic) :" + decodedTsgScript);messageVo.getTsgScript();
         super.setAnalyticalJob(messageVo);
     }
+    public static void main(String [] args)
+    {
+        String nvclDataServiceUrl = "http://nvclwebservices.vm.csiro.au/NVCLDataServices/";
+        String holeIdentifier = "WTB5";
+        HttpServiceCaller httpServiceCaller = new HttpServiceCaller(90000);
+        NVCLDataServiceMethodMaker nvclMethodMaker = new NVCLDataServiceMethodMaker();        
+
+        try {
+            HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
+            String responseString = httpServiceCaller.getMethodResponseAsString(method);
+            Document responseDoc = DOMUtil.buildDomFromString(responseString);
+            XPathExpression exprMask;
+            exprMask = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
+            NodeList nodeListMask = (NodeList) exprMask.evaluate(responseDoc, XPathConstants.NODESET);
+            XPathExpression exprLogIDMask = DOMUtil.compileXPathExpr("LogID");
+            XPathExpression exprLogNameMask = DOMUtil.compileXPathExpr("logName");
+            for (int j = 0; j < nodeListMask.getLength(); j++) {
+                Element eleLogIDMask = (Element) exprLogIDMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String strLogIDMask = eleLogIDMask.getFirstChild().getNodeValue(); 
+                Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
+                System.out.println(strLogNameMask);
+                if (strLogNameMask.equalsIgnoreCase("Final Mask")) {
+                    System.out.println("maskLogid:" + strLogIDMask );
+                    return ;
+                }
+            }
+        } catch ( Exception e) {
+            // TODO Auto-generated catch block
+            //e.printStackTrace();
+        }//DatasetCollection/Dataset/Logs/Log");//
+        
+        return ;
+        
+    }
+    
+    private String getFinalMaskLogid(Document doc) 
+    {
+        String strLogIDMask = null;
+        try {
+            XPathExpression exprMask;
+            exprMask = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
+            NodeList nodeListMask = (NodeList) exprMask.evaluate(doc, XPathConstants.NODESET);
+            XPathExpression exprLogIDMask = DOMUtil.compileXPathExpr("LogID");
+            XPathExpression exprLogNameMask = DOMUtil.compileXPathExpr("logName");
+            for (int j = 0; j < nodeListMask.getLength(); j++) {
+                Element eleLogIDMask = (Element) exprLogIDMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String logid = eleLogIDMask.getFirstChild().getNodeValue(); 
+                Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
+                //System.out.println(strLogNameMask);
+                if (strLogNameMask.equalsIgnoreCase("Final Mask")) {
+                    strLogIDMask = logid;
+                    System.out.println("maskLogid:" + strLogIDMask );
+                    break;
+                    //return strLogIDMask;
+                }
+            }
+        } catch ( Exception e) {
+            // TODO Auto-generated catch block
+            //e.printStackTrace();
+        }//DatasetCollection/Dataset/Logs/Log");//
+        
+        return strLogIDMask;
+        
+    }    
     public boolean getDataCollection() {
 
         int totalLogids = 0;
@@ -113,7 +181,22 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        System.out.println("Reflectance:LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
+                        System.out.println("Reflectance:LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
+
+                        
+                        //get final_mask logid
+                        String finalMaskLogid = getFinalMaskLogid(responseDoc);
+                        boreholeVo.setFinalMaskLogid(finalMaskLogid);
+                        
+//                        <Log>
+//                        <LogID>dd5c574e-7028-4077-a70e-f5d3430677d</LogID>
+//                        <logName>Final Mask</logName>
+//                        <ispublic>false</ispublic>
+//                        <logType>6</logType>
+//                        <algorithmoutID>0</algorithmoutID>
+//                        </Log>
+                        
+                        
                     } else {
                         //System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
                     }
@@ -153,7 +236,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 //System.out.println("skip: error borehole:" + boreholeVo.getHoleIdentifier() + ":status:" + boreholeVo.getStatus());
                 continue;
             }
-            String holeIdentifier = boreholeVo.getHoleIdentifier();                    
+            String holeIdentifier = boreholeVo.getHoleIdentifier();
+            String finalMaskLogid = boreholeVo.getFinalMaskLogid();
             boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
@@ -186,16 +270,15 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     tsgMod.parseOneScalarMethod(this.tsgScript, wvl, waveLengthCount , Utility.getFloatSpectralData(spectralData),sampleCount);   
                     
 
-                    HttpRequestBase methodMask =nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, logid);
-                    String strMask = "";//httpServiceCaller.getMethodResponseAsString(methodMask);
+                    HttpRequestBase methodMask =nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
+                    String strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
                     methodMask.releaseConnection();                    
 
                     String csvLine;
 
                     BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask)); 
                     //startDepth, endDepth, final_mask(could be null)
-                    TreeMap<String, Float> depthMap = new TreeMap<String, Float>(); //depth:countSum;
-                    TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
+                    TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); //depth:Mask;
                     csvLine = csvBuffer.readLine();//skip the header
                     System.out.println("csv:" + csvLine);
                     int linesread=0;
@@ -203,9 +286,10 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         linesread++;
                         List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
                         String depth = cells.get(0);
-                        Float count =  0.0f;
-                        String csvClassfication;
-                        //count = Float.parseFloat(cells.get(1));
+                        Byte mask = 0;
+                        mask = Byte.parseByte(cells.get(2));
+                        depthMaskMap.put(depth, mask);
+                        System.out.println("csv:" + csvLine);
                          //   csvClassfication="averageValue";
 
                      }

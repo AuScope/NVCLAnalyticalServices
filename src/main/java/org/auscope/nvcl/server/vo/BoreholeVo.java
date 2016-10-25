@@ -18,6 +18,7 @@ public class BoreholeVo {
     private int status = 0; //0-wait4process,1-error,2-hit,3-fail
     public List<String> logidList = new ArrayList<String> ();
     public List<SpectralLogVo> spectralLogList = new ArrayList<SpectralLogVo>();
+    private String finalMaskLogid;
   
     public BoreholeVo(String holeIdentifier, String holeUrl, String serviceUrl, String serviceHost, String servicePathOfData) {
         this.holeIdentifier = holeIdentifier;
@@ -65,5 +66,11 @@ public class BoreholeVo {
     }
     public void setServicePathOfData(String servicePathOfData) {
         this.servicePathOfData = servicePathOfData;
+    }
+    public String getFinalMaskLogid() {
+        return finalMaskLogid;
+    }
+    public void setFinalMaskLogid(String finalMaskLogid) {
+        this.finalMaskLogid = finalMaskLogid;
     }
 }
