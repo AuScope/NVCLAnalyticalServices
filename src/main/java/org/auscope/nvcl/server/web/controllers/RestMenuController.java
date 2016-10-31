@@ -24,7 +24,7 @@ import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
-import org.auscope.nvcl.server.vo.ConfigVo;
+//import org.auscope.nvcl.server.vo.ConfigVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +45,9 @@ import com.google.gson.Gson;
 @RestController
 public class RestMenuController {
     private static final Logger logger = LogManager.getLogger(RestMenuController.class);    
-    @Autowired
-    @Qualifier(value = "createConfig")
-    private ConfigVo configVo;
+//    @Autowired
+//    @Qualifier(value = "createConfig")
+//    private ConfigVo configVo;
 
     @Autowired
     @Qualifier(value = "nvclAnalyticalGateway")
