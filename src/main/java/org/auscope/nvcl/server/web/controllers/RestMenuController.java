@@ -8,10 +8,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.jms.Destination;
 import javax.servlet.ServletException;
@@ -24,7 +22,6 @@ import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
-//import org.auscope.nvcl.server.vo.ConfigVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +42,6 @@ import com.google.gson.Gson;
 @RestController
 public class RestMenuController {
     private static final Logger logger = LogManager.getLogger(RestMenuController.class);    
-//    @Autowired
-//    @Qualifier(value = "createConfig")
-//    private ConfigVo configVo;
 
     @Autowired
     @Qualifier(value = "nvclAnalyticalGateway")
@@ -122,7 +116,7 @@ public class RestMenuController {
         }
 
         AnalyticalJobVo jobVo = new AnalyticalJobVo();
-        // set TSG as requestType to ConfigVo
+
         jobVo.setRequestType("ANALYTICAL");
         jobVo.setJobid(jobid);
         jobVo.setJobDescription(jobname);
@@ -291,20 +285,12 @@ public class RestMenuController {
                     "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
                     "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
                     "return=expr, param1=p8, param2=p7, arithop=mult ";
-          
-//                   // Encode using basic encoder
-//                   String base64TsgScript = Base64.getEncoder().encodeToString(tsgScript.getBytes("utf-8"));
-//                   System.out.println("Base64 Encoded String (Basic) :" + base64TsgScript);
-//                  
-//                   // Decode
-//                   String decodedTsgScript = new String(Base64.getDecoder().decode(base64TsgScript), "utf-8");
-//                   System.out.println("Base64 decoded String (Basic) :" + decodedTsgScript);
-              
+
         }
         // Encode using basic encoder
         String base64TsgScript = Base64.getEncoder().encodeToString(tsgScript.getBytes("utf-8"));
         AnalyticalJobVo jobVo = new AnalyticalJobVo();
-        // set TSG as requestType to ConfigVo
+
         jobVo.setRequestType("TSGMOD");
         jobVo.setJobid(jobid);
         jobVo.setTsgScript(base64TsgScript);
@@ -351,14 +337,6 @@ public class RestMenuController {
         }
 
         return new AnalyticalJobResponse("SUCCESS", "jobid=" + jobid + ": Your job has been successfully submitted. Please check your jobs status later");
-//        System.out.println("start");
-//        TsgMod tsgMod = new TsgMod();
-//        System.out.println("1");        
-//        //tsgMod.parseOneScalarMethod();
-//        System.out.println("end");        
-//        Gson gson = new Gson();
-//        return gson.toJson(tsgMod);
-        
     }
 
     @RequestMapping("/doTSGMod.do")

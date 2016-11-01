@@ -16,6 +16,8 @@
     <tr><td>Submit to NT</td><td>ALL Thermal TSA group (regardless of version) Garnet over 2% of entire dataset.</td><td><a href="submitNVCLAnalyticalJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&email=lingbo.jiang@csiro.au&jobname=test004&classification=GARNET&algorithmoutputid=57,63,69,103&startdepth=0&enddepth=99999&logicalop=gt&value=2&units=pct&span=1">submitNVCLAnalyticalJob.do</a></td></tr>
 	<tr><td>Check my job status </td><td>Generate a list of job status in json format.</td><td><a href="checkNVCLAnalyticalJobStatus.do?email=lingbo.jiang@csiro.au">checkNVCLAnalyticalJobStatus.do</a></td></tr>
 	<tr><td>Gat a job result </td><td>Gat a job result in json format.</td><td><a href="getNVCLAnalyticalJobResult.do?jobid=1">getNVCLAnalyticalJobResult.do</a></td></tr>
+    <tr><td>Submit a TSGMod job to nvclWebServices</td><td>Submit a TSGMod job with TsgScript.</td><td><a href="submitNVCLTSGModJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=test011&logname=Reflectance&classification=Dickite&startdepth=0&enddepth=99999&logicalop=gt&value=10&units=count&span=1">submitNVCLTSGModJobResult.do</a></td></tr>
+    <tr><td>Submit a TSGMod job to NT </td><td>Submit a TSGMod job with TsgScript.</td><td><a href="submitNVCLTSGModJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&email=lingbo.jiang@csiro.au&jobname=test011&logname=Reflectance&classification=Dickite&startdepth=0&enddepth=99999&logicalop=gt&value=10&units=count&span=1">submitNVCLTSGModJobResult.do</a></td></tr>
 
     </table>
     

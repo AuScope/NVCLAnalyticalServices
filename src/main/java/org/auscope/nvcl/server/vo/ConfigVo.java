@@ -9,19 +9,14 @@ package org.auscope.nvcl.server.vo;
 
 
 public class ConfigVo {
-        //Spring will populate these fields through Dependency Injection.
+    //Spring will populate these fields from config.properties through Dependency Injection.
     private boolean sendEmails;
     private String msgTimetoLiveDays;
     private String sysAdminEmail;
     private String downloadURL;
     private String webappURL;
     private String portalURL;
-    public void displayConfig() {
-
-        //System.out.println("sysadmin.email=" + this.sysadmin_email);
-        //System.out.println("webapp.url=" + this.webapp_url);
-        //System.out.println("download.url="+ this.download_url);
-    }    
+    
     public boolean getSendEmails() {
         return sendEmails;
     }
