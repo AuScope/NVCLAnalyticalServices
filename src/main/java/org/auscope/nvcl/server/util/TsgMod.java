@@ -28,12 +28,14 @@ public class TsgMod {
 
     private native int scalarCalcMany(long h, double[] retv, float[] spv, int nch, int nsp);
 
-    public boolean parseOneScalarMethod(String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount) {
+    public boolean parseOneScalarMethod(String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount, float value, float pctBench) {
+        int nsp = samplecount;///* 99 sample count*/ 
+        int nch = wavelenthscount;//531;/*wvl count*/
+        int cc = 0;
+        double[] rv = new double[nsp];
         try {
             //int handle = checkHandle(0);    
-            int nsp = samplecount;///* 99 sample count*/ 
-            int nch = wavelenthscount;//531;/*wvl count*/
-            double[] rv = new double[nsp];
+
 
             if (script == null) {
                 script = "name = Hematite-goethite_distr, 9\n" +
@@ -54,14 +56,17 @@ public class TsgMod {
             if (h > 0){
                 checkHandle(h);
                 scalarCalcMany(h, rv, spv, nch, nsp);
-                int cc = 0;
+
                 for (int i = 0; i < nsp; i++) {
                     if (!Double.isNaN(rv[i])) {
                        // System.out.println("Calc1 " + i + " = " + rv[i]);
+                        if (rv[i] > value)
                         cc++;
                     }
                 }
-                System.out.println("tsgProcessed2:" + rv.length +":TotalValidValue:" + cc);
+
+                for (int i = 0; i < 100; i=i+5)
+                    System.out.printf("Calc:%d--%d:%.4f:%.4f:%.4f:%.4f:%.4f\n" , i, i+5,rv[i],rv[i+1],rv[i+2],rv[i+3],rv[i+4]);         
 
             } else {
                 System.out.println("!!!Handle: is wrong ");
@@ -72,7 +77,9 @@ public class TsgMod {
         } catch (Exception ex) {
             System.out.println(ex.toString());
         }
-        return true;
+        
+        float pct =(float) cc /(float)nsp;
+        return (pct>pctBench)? true:false;
     }
 
     
@@ -115,8 +122,8 @@ public class TsgMod {
             long h2 = parseOneBatchScript(scrtx, wvl, 64, 0, 1, 1);
             System.out.println("ParseOneBatchScript: " + h2);
             System.out.println("ScalarCalcMany: " + scalarCalcMany(h2, rv, spv, nch, nsp));
-            for (i = 0; i < nsp; i++)
-                System.out.println("Calc1 " + i + " = " + rv[i]);
+            for (i = 0; i < nsp; i=i+5)
+                System.out.printf("Calc:%i--%i:%.4f:%.4f:%.4f:%.4f:%.4f\n" , i, i+5,rv[i],rv[i+1],rv[i+2],rv[i+3],rv[i+4]);
             
 //            for (i = 0; i < nsp; i++) {
 //                float[] sp = Arrays.copyOfRange(spv, i * nch, (i + 1) * nch);
