@@ -32,7 +32,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 
 /*
- * NVCLAnalyticalJobProcessor will process a analytical job from AnalyticalJobVo.
+ * NVCLAnalyticalJobProcessor will process a nvclAnalytical job(based on traditional scalar) from AnalyticalJobVo.
  *  
  * @author Linbo Jiang
  * @author Peter Warren

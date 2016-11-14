@@ -40,7 +40,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 /*
- * TSGModJobProcessor will process a analytical job by using tsgMod.
+ * TSGModJobProcessor will process a TSGMod Analytical job(based on the live calculated scalar) from AnalyticalJobVo.
  *  
  * @author Linbo Jiang
  * @author Peter Warren
@@ -80,42 +80,12 @@ public class TSGModJobProcessor  extends IJobProcessor{
 //              System.out.println("Base64 decoded String (Basic) :" + decodedTsgScript);messageVo.getTsgScript();
         super.setAnalyticalJob(messageVo);
     }
-    public static void main(String [] args)
-    {
-        String nvclDataServiceUrl = "http://nvclwebservices.vm.csiro.au/NVCLDataServices/";
-        String holeIdentifier = "WTB5";
-        HttpServiceCaller httpServiceCaller = new HttpServiceCaller(90000);
-        NVCLDataServiceMethodMaker nvclMethodMaker = new NVCLDataServiceMethodMaker();        
 
-        try {
-            HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
-            String responseString = httpServiceCaller.getMethodResponseAsString(method);
-            Document responseDoc = DOMUtil.buildDomFromString(responseString);
-            XPathExpression exprMask;
-            exprMask = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
-            NodeList nodeListMask = (NodeList) exprMask.evaluate(responseDoc, XPathConstants.NODESET);
-            XPathExpression exprLogIDMask = DOMUtil.compileXPathExpr("LogID");
-            XPathExpression exprLogNameMask = DOMUtil.compileXPathExpr("logName");
-            for (int j = 0; j < nodeListMask.getLength(); j++) {
-                Element eleLogIDMask = (Element) exprLogIDMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
-                String strLogIDMask = eleLogIDMask.getFirstChild().getNodeValue(); 
-                Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
-                String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
-                System.out.println(strLogNameMask);
-                if (strLogNameMask.equalsIgnoreCase("Final Mask")) {
-                    System.out.println("maskLogid:" + strLogIDMask );
-                    return ;
-                }
-            }
-        } catch ( Exception e) {
-            // TODO Auto-generated catch block
-            //e.printStackTrace();
-        }//DatasetCollection/Dataset/Logs/Log");//
-        
-        return ;
-        
-    }
-    
+    /**
+     * Get the finalMask's logid from Document.
+     *  @param doc    XML Document
+     * return finalMaskLogid String 
+     */    
     private String getFinalMaskLogid(Document doc) 
     {
         String strLogIDMask = null;
@@ -145,7 +115,14 @@ public class TSGModJobProcessor  extends IJobProcessor{
         
         return strLogIDMask;
         
-    }    
+    }
+    /**
+     * getDataCollection
+     * It download the datasetCollection ,then it extract the logid, samplecount and wavelength. 
+     * It saved the extracted information into BoreholeVo 
+     * 
+     * @return true for successfully extracting the information
+     */      
     public boolean getDataCollection() {
 
         int totalLogids = 0;
@@ -181,13 +158,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        System.out.println("Reflectance:LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
-
+                        System.out.println("Reflectance:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
+                        
                         
                         //get final_mask logid
                         String finalMaskLogid = getFinalMaskLogid(responseDoc);
-                        boreholeVo.setFinalMaskLogid(finalMaskLogid);
-                        
+                        boreholeVo.setFinalMaskLogid(finalMaskLogid);                       
+
 //                        <Log>
 //                        <LogID>dd5c574e-7028-4077-a70e-f5d3430677d</LogID>
 //                        <logName>Final Mask</logName>
@@ -195,7 +172,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
 //                        <logType>6</logType>
 //                        <algorithmoutID>0</algorithmoutID>
 //                        </Log>
-                        
+                        break;
                         
                     } else {
                         //System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
@@ -209,6 +186,9 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
                 method.releaseConnection();
+                //for debug only
+                if (totalLogids > 10) 
+                    break;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -223,7 +203,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
         System.out.println("Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
         return true;
     }
-    
+    /**
+     * getSpectralData
+     * It download the SpetralData based on logid. then it called the TSGMod to do the caculation. 
+     * It download the finalMask and apply the finalMask on result. 
+     * It saved the result into jobResultVo(hitted or failed)
+     * @return true for successfully processing the information
+     */     
     public boolean getSpectralData() {
         //A sample for getDownSampledData request:
         //http://nvclwebservices.vm.csiro.au/NVCLDataServices/getDownsampledData.html?logid=14b146e6-bcdf-43e1-ae53-c007b6f28d3&interval=1.0&startdepth=0&enddepth=99999&outputformat=csv
@@ -252,62 +238,69 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 int waveLengthCount = wvl.length;
                 byte[] spectralData = new byte[sampleCount*waveLengthCount*4];
                 ByteBuffer target = ByteBuffer.wrap(spectralData);            
-                System.out.println("getSpectralData:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
-                //System.out.println("Stage3:process:borehole:" + holeIdentifier + "  logid:" + logid);
+                System.out.println("getSpectralData:start:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
+
+                // System.out.println("Stage3:process:borehole:" +
+                // holeIdentifier + "  logid:" + logid);
                 try {
                     int step = 4000;
-                    for (int i=0;i<sampleCount;i=i+step) {
-                    //LJ sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
+                    System.out.println("getSpectralData:download:step:" + step);
+                    for (int i = 0; i < sampleCount; i = i + step) {
+                        // LJ
+                        // sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
                         int start = i;
-                        int end = (i+step > sampleCount)? sampleCount-1:i+step-1;
-                        int count = end - start +1;
-                        HttpRequestBase methodSpectralData =nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl,logid,start, end);
-                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData,Utility.getProxyHttpClient("130.116.24.73",3128)));
-                        methodSpectralData.releaseConnection();  
-                        System.out.println("tsgProcessed:start:" + start + ":end:" + end + ":count:" + count);
-                    //tsgMod.parseOneScalarMethod(null, wvl, waveLengthCount , Utility.getFloatspectraldata(spectralData),sampleCount);                    
+                        int end = (i + step > sampleCount) ? sampleCount - 1 : i + step - 1;
+                        int count = end - start + 1;
+                        HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
+                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData, Utility.getProxyHttpClient("130.116.24.73", 3128)));
+                        methodSpectralData.releaseConnection();
+                        System.out.println("start:" + start + ":end:" + end + ":count:" + count);
+                        // tsgMod.parseOneScalarMethod(null, wvl,
+                        // waveLengthCount ,
+                        // Utility.getFloatspectraldata(spectralData),sampleCount);
                     }
-                    tsgMod.parseOneScalarMethod(this.tsgScript, wvl, waveLengthCount , Utility.getFloatSpectralData(spectralData),sampleCount);   
-                    
+                    System.out.println("getSpectralData:Call TsgMod");
+                    isHit = tsgMod.parseOneScalarMethod(this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
 
-                    HttpRequestBase methodMask =nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
+                    System.out.println("getSpectralData:getFinalMask");
+                    HttpRequestBase methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
                     String strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
-                    methodMask.releaseConnection();                    
+                    methodMask.releaseConnection();
 
                     String csvLine;
 
-                    BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask)); 
-                    //startDepth, endDepth, final_mask(could be null)
-                    TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); //depth:Mask;
-                    csvLine = csvBuffer.readLine();//skip the header
+                    BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
+                    // startDepth, endDepth, final_mask(could be null)
+                    TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); // depth:Mask;
+                    csvLine = csvBuffer.readLine();// skip the header
                     System.out.println("csv:" + csvLine);
-                    int linesread=0;
+                    int linesread = 0;
                     while ((csvLine = csvBuffer.readLine()) != null) {
                         linesread++;
-                        List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
+                        List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
                         String depth = cells.get(0);
                         Byte mask = 0;
                         mask = Byte.parseByte(cells.get(2));
                         depthMaskMap.put(depth, mask);
                         System.out.println("csv:" + csvLine);
-                         //   csvClassfication="averageValue";
+                        // csvClassfication="averageValue";
 
-                     }
-                    System.out.println("lines read " +linesread);
-                    if (isHit) {
-                            resultMsg = "Hitted by " + this.classification + " with value " ;
-                            boreholeVo.setStatus(2); //hitted status;
-                            jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
-                            System.out.println("*****************hitted:" +boreholeVo.getHoleIdentifier());
-                            break;
-                        
                     }
-                }catch (Exception ex) {
-                    //if exception happened, let it continue for next logid
+                    System.out.println("lines read " + linesread);
+                    if (isHit) {
+                        resultMsg = "Hitted by " + this.classification + " with value " + String.valueOf(value) + " " + units;
+                        boreholeVo.setStatus(2); // hitted status;
+                        jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(), resultMsg));
+                        System.out.println("*****************hitted:" + boreholeVo.getHoleIdentifier());
+                        break;
+
+                    }
+                } catch (Exception ex) {
+                    // if exception happened, let it continue for next logid
                     System.out.println("*****************Exception: at 394****************");
-                    log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier,logid));
-                    //return false;
-                } 
+                    log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier, logid));
+                    // return false;
+                }
             } //logid loop
             if(!isHit) {
                 resultMsg = "Failed by " + this.classification + " with no value " + logicalOp + " than threshhold " + String.valueOf(value)+ " " +units;

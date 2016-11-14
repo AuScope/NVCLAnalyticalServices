@@ -20,7 +20,16 @@ import org.auscope.portal.core.util.DOMUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
+/*
+ * IJobProcessor the base class for JobProcessor
+ * it is extends from Thread class. 
+ * it process an analyticalJob against one serviceUrl only.  
+ * it need setAnalyticalJob first before running the job.
+ * the jobResult is saved in jobResultVo.
+ *  
+ * @author Peter Warren
+ * @author Linbo Jiang
+ */
 public class IJobProcessor extends Thread {
     protected HttpServiceCaller httpServiceCaller;
     protected NVCLDataServiceMethodMaker nvclMethodMaker;    
