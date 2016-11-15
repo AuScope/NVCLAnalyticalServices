@@ -252,7 +252,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         int end = (i + step > sampleCount) ? sampleCount - 1 : i + step - 1;
                         int count = end - start + 1;
                         HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
-                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData, Utility.getProxyHttpClient("130.116.24.73", 3128)));
+                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
                         methodSpectralData.releaseConnection();
                         System.out.println("start:" + start + ":end:" + end + ":count:" + count);
                         // tsgMod.parseOneScalarMethod(null, wvl,
