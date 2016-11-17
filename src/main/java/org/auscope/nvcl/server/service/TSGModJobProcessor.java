@@ -186,7 +186,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
                 method.releaseConnection();
-
+                method = null;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -249,6 +249,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
                         target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
                         methodSpectralData.releaseConnection();
+                        methodSpectralData = null;
                         
                         System.out.println("start:" + start + ":end:" + end + ":count:" + count);
                         // tsgMod.parseOneScalarMethod(null, wvl,
@@ -262,6 +263,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     HttpRequestBase methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
                     String strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
                     methodMask.releaseConnection();
+                    methodMask = null;
 
                     String csvLine;
 
@@ -282,6 +284,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         // csvClassfication="averageValue";
 
                     }
+                    csvBuffer = null;
                     System.out.println("lines read " + linesread);
                     if (isHit) {
                         resultMsg = "Hitted by " + this.classification + " with value " + String.valueOf(value) + " " + units;
@@ -291,12 +294,15 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         break;
 
                     }
+                    
                 } catch (Exception ex) {
                     // if exception happened, let it continue for next logid
                     System.out.println("*****************Exception: at 394****************");
                     log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier, logid));
                     // return false;
                 }
+                spectralData = null;
+                
             } //logid loop
             if(!isHit) {
                 resultMsg = "Failed by " + this.classification + " with no value " + logicalOp + " than threshhold " + String.valueOf(value)+ " " +units;
