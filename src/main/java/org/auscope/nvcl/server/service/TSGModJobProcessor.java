@@ -186,9 +186,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
                 method.releaseConnection();
-                //for debug only
-                //if (totalLogids > 10) 
-                //    break;
+
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -213,7 +211,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
         //http://nvclwebservices.vm.csiro.au/NVCLDataServices/
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
-
         for (BoreholeVo boreholeVo : boreholeList) {
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             if (boreholeVo.getStatus()!= 0) {
@@ -281,7 +278,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         Byte mask = 0;
                         mask = Byte.parseByte(cells.get(2));
                         depthMaskMap.put(depth, mask);
-                        System.out.println("csv:" + csvLine);
+                        //System.out.println("csv:" + csvLine);
                         // csvClassfication="averageValue";
 
                     }
