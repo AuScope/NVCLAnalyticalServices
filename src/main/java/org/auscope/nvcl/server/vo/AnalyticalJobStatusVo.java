@@ -20,6 +20,8 @@ public class AnalyticalJobStatusVo {
     private String status;
     private String joburl;
     private String message;
+    private String jobStartTime;
+    private String jobEndTime;    
     
      
     public String getJMSTimestamp() {
@@ -95,6 +97,22 @@ public class AnalyticalJobStatusVo {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getJobStartTime() {
+        return jobStartTime;
+    }
+
+    public void setJobStartTime(String jobStartTime) {
+        this.jobStartTime = jobStartTime;
+    }
+
+    public String getJobEndTime() {
+        return jobEndTime;
+    }
+
+    public void setJobEndTime(String jobEndTime) {
+        this.jobEndTime = jobEndTime;
     }
     
 }

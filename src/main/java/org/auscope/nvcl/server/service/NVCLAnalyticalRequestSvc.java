@@ -11,6 +11,7 @@ import javax.jms.Message;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.auscope.nvcl.server.service.SpringFrameworkJmsSender.ReferenceHolderMessagePostProcessor;
+import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
@@ -74,6 +75,7 @@ public class NVCLAnalyticalRequestSvc {
 //            logger.debug("Failed:processor.processStage4");
 //          }     
         NVCLAnalyticalJobProcessorManager processorManager = new NVCLAnalyticalJobProcessorManager();
+        messageVo.setJobStartTime(Utility.getCurrentTime());
         if( processorManager.processRequest(messageVo)) {            
             messageVo.setStatus("Success");
             messageVo.setMessage("Success:job finished" );
@@ -85,7 +87,7 @@ public class NVCLAnalyticalRequestSvc {
             messageVo.setJoburl("Failed");
             logger.debug("Failed:processor.processStage4");     
         }
-
+        messageVo.setJobEndTime(Utility.getCurrentTime());
 		logger.debug("create reply message....");
 
 			
@@ -110,7 +112,7 @@ public class NVCLAnalyticalRequestSvc {
 		}
 		
 	  if (config.getSendEmails()==true)
-	      sendResultEmail(jobResultVo,messageVo.getJoburl());
+	      sendResultEmail(jobResultVo,messageVo.getJoburl(),messageVo.getJobStartTime(),messageVo.getJobEndTime());
 	  else 
 	      logger.debug("Notification emails disabled, skipping email step.");
 	}
@@ -136,7 +138,7 @@ public class NVCLAnalyticalRequestSvc {
 	  * 
 	  * @param	messaveVo	message value object 
 	  */
-	private void sendResultEmail(AnalyticalJobResultVo messageVo, String jobResultUrl) {
+	private void sendResultEmail(AnalyticalJobResultVo messageVo, String jobResultUrl, String jobStartTime,String jobEndTime) {
 	    
 	    SimpleMailMessage msg = new SimpleMailMessage();
 	    //http://auscope-portal-dev.arrc.csiro.au/gmap.html?nvclanid=8f664b74ed93bd5892307a0b4fb20dee&nvclanemail=Josh.Vote@csiro.au
@@ -152,6 +154,7 @@ public class NVCLAnalyticalRequestSvc {
 	        	+ " is ready for collect.\n  "
 	        	+ "The result link is :\n"
 	        	+  jobResultUrl + "\n"
+	        	+ "The job started at " + jobStartTime + " and ended at " + jobEndTime + "\n"	        	
 	        	+ "The visualization result link is :\n"
 	        	+ jobResultVisualUrl + "\n"
 	        	+"This link will remain available for download for "

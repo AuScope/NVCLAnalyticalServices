@@ -232,4 +232,8 @@ public class Utility {
         }
         return httpClient;
     }
+    public static String getCurrentTime() {
+        String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH.mm.ss").format(new java.util.Date());
+        return timeStamp;
+    }
 }

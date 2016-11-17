@@ -61,6 +61,8 @@ public class AnalyticalJobVo {
         private String joburl;        
         private String message;    
         private String tsgScript; //For TsgModJob only
+        private String jobStartTime;
+        private String jobEndTime;
 
         public AnalyticalJobVo(AnalyticalJobVo messageVo) {
             this.jobid = messageVo.getJobid();
@@ -334,6 +336,22 @@ public class AnalyticalJobVo {
 
         public void setTsgScript(String tsgScript) {
             this.tsgScript = tsgScript;
+        }
+
+        public String getJobStartTime() {
+            return jobStartTime;
+        }
+
+        public void setJobStartTime(String jobStartTime) {
+            this.jobStartTime = jobStartTime;
+        }
+
+        public String getJobEndTime() {
+            return jobEndTime;
+        }
+
+        public void setJobEndTime(String jobEndTime) {
+            this.jobEndTime = jobEndTime;
         }
 
 }

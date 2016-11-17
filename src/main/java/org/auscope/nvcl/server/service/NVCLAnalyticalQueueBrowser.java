@@ -166,8 +166,10 @@ public class NVCLAnalyticalQueueBrowser {
                         jmsMsgVo.setSpan(mapMessage.getFloat("span"));                             
                         jmsMsgVo.setUnits(mapMessage.getString("units"));   
                         jmsMsgVo.setValue(mapMessage.getFloat("value"));   
-                        jmsMsgVo.setLogicalOp(mapMessage.getString("logicalOp"));                             
-
+                        jmsMsgVo.setLogicalOp(mapMessage.getString("logicalOp"));    
+                        
+                        jmsMsgVo.setJobStartTime(mapMessage.getString("jobStartTime"));
+                        jmsMsgVo.setJobEndTime(mapMessage.getString("jobEndTime"));
                     }
                     msgList.add(0, jmsMsgVo);
                 }

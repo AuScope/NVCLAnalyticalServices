@@ -122,7 +122,11 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
             message.setString("logicalOp",  messageVo.getLogicalOp());          
             message.setString("joburl", messageVo.getJoburl());
             message.setString("message", messageVo.getMessage());       
-            message.setString("tsgScript", messageVo.getTsgScript());              
+            message.setString("tsgScript", messageVo.getTsgScript());     
+            
+            message.setString("jobStartTime",messageVo.getJobStartTime());
+            message.setString("jobEndTime",messageVo.getJobEndTime());
+            
             return message;
 		} else if (object instanceof AnalyticalJobStatusVo){
 			//creating status message
