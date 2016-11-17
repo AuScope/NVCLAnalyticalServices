@@ -187,8 +187,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 }
                 method.releaseConnection();
                 //for debug only
-                if (totalLogids > 10) 
-                    break;
+                //if (totalLogids > 10) 
+                //    break;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -196,9 +196,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
-            //For debug purpose only
-//            if (totalLogids > 0)
-//                break;
         }
         System.out.println("Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
         return true;
@@ -216,6 +213,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
         //http://nvclwebservices.vm.csiro.au/NVCLDataServices/
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
+
         for (BoreholeVo boreholeVo : boreholeList) {
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             if (boreholeVo.getStatus()!= 0) {
@@ -254,6 +252,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
                         target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
                         methodSpectralData.releaseConnection();
+                        
                         System.out.println("start:" + start + ":end:" + end + ":count:" + count);
                         // tsgMod.parseOneScalarMethod(null, wvl,
                         // waveLengthCount ,
