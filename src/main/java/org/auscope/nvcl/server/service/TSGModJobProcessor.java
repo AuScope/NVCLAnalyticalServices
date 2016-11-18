@@ -187,6 +187,9 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 }
                 method.releaseConnection();
                 method = null;
+                //for debug only
+                if (totalLogids > 10) 
+                    break;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
