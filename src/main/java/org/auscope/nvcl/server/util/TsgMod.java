@@ -28,15 +28,12 @@ public class TsgMod {
 
     private native int scalarCalcMany(long h, double[] retv, float[] spv, int nch, int nsp);
 
-    public boolean parseOneScalarMethod(String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount, float value, float pctBench) {
+    public boolean parseOneScalarMethod(double[] rv,String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount, float value, float pctBench) {
         int nsp = samplecount;///* 99 sample count*/ 
         int nch = wavelenthscount;//531;/*wvl count*/
         int cc = 0;
-        double[] rv = new double[nsp];
         try {
             //int handle = checkHandle(0);    
-
-
             if (script == null) {
                 script = "name = Hematite-goethite_distr, 9\n" +
                             "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +

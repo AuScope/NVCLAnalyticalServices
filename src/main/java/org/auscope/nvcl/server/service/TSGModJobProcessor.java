@@ -3,13 +3,16 @@ package org.auscope.nvcl.server.service;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.net.ConnectException;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -17,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.ConnectTimeoutException;
 //import org.auscope.portal.core.server.http.HttpServiceCaller;
 import org.auscope.portal.core.services.methodmakers.WFSGetFeatureMethodMaker;
 import org.auscope.nvcl.server.http.HttpServiceCaller;
@@ -30,6 +34,8 @@ import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.BoreholeVo;
+import org.auscope.nvcl.server.vo.SpectralDataArrayVo;
+import org.auscope.nvcl.server.vo.SpectralDataVo;
 import org.auscope.nvcl.server.vo.SpectralLogVo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -180,20 +186,19 @@ public class TSGModJobProcessor  extends IJobProcessor{
                    // System.out.println("exprLogID:" + strLogID + ":" + strLogName + ":" + strLogType + ":" + strAlgorithmoutID);                        
                 }
                 if (isError) {
-                    String resultMsg;
-                    resultMsg = "Error by with SampleCountZero";
+                    String resultMsg = formatMessage(0);
                     boreholeVo.setStatus(1); //error status;
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
                 method.releaseConnection();
                 method = null;
                 //for debug only
-                if (totalLogids > 10) 
+                if (totalLogids > 2) 
                     break;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
-                String resultMsg = "Error:unknow exception:" + ex.toString();
+                String resultMsg = formatMessage(3) + ex.toString();
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
@@ -235,6 +240,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 float[] wvl = spectralLog.getWvl();
                 int waveLengthCount = wvl.length;
                 byte[] spectralData = new byte[sampleCount*waveLengthCount*4];
+                double[] tsgRV = new double[sampleCount];
                 ByteBuffer target = ByteBuffer.wrap(spectralData);            
                 System.out.println("getSpectralData:start:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
 
@@ -260,37 +266,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         // Utility.getFloatspectraldata(spectralData),sampleCount);
                     }
                     System.out.println("getSpectralData:Call TsgMod");
-                    isHit = tsgMod.parseOneScalarMethod(this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
-
-                    System.out.println("getSpectralData:getFinalMask");
-                    HttpRequestBase methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
-                    String strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
-                    methodMask.releaseConnection();
-                    methodMask = null;
-
-                    String csvLine;
-
-                    BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
-                    // startDepth, endDepth, final_mask(could be null)
-                    TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); // depth:Mask;
-                    csvLine = csvBuffer.readLine();// skip the header
-                    System.out.println("csv:" + csvLine);
-                    int linesread = 0;
-                    while ((csvLine = csvBuffer.readLine()) != null) {
-                        linesread++;
-                        List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
-                        String depth = cells.get(0);
-                        Byte mask = 0;
-                        mask = Byte.parseByte(cells.get(2));
-                        depthMaskMap.put(depth, mask);
-                        //System.out.println("csv:" + csvLine);
-                        // csvClassfication="averageValue";
-
-                    }
-                    csvBuffer = null;
-                    System.out.println("lines read " + linesread);
+                    tsgMod.parseOneScalarMethod(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
+                    
+                    ////////
+                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,finalMaskLogid );
+                    ////////
                     if (isHit) {
-                        resultMsg = "Hitted by " + this.classification + " with value " + String.valueOf(value) + " " + units;
+                        resultMsg = formatMessage(1);
                         boreholeVo.setStatus(2); // hitted status;
                         jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(), resultMsg));
                         System.out.println("*****************hitted:" + boreholeVo.getHoleIdentifier());
@@ -305,10 +287,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     // return false;
                 }
                 spectralData = null;
+                tsgRV = null;
                 
             } //logid loop
             if(!isHit) {
-                resultMsg = "Failed by " + this.classification + " with no value " + logicalOp + " than threshhold " + String.valueOf(value)+ " " +units;
+                resultMsg = formatMessage(2);
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 System.out.println("*****************failed:" +boreholeVo.getHoleIdentifier());
@@ -317,5 +300,74 @@ public class TSGModJobProcessor  extends IJobProcessor{
         System.out.println("total Processed Logid:" + totalProcessedLogid);   
         System.out.println("Stage 3:OK:" + this.serviceUrls);
         return true;
+    }
+    
+    public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String finalMaskLogid) {
+        boolean isHit = false;
+        System.out.println("getSpectralData:getFinalMask");
+        HttpRequestBase methodMask;
+        try {
+            methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
+            System.out.println(methodMask.getURI());
+            String strMask;
+            strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
+            methodMask.releaseConnection();
+            methodMask = null;
+    
+            String csvLine;
+    
+            BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
+            // startDepth, endDepth, final_mask(could be null)
+            TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); // depth:Mask;
+            csvLine = csvBuffer.readLine();// skip the header
+            System.out.println("csv:" + csvLine);
+            int index = 0;
+
+            SpectralDataArrayVo spectralDataArray = new SpectralDataArrayVo(this.span);
+            
+            while ((csvLine = csvBuffer.readLine()) != null) {
+
+                List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
+                String depth = cells.get(0);
+                Byte mask = 0;
+                mask = Byte.parseByte(cells.get(2));
+                spectralDataArray.add(new SpectralDataVo(depth,mask!=0,tsgRV[index]));
+                depthMaskMap.put(depth, mask);
+                index++;
+                //System.out.println("csv:" + csvLine);
+                // csvClassfication="averageValue";    
+            }
+            csvBuffer = null;
+            System.out.println("lines read " + index);    
+            int sizeOfBin = spectralDataArray.bin();
+            isHit = spectralDataArray.query(this.units, this.logicalOp,this.value);
+            spectralDataArray = null;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return isHit;
+    }   
+    private String formatMessage(int type) {
+        String resultMsg;
+        switch (type) { 
+        case 0: //Error message
+            resultMsg = "Error by with SampleCountZero";
+            break;
+        case 1: //Hit message
+            resultMsg = "Hitted by " +  " has value " +  this.logicalOp + " " + String.valueOf(this.value) + " " +  this.units;
+            break;
+        case 2: //Fail message
+            resultMsg = "Failed by " + " has no value "  + this.logicalOp + " " + String.valueOf(this.value) + " " + this.units;
+            break;
+        case 3:
+            resultMsg = "Error:unknow exception:";
+            break;
+        default:
+            resultMsg = "InitMessage:";
+            break;            
+        }
+        return resultMsg;
+
     }
 }
