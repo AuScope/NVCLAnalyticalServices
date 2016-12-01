@@ -1,1 +1,1 @@
-mvn jetty:run
+mvn -DskipTests=true jetty:run-war
