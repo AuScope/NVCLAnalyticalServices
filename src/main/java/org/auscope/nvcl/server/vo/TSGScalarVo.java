@@ -6,13 +6,13 @@ package org.auscope.nvcl.server.vo;
  * 
  * @author Lingbo Jiang
  */
-public class SpectralDataVo {
+public class TSGScalarVo {
     private String depthS;
     private float depth;
     private boolean mask;
     private int     color;
     private double value;
-    public SpectralDataVo(String depthS, boolean mask, double value) {
+    public TSGScalarVo(String depthS, boolean mask, double value) {
         this.depthS = depthS;
         this.depth = Float.parseFloat(depthS);
         this.mask = mask;

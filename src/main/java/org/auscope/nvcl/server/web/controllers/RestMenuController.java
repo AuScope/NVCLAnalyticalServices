@@ -275,7 +275,7 @@ public class RestMenuController {
         
         if (tsgScript == null || tsgScript.isEmpty()) {
            
-            tsgScript = "name = Hematite-goethite_distr, 9\n" +
+/*            tsgScript = "name = Hematite-goethite_distr, 9\n" +
                     "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +
                     "p2= profile, layer=ref, stat=mean, wcentre=1650, wradius=0\n"+
                     "p3= profile, layer=ref, stat=mean, wcentre=450, wradius=0\n"+
@@ -284,7 +284,18 @@ public class RestMenuController {
                     "p6= expr, param1=p5, param2=p1, arithop=mult\n"+
                     "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
                     "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
-                    "return=expr, param1=p8, param2=p7, arithop=mult ";
+                    "return=expr, param1=p8, param2=p7, arithop=mult ";*/
+            
+            tsgScript = "name = Kaolinite Crystallinity,8\n" +
+"description = Based on Pontual, Merry & Gamson, (1997), \"Regolith Logging\" in G-MEX Vol. 8, page 8-29, by Ausspec International Pty Ltd.   A combination of the 2180nm and 2160nm kaolinite slope indices that correlates with kaolinite crystallinity.  Index increases in v\n" +
+"P1 = profile, stat=MEAN, wcentre=2184.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+"P2 = profile, stat=MEAN, wcentre=2190.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+"P3 = expr, param1=P1, param2=P2, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+"P4 = profile, stat=MEAN, wcentre=2160.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+"P5 = profile, stat=MEAN, wcentre=2177.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+"P6 = expr, param1=P4, param2=P5, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+"P7 = expr, param1=P6, param2=P3, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+"return = expr, param1=P3, param2=P7, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE";
 
         }
         // Encode using basic encoder

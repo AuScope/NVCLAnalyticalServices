@@ -3,47 +3,30 @@ package org.auscope.nvcl.server.service;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.net.ConnectException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.conn.ConnectTimeoutException;
-//import org.auscope.portal.core.server.http.HttpServiceCaller;
-import org.auscope.portal.core.services.methodmakers.WFSGetFeatureMethodMaker;
-import org.auscope.nvcl.server.http.HttpServiceCaller;
-import org.auscope.portal.core.services.responses.ows.OWSExceptionParser;
 import org.auscope.portal.core.util.DOMUtil;
-import org.auscope.nvcl.server.http.NVCLDataServiceMethodMaker;
-import org.auscope.nvcl.server.http.NVCLNamespaceContext;
 import org.auscope.nvcl.server.util.TsgMod;
 import org.auscope.nvcl.server.util.Utility;
-import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.BoreholeVo;
-import org.auscope.nvcl.server.vo.SpectralDataArrayVo;
-import org.auscope.nvcl.server.vo.SpectralDataVo;
 import org.auscope.nvcl.server.vo.SpectralLogVo;
+import org.auscope.nvcl.server.vo.TSGScalarArrayVo;
+import org.auscope.nvcl.server.vo.TSGScalarVo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
 
 /*
  * TSGModJobProcessor will process a TSGMod Analytical job(based on the live calculated scalar) from AnalyticalJobVo.
@@ -134,6 +117,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
         int totalLogids = 0;
         for (BoreholeVo boreholeVo : boreholeList) {
             String holeIdentifier = boreholeVo.getHoleIdentifier();
+            //lj debug
+            
+            if (!holeIdentifier.contains("18189_lyn007_lynchford"))
+                continue;
+                
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
@@ -160,7 +148,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     Element eleWavelengths = (Element) exprWavelengths.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strWavelengths = eleWavelengths.getFirstChild().getNodeValue();
                     
-                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {                        
+                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {//9873848a-4dd5-46ba-b76d-5ea0f4c622d
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
@@ -214,9 +202,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
      * @return true for successfully processing the information
      */     
     public boolean getSpectralData() {
-        //A sample for getDownSampledData request:
-        //http://nvclwebservices.vm.csiro.au/NVCLDataServices/getDownsampledData.html?logid=14b146e6-bcdf-43e1-ae53-c007b6f28d3&interval=1.0&startdepth=0&enddepth=99999&outputformat=csv
-        //http://nvclwebservices.vm.csiro.au/NVCLDataServices/
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
         for (BoreholeVo boreholeVo : boreholeList) {
@@ -323,7 +308,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             System.out.println("csv:" + csvLine);
             int index = 0;
 
-            SpectralDataArrayVo spectralDataArray = new SpectralDataArrayVo(this.span);
+            TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
             
             while ((csvLine = csvBuffer.readLine()) != null) {
 
@@ -331,7 +316,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 String depth = cells.get(0);
                 Byte mask = 0;
                 mask = Byte.parseByte(cells.get(2));
-                spectralDataArray.add(new SpectralDataVo(depth,mask!=0,tsgRV[index]));
+                scalarArray.add(new TSGScalarVo(depth,mask!=0,tsgRV[index]));
                 depthMaskMap.put(depth, mask);
                 index++;
                 //System.out.println("csv:" + csvLine);
@@ -339,9 +324,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
             }
             csvBuffer = null;
             System.out.println("lines read " + index);    
-            int sizeOfBin = spectralDataArray.bin();
-            isHit = spectralDataArray.query(this.units, this.logicalOp,this.value);
-            spectralDataArray = null;
+            int sizeOfBin = scalarArray.downSample();
+            isHit = scalarArray.query(this.units, this.logicalOp,this.value);
+            scalarArray.writeScalarCSV("/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/scalar.csv");
+            scalarArray.writeDownSampledScalarCSV("/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/scalarDownSampled.csv");          
+            scalarArray = null;
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
