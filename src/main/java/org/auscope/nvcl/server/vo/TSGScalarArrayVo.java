@@ -46,14 +46,15 @@ public class TSGScalarArrayVo {
         double value = 0.0;        
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
+            value = scalar.getValue();
+            System.out.println(depth + "    " + value + "    " + scalar.isMask());
             if (depth >= depthStart && depth < depthEnd) {
-                if (!scalar.isMask()) {
-                    value = scalar.getValue();
+                if (scalar.isMask()) {
                     sumValue += value;
                     count ++;
                 }
             } else if (depth >= depthEnd) {
-                downSampledScalarArray.add(new TSGScalarVo(String.valueOf(depthStart), false, sumValue/count));
+                downSampledScalarArray.add(new TSGScalarVo(String.valueOf(depthStart), true, sumValue/count));
                 System.out.println("Bin:" + depthStart + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);
                 depthStart = depthEnd;
                 depthEnd = depthEnd + interval;

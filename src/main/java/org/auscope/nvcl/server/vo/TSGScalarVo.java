@@ -9,7 +9,7 @@ package org.auscope.nvcl.server.vo;
 public class TSGScalarVo {
     private String depthS;
     private float depth;
-    private boolean mask;
+    private boolean mask;//1 is valid, 0 is skip
     private int     color;
     private double value;
     public TSGScalarVo(String depthS, boolean mask, double value) {
@@ -18,7 +18,7 @@ public class TSGScalarVo {
         this.mask = mask;
         this.value = value;
         if (Double.isNaN(value)) {
-            this.mask = true;
+            this.mask = false;
         }
     }
     public String getDepthS() {
