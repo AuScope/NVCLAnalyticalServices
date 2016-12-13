@@ -118,9 +118,9 @@ public class TSGModJobProcessor  extends IJobProcessor{
         for (BoreholeVo boreholeVo : boreholeList) {
             String holeIdentifier = boreholeVo.getHoleIdentifier();
             //lj debug
-            
-            if (!holeIdentifier.contains("18189_lyn007_lynchford"))
-                continue;
+//            
+//            if (!holeIdentifier.contains("18189_lyn007_lynchford"))
+//                continue;
                 
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
@@ -152,7 +152,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        System.out.println("Reflectance:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
+                        System.out.println("getDataCollection:Reflectance:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
                         
                         
                         //get final_mask logid
@@ -181,8 +181,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 method.releaseConnection();
                 method = null;
                 //for debug only
-                if (totalLogids > 2) 
-                    break;
+//                if (totalLogids > 2) 
+//                    break;
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -191,7 +191,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
         }
-        System.out.println("Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
+        System.out.println("getDataCollection:Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
         return true;
     }
     /**
@@ -204,6 +204,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
     public boolean getSpectralData() {
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
+        System.out.println("getSpectralData:" + this.serviceUrls);
         for (BoreholeVo boreholeVo : boreholeList) {
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             if (boreholeVo.getStatus()!= 0) {
@@ -233,7 +234,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 // holeIdentifier + "  logid:" + logid);
                 try {
                     int step = 4000;
-                    System.out.println("getSpectralData:download:step:" + step);
                     for (int i = 0; i < sampleCount; i = i + step) {
                         // LJ
                         // sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
@@ -244,23 +244,18 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
                         methodSpectralData.releaseConnection();
                         methodSpectralData = null;
-                        
-                        System.out.println("start:" + start + ":end:" + end + ":count:" + count);
-                        // tsgMod.parseOneScalarMethod(null, wvl,
-                        // waveLengthCount ,
-                        // Utility.getFloatspectraldata(spectralData),sampleCount);
                     }
                     System.out.println("getSpectralData:Call TsgMod");
                     tsgMod.parseOneScalarMethod(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
                     
                     ////////
-                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,finalMaskLogid );
+                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,holeIdentifier,finalMaskLogid );
                     ////////
                     if (isHit) {
                         resultMsg = formatMessage(1);
                         boreholeVo.setStatus(2); // hitted status;
                         jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(), resultMsg));
-                        System.out.println("*****************hitted:" + boreholeVo.getHoleIdentifier());
+                        System.out.println("getSpectralData:hitted:" + boreholeVo.getHoleIdentifier());
                         break;
 
                     }
@@ -282,14 +277,14 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 System.out.println("*****************failed:" +boreholeVo.getHoleIdentifier());
             }            
         }//borehole loop  
-        System.out.println("total Processed Logid:" + totalProcessedLogid);   
-        System.out.println("Stage 3:OK:" + this.serviceUrls);
+        System.out.println("getSpectralData:total Processed Logid:" + totalProcessedLogid);   
+
         return true;
     }
     
-    public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String finalMaskLogid) {
+    public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String holeIdentifier,String finalMaskLogid) {
         boolean isHit = false;
-        System.out.println("getSpectralData:getFinalMask");
+        System.out.println("getDownSampledData:getFinalMask");
         HttpRequestBase methodMask;
         try {
             methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
@@ -305,7 +300,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             // startDepth, endDepth, final_mask(could be null)
             TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); // depth:Mask;
             csvLine = csvBuffer.readLine();// skip the header
-            System.out.println("csv:" + csvLine);
+            //System.out.println("csv:" + csvLine);
             int index = 0;
 
             TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
@@ -326,8 +321,12 @@ public class TSGModJobProcessor  extends IJobProcessor{
             System.out.println("lines read " + index);    
             int sizeOfBin = scalarArray.downSample();
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
-            scalarArray.writeScalarCSV("/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/scalar.csv");
-            scalarArray.writeDownSampledScalarCSV("/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/scalarDownSampled.csv");          
+            if (true) {//log.isDebugEnabled()) {
+           //     
+                String filePath = "/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/" + holeIdentifier;
+                scalarArray.writeScalarCSV(filePath + "-scalar.csv");
+                scalarArray.writeDownSampledScalarCSV(filePath + "-scalarDownSampled.csv");
+            }
             scalarArray = null;
         } catch (Exception e) {
             // TODO Auto-generated catch block
