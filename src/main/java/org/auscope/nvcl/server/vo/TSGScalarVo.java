@@ -12,6 +12,7 @@ public class TSGScalarVo {
     private boolean mask;//1 is valid, 0 is skip
     private int     color;
     private double value;
+    private int count;
     public TSGScalarVo(String depthS, boolean mask, double value) {
         this.depthS = depthS;
         this.depth = Float.parseFloat(depthS);
@@ -20,7 +21,18 @@ public class TSGScalarVo {
         if (Double.isNaN(value)) {
             this.mask = false;
         }
+        this.setCount(0);
     }
+    public TSGScalarVo(String depthS, boolean mask, double value,int count) {
+        this.depthS = depthS;
+        this.depth = Float.parseFloat(depthS);
+        this.mask = mask;
+        this.value = value;
+        if (Double.isNaN(value)) {
+            this.mask = false;
+        }
+        this.setCount(count);
+    }    
     public String getDepthS() {
         return depthS;
     }
@@ -50,6 +62,12 @@ public class TSGScalarVo {
     }
     public void setValue(double value) {
         this.value = value;
+    }
+    public int getCount() {
+        return count;
+    }
+    public void setCount(int count) {
+        this.count = count;
     }
   
 }

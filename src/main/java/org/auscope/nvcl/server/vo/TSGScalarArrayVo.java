@@ -40,10 +40,10 @@ public class TSGScalarArrayVo {
         this.interval = interval;
     }
     
-    public int downSample() {
+    public int downSample2() {
         int f = (int)(floorDepth/interval);
-        float depthStart =  f*interval;
-        float depthEnd = depthStart + interval;
+        float depthStart = f > 0 ? f*interval : floorDepth;
+        float depthEnd = (depthStart + interval) > ceilingDepth ? ceilingDepth : (depthStart+interval);
         float depth;
         int count = 0;
         double sumValue = 0.0;
@@ -51,22 +51,24 @@ public class TSGScalarArrayVo {
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            if (log.isDebugEnabled()) {
+            if (true) {//log.isDebugEnabled()) {
                 System.out.println(depth + "    " + value + "    " + scalar.isMask());
             }
+
             if (depth >= depthStart && depth < depthEnd) {
-                if (scalar.isMask()) {
-                    sumValue += value;
-                    count ++;
-                }
+                if (!scalar.isMask()) //skip the masked one.
+                    continue;            
+                sumValue += value;
+                count ++;
             } else if (depth >= depthEnd) {
-                float downSampledDepth = depthStart + interval/2;
-                downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count));
-                if (log.isDebugEnabled()) {
-                    System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);
+                if (count >0 && sumValue > 0.0) {        
+                    float downSampledDepth = (depthStart + depthEnd)/2;
+                    downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
+                    if (true) 
+                        System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue:" + sumValue/count + ":count:" + count);
                 }
                 depthStart = depthEnd;
-                depthEnd = depthEnd + interval;
+                depthEnd = (depthEnd + interval) > ceilingDepth ? ceilingDepth : (depthEnd + interval); //depthEnd + interval; 
                 sumValue = 0.0;
                 count = 0;
                 
@@ -74,9 +76,61 @@ public class TSGScalarArrayVo {
                 System.out.println("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
             }
         }
+        
+        //the last downSampled
+        
+        if (count >0 && sumValue > 0.0) {
+            float downSampledDepth = (depthStart + depthEnd)/2;
+            downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
+            if (true) {//log.isDebugEnabled()
+                System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);
+            }            
+        }
+        System.out.println("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
         return downSampledScalarArray.size();
         
     }
+    
+    public int downSample() {
+        int size = (int) ((ceilingDepth - floorDepth)/ interval) +1;
+        for (int i=0;i<size;i++) {
+            float downSampledDepth = floorDepth + i*interval;
+            downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, 0,0));
+        }
+        System.out.println("InitDownSampledScalarArraySize=" + downSampledScalarArray.size());
+        
+        float depth;
+        double value;
+        for (TSGScalarVo scalar : scalarArray) {
+            depth = scalar.getDepth();
+            value = scalar.getValue();
+            if (true) {//log.isDebugEnabled()) {
+                System.out.println(depth + "    " + value + "    " + scalar.isMask());
+            }
+            if (!scalar.isMask()) //skip the masked one.
+                continue;            
+            int index = (int)((depth-floorDepth)/interval);
+            if (index >= size)
+                System.out.println("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
+                
+            TSGScalarVo downSampledScalar = downSampledScalarArray.get(index);
+            double sumValue = downSampledScalar.getValue() + value;
+            downSampledScalar.setValue(sumValue);
+            downSampledScalar.setCount(downSampledScalar.getCount() +1);
+        }
+        
+        for (int i=0;i<size;i++) {
+            TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
+            downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
+            if (true) {//log.isDebugEnabled()
+                System.out.println("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );
+            }                        
+        }
+        System.out.println("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
+        return downSampledScalarArray.size();
+        
+    }
+    
     public int writeScalarCSV(String fileName) {
         CSVWriter writer;
         try {
@@ -103,13 +157,15 @@ public class TSGScalarArrayVo {
         CSVWriter writer;
         try {
             writer = new CSVWriter(new FileWriter(fileName));
-            writer.writeNext("depth,value".split(","));
+            writer.writeNext("depth,value,count".split(","));
             float depth;
             double value = 0.0;    
+            int count = 0;
             for (TSGScalarVo scalar : downSampledScalarArray) {
                 depth = scalar.getDepth();
                 value = scalar.getValue();
-                String record = depth + "," + value ;
+                count = scalar.getCount();
+                String record = depth + "," + value + "," + count ;
                 writer.writeNext(record.split(","));
             }
             writer.close();     

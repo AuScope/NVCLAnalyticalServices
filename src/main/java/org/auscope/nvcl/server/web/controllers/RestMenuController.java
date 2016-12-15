@@ -238,7 +238,7 @@ public class RestMenuController {
             @RequestParam(required = false, value = "logname") String logName,
             @RequestParam(required = true, value = "classification") String classification, 
             @RequestParam(required = false, value = "algorithmoutputid") String algorithmOutputID,
-            @RequestParam(required = true, value = "span") int span, 
+            @RequestParam(required = true, value = "span") float span, 
             @RequestParam(required = true, value = "units") String units,
             @RequestParam(required = true, value = "value") float value, 
             @RequestParam(required = true, value = "logicalop") String logicalOp) throws ServletException,
