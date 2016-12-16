@@ -35,15 +35,15 @@ public class NVCLAnalyticalGateway {
 	 * Note : NVCLAnalyticalMessageConverter has been auto wired into JmsTemplate in 
 	 *        applicationContext.xml
 	 * 
-	 * @param configVo	ConfigVo object that consists of the configuration information
+	 * @param AnalyticalJobVo	AnalyticalJobVo object that consists of the configuration information
 	 * 					needed for trigger the AnalyticalJob
 	 */ 
-	public String createNVCLAnalyticalReqMsg(final AnalyticalJobVo configVo)   {
+	public String createNVCLAnalyticalReqMsg(final AnalyticalJobVo jobVo)   {
 		
 		
 		try {
 	        ReferenceHolderMessagePostProcessor messagePostProcessor = new ReferenceHolderMessagePostProcessor();
-	        this.jmsTemplate.convertAndSend(this.destination, configVo, messagePostProcessor);        	        
+	        this.jmsTemplate.convertAndSend(this.destination, jobVo, messagePostProcessor);        	        
 	        Message sentMessage = messagePostProcessor.getSentMessage();
 	        logger.debug("Generated JMSMessageID : " + sentMessage.getJMSMessageID());
 	        return sentMessage.getJMSMessageID();
