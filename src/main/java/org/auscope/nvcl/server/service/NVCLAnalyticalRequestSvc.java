@@ -179,9 +179,11 @@ public class NVCLAnalyticalRequestSvc {
 		this.mailSender = mailSender;
 	}
 	
-	private ConfigVo config;
+	//Injects config from Config.properties
+	
+	public static ConfigVo config;
 	public void setConfig(ConfigVo config) {
-			this.config = config;
+			NVCLAnalyticalRequestSvc.config = config;
 	}
 	
 	//Injects JmsTemplate

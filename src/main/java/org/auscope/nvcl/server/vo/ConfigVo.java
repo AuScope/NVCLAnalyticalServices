@@ -16,6 +16,7 @@ public class ConfigVo {
     private String downloadURL;
     private String webappURL;
     private String portalURL;
+    private float minDownSampleInterval;
     
     public boolean getSendEmails() {
         return sendEmails;
@@ -52,5 +53,11 @@ public class ConfigVo {
     }
     public void setPortalURL(String portalURL) {
         this.portalURL = portalURL;
+    }
+    public float getMinDownSampleInterval() {
+        return minDownSampleInterval;
+    }
+    public void setMinDownSampleInterval(float minDownSampleInterval) {
+        this.minDownSampleInterval = minDownSampleInterval;
     }
 }

@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
+import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
@@ -272,6 +273,12 @@ public class RestMenuController {
         if (filter == null || filter.isEmpty()) {
             filter = "<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
+        
+        float minDownSampleInterval = NVCLAnalyticalRequestSvc.config.getMinDownSampleInterval();
+        if (span < minDownSampleInterval ) {
+            span = minDownSampleInterval;
+        }
+        
         
         if (tsgScript == null || tsgScript.isEmpty()) {
            
