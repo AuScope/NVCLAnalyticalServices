@@ -21,6 +21,7 @@
         <property name="downloadURL" value="${download.url}" />
         <property name="webappURL" value="${webapp.url}" /> 
         <property name="portalURL" value="${portal.url}" />         
+        <property name="minDownSampleInterval" value="${tsg.downsample.minInterval}" />                 
     </bean>
 
     <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
