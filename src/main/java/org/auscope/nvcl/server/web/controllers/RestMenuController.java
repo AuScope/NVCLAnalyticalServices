@@ -226,19 +226,54 @@ public class RestMenuController {
         Gson gson = new Gson();
         return gson.toJson(jobResultVo);
     }
+    @RequestMapping("/getTsgAlgorithms.do")
+    public String getTsgAlgorithms( @RequestParam(value="tsgAlgName", defaultValue="tsg001") String tsgAlgName ) throws ServletException,
+            IOException {
+        String tsgScript;
+        if (tsgAlgName.equalsIgnoreCase("Hematite-goethite_distr")) {
+            tsgScript = "name = Hematite-goethite_distr, 9\n" +
+            "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +
+            "p2= profile, layer=ref, stat=mean, wcentre=1650, wradius=0\n"+
+            "p3= profile, layer=ref, stat=mean, wcentre=450, wradius=0\n"+
+            "p4= expr, param1=p3, param2=p2, arithop=div\n"+
+            "p5 = expr, param1=p4, const2=1, arithop=lle, nullhandling=out\n"+
+            "p6= expr, param1=p5, param2=p1, arithop=mult\n"+
+            "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
+            "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
+            "return=expr, param1=p8, param2=p7, arithop=mult ";
+        } else if (tsgAlgName.equalsIgnoreCase("Kaolinite Crystallinity")) {
 
+            tsgScript = "name = Kaolinite Crystallinity,8\n" +
+            "description = Based on Pontual, Merry & Gamson, (1997), \"Regolith Logging\" in G-MEX Vol. 8, page 8-29, by Ausspec International Pty Ltd.   A combination of the 2180nm and 2160nm kaolinite slope indices that correlates with kaolinite crystallinity.  Index increases in v\n" +
+            "P1 = profile, stat=MEAN, wcentre=2184.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+            "P2 = profile, stat=MEAN, wcentre=2190.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+            "P3 = expr, param1=P1, param2=P2, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+            "P4 = profile, stat=MEAN, wcentre=2160.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+            "P5 = profile, stat=MEAN, wcentre=2177.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
+            "P6 = expr, param1=P4, param2=P5, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+            "P7 = expr, param1=P6, param2=P3, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
+            "return = expr, param1=P3, param2=P7, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE";
+        } else {
+            tsgScript = "Not defined";
+        }
+ 
+        String algEncoded = tsgScript;
+        return algEncoded;
+    }    
+    
+        
+        
     @RequestMapping("/submitNVCLTSGModJob.do")
     public AnalyticalJobResponse submitNVCLTSGModJob(
             @RequestParam(required = true, value = "serviceurls") String serviceUrls,
             @RequestParam(required = true, value = "email") String email, 
             @RequestParam(required = true, value = "jobname") String jobname,
-            @RequestParam(required = false, value = "tsgscript") String tsgScript,            
+            @RequestParam(required = false, value = "tsgAlgName") String tsgAlgName,  
+            @RequestParam(required = false, value = "tsgWvRange") String tsgWvRange,              
+            @RequestParam(required = false, value = "tsgScript") String tsgScript,            
             @RequestParam(required = false, value = "filter") String filter, 
             @RequestParam(required = true, value = "startdepth") int startDepth,
             @RequestParam(required = true, value = "enddepth") int endDepth, 
-            @RequestParam(required = false, value = "logname") String logName,
-            @RequestParam(required = true, value = "classification") String classification, 
-            @RequestParam(required = false, value = "algorithmoutputid") String algorithmOutputID,
             @RequestParam(required = true, value = "span") float span, 
             @RequestParam(required = true, value = "units") String units,
             @RequestParam(required = true, value = "value") float value, 
@@ -260,15 +295,6 @@ public class RestMenuController {
             email = email.toLowerCase();
         }
 
-        if ((algorithmOutputID == null && logName == null) || (algorithmOutputID != null && logName != null)) {
-            String errMsg = "jobid=" + jobid + ": you has to provide either logName or algorithmOutputID.";
-            return new AnalyticalJobResponse("ERROR", errMsg);
-        }
-
-        if (algorithmOutputID != null && !Utility.checkAlgoutiIDs(algorithmOutputID)) {
-            String errMsg = "your algorithmOutputID=" + algorithmOutputID + " is in wrong format.";
-            return new AnalyticalJobResponse("ERROR", errMsg);
-        }
 
         if (filter == null || filter.isEmpty()) {
             filter = "<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
@@ -318,9 +344,9 @@ public class RestMenuController {
         jobVo.setFilter(filter);
         jobVo.setStartDepth(startDepth);
         jobVo.setEndDepth(endDepth);
-        jobVo.setLogName(logName);
-        jobVo.setClassification(classification);
-        jobVo.setAlgorithmOutputID(algorithmOutputID);
+//        jobVo.setLogName(logName);
+//        jobVo.setClassification(classification);
+//        jobVo.setAlgorithmOutputID(algorithmOutputID);
         jobVo.setSpan(span);
         jobVo.setUnits(units);
         jobVo.setValue(value);

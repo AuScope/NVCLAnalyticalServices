@@ -8,8 +8,7 @@
 
 	<mvc:annotation-driven />
 	<mvc:resources mapping="/style/**" location="/style/" />
-	<mvc:resources mapping="/script/**" location="/script/" />
-	
+	<mvc:resources mapping="/js/**" location="/js/" />
 	<context:component-scan base-package="org.auscope.nvcl.server.web.controllers" />
 
 	<bean id="viewResolver"

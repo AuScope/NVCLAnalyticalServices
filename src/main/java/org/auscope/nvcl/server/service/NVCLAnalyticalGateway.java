@@ -8,7 +8,6 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.MessageConversionException;
 import org.auscope.nvcl.server.service.SpringFrameworkJmsSender.ReferenceHolderMessagePostProcessor;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
-import org.auscope.nvcl.server.vo.ConfigVo;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 

@@ -49,4 +49,9 @@ public class MenuController {
         return "testlinks";
     }
 
+    @RequestMapping("/tsgdemo.html")
+    public String tsgdemo(HttpServletRequest request, HttpServletResponse response) {
+
+        return "tsgdemo";
+    }
 }
