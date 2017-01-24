@@ -75,7 +75,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
                     anchor: '100%'
                 },{
                     xtype: 'textfield',
-                    name: 'jobName',
+                    name: 'jobname',
                     fieldLabel: 'Job Name',
                     allowBlank: false,
                     anchor: '100%'
@@ -93,8 +93,8 @@ Ext.define('NVCLAnalyticsTsgForm', {
                         defaults: defaults,
                         items: [{
                             xtype: 'combo',
-                            name: 'tsgAlgName',
-                            itemId: 'tsgAlgName',
+                            name: 'tsgalgname',
+                            itemId: 'tsgalgname',
                             fieldLabel: 'Name',
                             store: tsgAlgNameStore,
                             displayField: 'tsgAlgName',
@@ -109,8 +109,8 @@ Ext.define('NVCLAnalyticsTsgForm', {
                             }
                         },{ 
                             xtype: 'combo',
-                            name: 'tsgWvRange',
-                            itemId: 'tsgWvRange',
+                            name: 'tsgwvrange',
+                            itemId: 'tsgwvrange',
                             fieldLabel: 'Wavelength',
                             store:['Thermal','VisSWIR'],
                             displayField: 'tsgWvRange',
@@ -123,11 +123,11 @@ Ext.define('NVCLAnalyticsTsgForm', {
                             
                         },{
                             xtype     : 'textareafield',
-                            itemId    : 'tsgAlg',
+                            itemId    : 'tsgscript',
                             grow      : true,
                             width     : 700,
                             height    : 300,
-                            name      : 'tsgAlgorithm',
+                            name      : 'tsgscript',
                             fieldLabel: 'Algorithm',
                             anchor    : '100%'
                         }]
@@ -146,7 +146,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
                         defaults: defaults,
                         items: [{
                             xtype: 'numberfield',
-                            name: 'startDepth',
+                            name: 'startdepth',
                             fieldLabel: 'Region of interest',
                             decimalPrecision: 0,
                             allowBlank: false,
@@ -158,7 +158,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
                             margin: '3 5 0 5'
                         },{
                             xtype: 'numberfield',
-                            name: 'endDepth',
+                            name: 'enddepth',
                             decimalPrecision: 0,
                             allowBlank: false,
                             value: 9999
@@ -169,7 +169,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
                         }]
                     },{
                         xtype: 'combo',
-                        name: 'operator',
+                        name: 'logicalop',
                         fieldLabel: 'Operator',
                         store: operatorStore,
                         displayField: 'name',
@@ -256,7 +256,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
             scope: this,
             success: function(response) {
                 console.log(response.responseText);
-                this.down('#tsgAlg').setValue(response.responseText);
+                this.down('#tsgscript').setValue(response.responseText);
              },
              failure : function(fp,action){
                  Ext.Msg.alert('Status', 'Unable to get Algorithm.');
@@ -412,9 +412,11 @@ Ext.define('NVCLAnalyticsTsgForm', {
             target: this
         });
         mask.show();
-        portal.util.Ajax.request({
-            url: 'submitSF0NVCLProcessingTsgJob.do',
+        Ext.Ajax.request({
+            url: 'submitNVCLTSGModJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&filter =<ogc:Filter><PropertyIsEqualTo><PropertyName>gsmlp:nvclCollection</PropertyName><Literal>true</Literal></PropertyIsEqualTo></ogc:Filter>',
             params: params,
+            timeout: 60000,
+            method: 'GET',
             scope: this,
             callback: function(success) {
                 mask.hide();
