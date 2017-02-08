@@ -324,9 +324,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
             System.out.println("lines read " + index);    
             int sizeOfBin = scalarArray.downSample();
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
-            if (true) {//log.isDebugEnabled()) {
-           //     
-                String filePath = "/home/jia020/work/ws/NVCLAnalyticalServices/TestCases/" + holeIdentifier;
+            if (log.isDebugEnabled()) {
+                String filePath = "/home/LingboJiang/dev/NVCLAnalyticalServices/TestCases/" + holeIdentifier;
                 scalarArray.writeScalarCSV(filePath + "-scalar.csv");
                 scalarArray.writeDownSampledScalarCSV(filePath + "-scalarDownSampled.csv");
             }
