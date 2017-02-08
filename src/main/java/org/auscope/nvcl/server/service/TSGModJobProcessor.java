@@ -39,12 +39,19 @@ public class TSGModJobProcessor  extends IJobProcessor{
     private final Log log = LogFactory.getLog(getClass());      
     private TsgMod tsgMod = new TsgMod(); 
     private String tsgScript;
+    private boolean bProxy;
+    private String proxyHost;
+    private int    proxyPort;
     /**
      * Constructor Construct all the member variables.
      * 
      */    
     public TSGModJobProcessor() {
-        
+        bProxy = NVCLAnalyticalRequestSvc.config.isUseProxy();
+        if (bProxy) {
+            proxyHost = NVCLAnalyticalRequestSvc.config.getProxyHost();
+            proxyPort = NVCLAnalyticalRequestSvc.config.getProxyPort();
+        }
 
     }
     public void run()
@@ -117,11 +124,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
         int totalLogids = 0;
         for (BoreholeVo boreholeVo : boreholeList) {
             String holeIdentifier = boreholeVo.getHoleIdentifier();
-            //lj debug
-//            
-//            if (!holeIdentifier.contains("18189_lyn007_lynchford"))
-//                continue;
-                
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
@@ -180,9 +182,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 }
                 method.releaseConnection();
                 method = null;
-                //for debug only
-//                if (totalLogids > 2) 
-//                    break;
+
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -216,7 +216,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
             boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
-
             
             for(SpectralLogVo spectralLog : boreholeVo.spectralLogList) {
 
@@ -241,7 +240,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         int end = (i + step > sampleCount) ? sampleCount - 1 : i + step - 1;
                         int count = end - start + 1;
                         HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
-                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
+                        if (this.bProxy) {
+                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort)));
+                        } else {
+                            target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
+                        }
                         methodSpectralData.releaseConnection();
                         methodSpectralData = null;
                     }

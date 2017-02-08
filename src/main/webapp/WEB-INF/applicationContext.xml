@@ -22,6 +22,9 @@
         <property name="webappURL" value="${webapp.url}" /> 
         <property name="portalURL" value="${portal.url}" />         
         <property name="minDownSampleInterval" value="${tsg.downsample.minInterval}" />                 
+        <property name="useProxy" value="${proxy.useProxy:false}" /> 
+        <property name="proxyHost" value="${proxy.proxyHost}" />         
+        <property name="proxyPort" value="${proxy.proxyPort}" />                         
     </bean>
 
     <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
