@@ -25,6 +25,7 @@ import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
+import org.auscope.nvcl.server.vo.TSGJobVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
@@ -382,16 +383,11 @@ public class RestMenuController {
 
         return new AnalyticalJobResponse("SUCCESS", "jobid=" + jobid + ": Your job has been successfully submitted. Please check your jobs status later");
     }
-
-    @RequestMapping("/doTSGMod.do")
-    public String doTSGMod(@RequestParam(value = "jobid", defaultValue = "028c68636c05586c2985476dd7d7b069") String jobID) throws ServletException, IOException {
-
-        System.out.println("start");
-        TsgMod tsgMod = new TsgMod();
-        System.out.println("1");
-        // tsgMod.parseOneScalarMethod();
-        System.out.println("end");
+    @RequestMapping("/getTsgJobsByBoreholeid.do")
+    public String getTsgJobsByBoreholeid(@RequestParam(value = "boreholeid", defaultValue = "jobid") String jobID) throws ServletException, IOException {
+        TSGJobVo tsgJob = new TSGJobVo("boreholeid","jobid","jobName");
         Gson gson = new Gson();
-        return gson.toJson(tsgMod);
-    }  
+        return gson.toJson(tsgJob);
+    }      
+
 }
