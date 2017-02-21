@@ -37,6 +37,7 @@ public class IJobProcessor extends Thread {
     protected AnalyticalJobResultVo jobResultVo;
 
     protected String serviceUrls;
+    protected String jobid;
     protected List<String> serviceUrlsList = new ArrayList<String>();
     protected String filter;
     protected int startDepth;
@@ -89,7 +90,7 @@ public class IJobProcessor extends Thread {
         this.jobResultVo.setJobid(messageVo.getJobid());
         this.jobResultVo.setJobDescription(messageVo.getJobDescription());        
         this.jobResultVo.setEmail(messageVo.getEmail());
-        
+        this.jobid = messageVo.getJobid();        
         this.serviceUrls = messageVo.getServiceUrls(); //"http://nvclwebservices.vm.csiro.au/geoserverBH/wfs";//"http://geology.data.nt.gov.au/geoserver/wfs"; //
         setServiceUrls(serviceUrls);
         this.algorithmOutputID = messageVo.getAlgorithmOutputID();

@@ -19,6 +19,7 @@
         <property name="msgTimetoLiveDays" value="${msgTimetoLiveDays:31}" />
         <property name="SysAdminEmail" value="${sysadmin.email}" />  
         <property name="downloadURL" value="${download.url}" />
+        <property name="dataPath" value="${data.path}" />        
         <property name="webappURL" value="${webapp.url}" /> 
         <property name="portalURL" value="${portal.url}" />         
         <property name="minDownSampleInterval" value="${tsg.downsample.minInterval}" />                 

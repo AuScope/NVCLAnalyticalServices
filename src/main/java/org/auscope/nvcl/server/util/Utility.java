@@ -1,8 +1,12 @@
 package org.auscope.nvcl.server.util;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -15,7 +19,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
 import org.apache.http.client.HttpClient;
 
 
@@ -235,5 +238,20 @@ public class Utility {
     public static String getCurrentTime() {
         String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH.mm.ss").format(new java.util.Date());
         return timeStamp;
+    }
+    
+    public static boolean createDirectorys(String directoryPath) {
+            Path path = Paths.get(directoryPath);
+            //if directory exists?
+            if (!Files.exists(path)) {
+                try {
+                    Files.createDirectories(path);
+                } catch (IOException e) {
+                    //fail to create directory
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+            return true;
     }
 }

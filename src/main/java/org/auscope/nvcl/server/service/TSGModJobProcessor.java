@@ -42,11 +42,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
     private boolean bProxy;
     private String proxyHost;
     private int    proxyPort;
+    private String dataPath;
     /**
      * Constructor Construct all the member variables.
      * 
      */    
     public TSGModJobProcessor() {
+        dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
         bProxy = NVCLAnalyticalRequestSvc.config.isUseProxy();
         if (bProxy) {
             proxyHost = NVCLAnalyticalRequestSvc.config.getProxyHost();
@@ -325,9 +327,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
             int sizeOfBin = scalarArray.downSample();
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
             if (log.isDebugEnabled()) {
-                String filePath = "/home/LingboJiang/dev/NVCLAnalyticalServices/TestCases/" + holeIdentifier;
-                scalarArray.writeScalarCSV(filePath + "-scalar.csv");
-                scalarArray.writeDownSampledScalarCSV(filePath + "-scalarDownSampled.csv");
+                String filePath = dataPath + this.jobid;
+                Utility.createDirectorys(filePath);
+                String fileFullPath = filePath + "/" + holeIdentifier;
+                scalarArray.writeScalarCSV(fileFullPath + "-scalar.csv");
+                scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled.csv");
             }
             scalarArray = null;
         } catch (Exception e) {

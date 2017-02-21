@@ -14,6 +14,7 @@ public class ConfigVo {
     private String msgTimetoLiveDays;
     private String sysAdminEmail;
     private String downloadURL;
+    private String dataPath;    
     private String webappURL;
     private String portalURL;
     private float minDownSampleInterval;
@@ -80,5 +81,11 @@ public class ConfigVo {
     }
     public void setProxyPort(int proxyPort) {
         this.proxyPort = proxyPort;
+    }
+    public String getDataPath() {
+        return dataPath;
+    }
+    public void setDataPath(String dataPath) {
+        this.dataPath = dataPath;
     }
 }
