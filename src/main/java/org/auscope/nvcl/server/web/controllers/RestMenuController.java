@@ -384,10 +384,23 @@ public class RestMenuController {
         return new AnalyticalJobResponse("SUCCESS", "jobid=" + jobid + ": Your job has been successfully submitted. Please check your jobs status later");
     }
     @RequestMapping("/getTsgJobsByBoreholeid.do")
-    public String getTsgJobsByBoreholeid(@RequestParam(value = "boreholeid", defaultValue = "jobid") String jobID) throws ServletException, IOException {
+    public String getTsgJobsByBoreholeid(@RequestParam(value = "boreholeid", defaultValue = "boreholeid") String boreholeid) throws ServletException, IOException {
         TSGJobVo tsgJob = new TSGJobVo("boreholeid","jobid","jobName");
         Gson gson = new Gson();
-        return gson.toJson(tsgJob);
+        
+        NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
+        nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
+        List<TSGJobVo> tsgJobVoList = (ArrayList<TSGJobVo>) nvclAnalyticalQueueBrowser.browseTsgJob(boreholeid, nvclResultDestination);
+        TSGJobVo tsgJobVo = null;
+        if (tsgJobVoList == null) {
+            logger.info("result queue is null");
+        } else {
+            System.out.println("result queue is ****************");
+            for (Iterator<?> it1 = tsgJobVoList.iterator(); it1.hasNext();) {
+                tsgJobVo = (TSGJobVo) it1.next();
+            }
+        }      
+        return gson.toJson(tsgJobVoList);
     }      
 
 }

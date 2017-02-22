@@ -21,6 +21,8 @@ import org.apache.logging.log4j.LogManager;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
+import org.auscope.nvcl.server.vo.BoreholeResultVo;
+import org.auscope.nvcl.server.vo.TSGJobVo;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.SessionCallback;
 
@@ -237,6 +239,48 @@ public class NVCLAnalyticalQueueBrowser {
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
+    }
+    public List<TSGJobVo> browseTsgJob(String boreholeid, Destination destination) {
+        List<TSGJobVo> msgList = (ArrayList<TSGJobVo>) this.jmsTemplate.execute(new SessionCallback<List<TSGJobVo>>() {
+
+            public List<TSGJobVo> doInJms(Session session) throws JMSException {
+                int count = 0;
+                List<TSGJobVo> msgList = new ArrayList<TSGJobVo>();
+                logger.debug("browse message in : " + destination);
+
+                QueueBrowser browser = session.createBrowser((Queue) destination);
+                Enumeration<?> messages = browser.getEnumeration();
+                while (messages.hasMoreElements()) {
+                    //AnalyticalJobResultVo jmsMsgVo = new AnalyticalJobResultVo();
+                    count++;
+                    Message message = (Message) messages.nextElement();
+                    // logger.debug("Message " + count + " : " + message);
+                    if (message instanceof MapMessage) {
+                        MapMessage mapMessage = (MapMessage) message;
+                        String jobResult = mapMessage.getString("jobResult");
+                        AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
+                        String jobid = jmsMsgVo.getJobid();
+                        String jobname = jmsMsgVo.getJobDescription();
+                        for (BoreholeResultVo boreholeResultVo : jmsMsgVo.boreholes) {
+                            String id = boreholeResultVo.getId();
+                            if (id.toLowerCase().contains(boreholeid.toLowerCase()))
+                            {
+                                msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
+                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                            }
+                        }
+                    }
+
+                }
+                if (count > 0) {
+                    return msgList;
+                } else {
+                    return null;
+                }
+            }
+        }, true);
+
+        return msgList;
     }
 
 

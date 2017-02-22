@@ -326,7 +326,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             System.out.println("lines read " + index);    
             int sizeOfBin = scalarArray.downSample();
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
-            if (log.isDebugEnabled()) {
+            if (true) { //log.isDebugEnabled()) {
                 String filePath = dataPath + this.jobid;
                 Utility.createDirectorys(filePath);
                 String fileFullPath = filePath + "/" + holeIdentifier;
