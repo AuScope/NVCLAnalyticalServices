@@ -336,6 +336,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             scalarArray = null;
         } catch (Exception e) {
             // TODO Auto-generated catch block
+            System.out.println("Exception: on getDownSampledData");
             e.printStackTrace();
         }
         return isHit;

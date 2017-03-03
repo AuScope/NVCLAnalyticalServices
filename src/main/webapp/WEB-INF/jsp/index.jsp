@@ -59,14 +59,24 @@
 		</tr>
 		<tr>
 			<td>Submit a TSGMod job to nvclWebServices</td>
-			<td>Submit a TSGMod job with TsgScript.</td>
-			<td><a ref="submitNVCLTSGModJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=test011&logname=Reflectance&classification=Dickite&startdepth=0&enddepth=99999&logicalop=gt&value=10&units=count&span=1">submitNVCLTSGModJobResult.do</a></td>
+			<td>Submit a TSGMod job with TsgScript(Kaolinite).</td>
+			<td><a href="submitNVCLTSGModJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=testCsiroTsgKaolinite&startdepth=0&enddepth=99999&logicalop=gt&value=1.06&units=count&span=1">submitNVCLTSGModJobResult.do</a></td>
 		</tr>
+        <tr>
+            <td>Submit a TSGMod job to nvclWebServices</td>
+            <td>Submit a TSGMod job with TsgScript(Hematite).</td>
+            <td><a href="submitNVCLTSGModJob.do?serviceurls=http://nvclwebservices.vm.csiro.au/geoserverBH/wfs&email=lingbo.jiang@csiro.au&jobname=testCsiroTsgHematite&startdepth=0&enddepth=99999&logicalop=gt&value=900.0&units=count&span=1&tsgScript=name+%3D+Hematite-goethite_distr%2C+9%0Ap1+%3D+profile%2C+layer%3Dref%2C+stat%3Ddepth%2C+bkrem%3Ddiv%2C+fit%3D3%2C+wcentre%3D913%2C+wradius%3D137%0Ap2%3D+profile%2C+layer%3Dref%2C+stat%3Dmean%2C+wcentre%3D1650%2C+wradius%3D0%0Ap3%3D+profile%2C+layer%3Dref%2C+stat%3Dmean%2C+wcentre%3D450%2C+wradius%3D0%0Ap4%3D+expr%2C+param1%3Dp3%2C+param2%3Dp2%2C+arithop%3Ddiv%0Ap5+%3D+expr%2C+param1%3Dp4%2C+const2%3D1%2C+arithop%3Dlle%2C+nullhandling%3Dout%0Ap6%3D+expr%2C+param1%3Dp5%2C+param2%3Dp1%2C+arithop%3Dmult%0Ap7%3D+expr%2C+param1%3Dp6%2C+const2%3D0.025%2C+arithop%3Dlgt%2C+nullhandling%3Dout%0Ap8%3D+pfit%2C+layer%3Dref%2C+wunits%3Dnm%2C+wmin%3D776%2C+wmax%3D1050%2C+bktype%3Dhull%2C+bksub%3Ddiv%2C+order%3D4%2C+product%3D0%2C+bktype%3Dhull%2C+bksub%3Ddiv%0Areturn%3Dexpr%2C+param1%3Dp8%2C+param2%3Dp7%2C+arithop%3Dmult+">submitNVCLTSGModJobResult.do</a></td>
+        </tr>		
 		<tr>
 			<td>Submit a TSGMod job to NT</td>
-			<td>Submit a TSGMod job with TsgScript.</td>
-			<td><a href="submitNVCLTSGModJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&email=lingbo.jiang@csiro.au&jobname=test011&logname=Reflectance&classification=Dickite&startdepth=0&enddepth=99999&logicalop=gt&value=10&units=count&span=1">submitNVCLTSGModJobResult.do</a></td>
+			<td>Submit a TSGMod job with TsgScript(Kaolinite).</td>
+			<td><a href="submitNVCLTSGModJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&email=lingbo.jiang@csiro.au&jobname=testNtTsgKaolinite&startdepth=0&enddepth=99999&logicalop=gt&value=1.06&units=count&span=1">submitNVCLTSGModJobResult.do</a></td>
 		</tr>
+        <tr>
+            <td>Submit a TSGMod job to NT</td>
+            <td>Submit a TSGMod job with TsgScript(Hematite).</td>
+            <td><a href="submitNVCLTSGModJob.do?serviceurls=http://geology.data.nt.gov.au/geoserver/wfs&email=lingbo.jiang@csiro.au&jobname=testNtTsgHematite&&startdepth=0&enddepth=99999&logicalop=gt&value=900.0&units=count&span=1&tsgScript=name+%3D+Hematite-goethite_distr%2C+9%0Ap1+%3D+profile%2C+layer%3Dref%2C+stat%3Ddepth%2C+bkrem%3Ddiv%2C+fit%3D3%2C+wcentre%3D913%2C+wradius%3D137%0Ap2%3D+profile%2C+layer%3Dref%2C+stat%3Dmean%2C+wcentre%3D1650%2C+wradius%3D0%0Ap3%3D+profile%2C+layer%3Dref%2C+stat%3Dmean%2C+wcentre%3D450%2C+wradius%3D0%0Ap4%3D+expr%2C+param1%3Dp3%2C+param2%3Dp2%2C+arithop%3Ddiv%0Ap5+%3D+expr%2C+param1%3Dp4%2C+const2%3D1%2C+arithop%3Dlle%2C+nullhandling%3Dout%0Ap6%3D+expr%2C+param1%3Dp5%2C+param2%3Dp1%2C+arithop%3Dmult%0Ap7%3D+expr%2C+param1%3Dp6%2C+const2%3D0.025%2C+arithop%3Dlgt%2C+nullhandling%3Dout%0Ap8%3D+pfit%2C+layer%3Dref%2C+wunits%3Dnm%2C+wmin%3D776%2C+wmax%3D1050%2C+bktype%3Dhull%2C+bksub%3Ddiv%2C+order%3D4%2C+product%3D0%2C+bktype%3Dhull%2C+bksub%3Ddiv%0Areturn%3Dexpr%2C+param1%3Dp8%2C+param2%3Dp7%2C+arithop%3Dmult+&">submitNVCLTSGModJobResult.do</a></td>
+        </tr>		
         <tr>
             <td>Submit a TSGMod job to All survey</td>
             <td>Submit a TSGMod job with form.</td>
