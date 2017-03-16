@@ -129,7 +129,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
-                String responseString = httpServiceCaller.getMethodResponseAsString(method);
+                String responseString = httpServiceCaller.getMethodResponseAsString(method,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
                 Document responseDoc = DOMUtil.buildDomFromString(responseString);
                 //System.out.println(responseString);
                 XPathExpression expr = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
