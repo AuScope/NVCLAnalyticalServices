@@ -251,7 +251,7 @@ Ext.define('NVCLAnalyticsTsgForm', {
     _onAlgorithmSelect: function(combo, record) {
         var tsgAlgName = combo.getValue();
         Ext.Ajax.request({
-            url: 'http://localhost:8080/NVCLAnalyticalServices/getTsgAlgorithms.do',
+            url: 'getTsgAlgorithms.do',
             params: {tsgAlgName: tsgAlgName},
             scope: this,
             success: function(response) {
