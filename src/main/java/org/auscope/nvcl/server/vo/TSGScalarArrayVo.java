@@ -51,7 +51,7 @@ public class TSGScalarArrayVo {
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            if (true) {//log.isDebugEnabled()) {
+            if (false) {//log.isDebugEnabled()) {
                 System.out.println(depth + "    " + value + "    " + scalar.isMask());
             }
 
@@ -64,7 +64,7 @@ public class TSGScalarArrayVo {
                 if (count >0 && sumValue > 0.0) {        
                     float downSampledDepth = (depthStart + depthEnd)/2;
                     downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
-                    if (true) 
+                    if (false) 
                         System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue:" + sumValue/count + ":count:" + count);
                 }
                 depthStart = depthEnd;
@@ -82,7 +82,7 @@ public class TSGScalarArrayVo {
         if (count >0 && sumValue > 0.0) {
             float downSampledDepth = (depthStart + depthEnd)/2;
             downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
-            if (true) {//log.isDebugEnabled()
+            if (false) {//log.isDebugEnabled()
                 System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);
             }            
         }
@@ -104,7 +104,7 @@ public class TSGScalarArrayVo {
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            if (true) {//log.isDebugEnabled()) {
+            if (false) {//log.isDebugEnabled()) {
                 System.out.println(depth + "    " + value + "    " + scalar.isMask());
             }
             if (!scalar.isMask()) //skip the masked one.
@@ -122,7 +122,7 @@ public class TSGScalarArrayVo {
         for (int i=0;i<size;i++) {
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
             downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
-            if (true) {//log.isDebugEnabled()
+            if (false) {//log.isDebugEnabled()
                 System.out.println("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );
             }                        
         }
