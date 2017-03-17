@@ -156,7 +156,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        System.out.println("getDataCollection:Reflectance:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths);
+                        System.out.println("getDataCollection:Reflectance:boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
                         
                         
                         //get final_mask logid
@@ -299,7 +299,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
             System.out.println(methodMask.getURI());
             String strMask;
-            strMask = httpServiceCaller.getMethodResponseAsString(methodMask);
+            strMask = httpServiceCaller.getMethodResponseAsString(methodMask,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
             methodMask.releaseConnection();
             methodMask = null;
     
@@ -307,22 +307,29 @@ public class TSGModJobProcessor  extends IJobProcessor{
     
             BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
             // startDepth, endDepth, final_mask(could be null)
-            TreeMap<String, Byte> depthMaskMap = new TreeMap<String, Byte>(); // depth:Mask;
+            TreeMap<String, Boolean> depthMaskMap = new TreeMap<String, Boolean>(); // depth:Mask;
             csvLine = csvBuffer.readLine();// skip the header
             //System.out.println("csv:" + csvLine);
             int index = 0;
 
             TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
-            
-            while ((csvLine = csvBuffer.readLine()) != null) {
 
-                List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
-                String depth = cells.get(0);
-                Byte mask = 0;
-                mask = Byte.parseByte(cells.get(2));
-                scalarArray.add(new TSGScalarVo(depth,mask!=0,tsgRV[index]));
-                depthMaskMap.put(depth, mask);
-                index++;
+            while ((csvLine = csvBuffer.readLine()) != null) {
+                try {
+                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
+                    String depth = cells.get(0);
+                    boolean mask = false;
+                  //Lingbo some of mask could be "null" as well beside "0" or "1" 
+                    if (!cells.get(2).equalsIgnoreCase("0")){
+                        mask = true;
+                    }
+                    scalarArray.add(new TSGScalarVo(depth,mask,tsgRV[index]));
+                    depthMaskMap.put(depth, mask);
+                    index++;
+                } catch (Exception e) {
+                    System.out.println("Exception: on getDownSampledData.parseCSV" + csvLine);
+                    e.printStackTrace();
+                }
                 //System.out.println("csv:" + csvLine);
                 // csvClassfication="averageValue";    
             }
