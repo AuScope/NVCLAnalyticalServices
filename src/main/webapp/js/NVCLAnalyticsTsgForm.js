@@ -107,20 +107,6 @@ Ext.define('NVCLAnalyticsTsgForm', {
                             listeners: {
                                 select: Ext.bind(this._onAlgorithmSelect, this)
                             }
-                        },{ 
-                            xtype: 'combo',
-                            name: 'tsgwvrange',
-                            itemId: 'tsgwvrange',
-                            fieldLabel: 'Wavelength',
-                            store:['Thermal','VisSWIR'],
-                            displayField: 'tsgWvRange',
-                            valueField: 'tsgWvRange',
-                            forceSelection: true,
-                            queryMode: 'local',
-                            typeAhead: true,
-                            allowBlank: false,
-                            width: fieldWidth,                            
-                            
                         },{
                             xtype     : 'textareafield',
                             itemId    : 'tsgscript',
