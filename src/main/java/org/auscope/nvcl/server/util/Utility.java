@@ -177,7 +177,7 @@ public class Utility {
       //  int port = url.indexOf(':', doubleslash);
      //   end = (port > 0 && port < end) ? port : end;
 
-        String host = url.substring(0, url.lastIndexOf('/',url.lastIndexOf('/')-1);
+        String host = url.substring(0, url.lastIndexOf('/',url.lastIndexOf('/')-1));
         return host;
 
     }
