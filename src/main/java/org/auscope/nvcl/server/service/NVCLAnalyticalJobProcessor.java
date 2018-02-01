@@ -205,8 +205,8 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                             countSum = 0 + count;
                         }
                         depthMap.put(depth, countSum);
-                        if( depthClassificationMap.get(depth) == null) {
-                            depthClassificationMap.put(depth, 0);
+                        if( !depthClassificationMap.containsKey(depth)) {
+                            depthClassificationMap.put(depth, (float) 0.0);
                         }
                         if (csvClassfication.equalsIgnoreCase(classification)) {
                             depthClassificationMap.put(depth, count);
