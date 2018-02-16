@@ -1,0 +1,425 @@
+name = Hm-Go_Distr, 6
+description = Continuum removed wavelength of the 900 nm absorption minimum calculated using a fitted 4th order polynomial between 776-1150nm.
+Version = 1.0
+Category = published
+scalargroup = mineralogy:iron oxides
+UUID = AF696A4B-EE55-4EEC-B646-2AB0309CAE42
+Author = CSIRO (Tom Cudahy and Erick Ramanaidou, 1997)
+# masking of samples with low Fe-ox abundance and with 450>1650, p1..p4 (mask is p4)
+p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137
+p2=ratio, wnum=450, wdenom=1650, biggest=1
+p3= expr, param1=p2, mod1=set, param2=p1, arithop=mult
+p4= expr, param1=p3, const2=0.025, arithop=lgt, nullhandling=out
+p5= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div
+return=expr, param1=p4, param2=p5, arithop=mult
+
+
+name = Kaolin_Abundance,3
+description = Normalized depth of a fitted 4th order polynomial between 2120 and 2245 nm, aka 2200D
+Version = 2.0
+Category = published
+scalargroup = mineralogy:kaolins
+uuid = 4A500CB6-B543-409C-B942-82F8B0D1A1DA
+author = Sonntag et al. (2012)
+p1=ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, biggest=1.005
+p2 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2183, wradius=63
+return=expr, param1=p1, mod1=unset, param2=p2, arithop=mult, nullhandling=both
+
+
+name = Kaolin_Crystallinity,8
+description = Composition and crystallinity of kaolin group minerals ranging from well-ordered kaolinite to halloysite to dickite (and nacrite)
+Version = 2.0
+Category = published
+scalargroup = mineralogy:kaolins
+uuid = 90769D56-0B5E-4E82-A522-F9AA228E5161
+author = Sonntag et al. (2012)
+p1=ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, biggest=1.005
+p2=ratio, wnum=2138, wnum2=2173, wdenom=2156
+p3=ratio, wnum=2155, wnum2=2190, wdenom=2173
+p4 = expr, param1=p2, param2=p3, arithop=div, nullhandling=out
+p5= expr, param1=p1, mod1=unset, param2=p4, arithop=mult, nullhandling=out
+p6 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2183, wradius=63
+p7 = expr, param1=p6, const2=0.1, arithop=lgt, nullhandling=out
+return= expr, param1=p5, param2=p7, arithop=mult
+
+
+
+name = Ferric_Oxide_Abundance, 3
+description = Continuum removed depth of the 900 nm absorption calculated using a fitted 2nd order polynomial between 776 and 1050 nm
+Version = 1.0
+Category = published
+scalargroup = mineralogy:iron oxides
+uuid = 043E5529-5BCC-4FF7-87C5-38CB755DB6BD
+author = Based on Haest et al (2012)
+#P2 masks off samples with 450>1650
+p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137
+p2=ratio, wnum=450, wdenom=1650, biggest=1
+return= expr, param1=p2, mod1=set, param2=p1, arithop=mult, nullhandling=out
+
+
+name = Amph_Talc_Abundance,5
+description = Amphibole and talc abundance index with kaolin masking
+Version = 1.0
+Category = published
+uuid = A24997DB-55F4-4A1F-AF5B-D8914A68B6E3
+author = CSIRO (Carsten Laukamp, 2012)
+#P1 masks off low 2320 MgOH;  p2 masks off noticeable kaolin;  p3 combines p1 and p2.
+p1=ratio, wnum=2270, wnum2=2370, wdenom=2300, wdenom2=2340, smallest=1.01
+p2=ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, smallest=1.005
+P3 = expr, param1=P1, mod1=set, param2=P2, mod2=unset, arithop=MULT, mainmod=PLAIN, nullhandling=out
+p4=ratio, wnum=2365, wnum2=2415, wdenom=2381, wdenom2=2390
+return = expr, param1=P3, param2=P4, arithop=MULT, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE
+
+
+name = Amph_Talc_Composition,7
+description = Amphibole and talc composition with kaolin masking
+Version = 1.0
+Category = published
+uuid = AF15A753-8CFB-4CBD-ABFF-C8248F87DFF0
+author = CSIRO (Carsten Laukamp, 2012)
+#It does all of amph_talc_abundance (above) to make an abundace mask (>1.005) in p5, then returns the masked 2390 wavelength.
+p1=ratio, wnum=2270, wnum2=2370, wdenom=2300, wdenom2=2340, smallest=1.01
+p2=ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, smallest=1.005
+P3 = expr, param1=P1, mod1=set, param2=P2, mod2=unset, arithop=MULT, mainmod=PLAIN, nullhandling=out
+p4=ratio, wnum=2365, wnum2=2415, wdenom=2381, wdenom2=2390, biggest=1.005
+P5 = expr, param1=P3, mod1=set, param2=P4, mod2=unset, arithop=MULT, mainmod=PLAIN, nullhandling=out
+p6 = profile, stat=Wvl@Min, wcentre=2405.00, wradius=30.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+return = expr, param1=P5, param2=P6, arithop=MULT
+
+
+name = Carbonate_Abundance,19
+description = Carbonate abundance index (SWIR)
+Version = 1.0
+Category = published
+scalargroup = mineralogy:carbonates
+uuid = 7D929C55-C4E3-48C1-B467-EE862BBF9CE3
+author = Based on Sonntag et al. (2012)
+#2295<2300wvl<2355
+p1 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2320, wradius=50
+P2 = expr, param1=P1, const2=2295, arithop=LGT, nullhandling=out
+p3 = expr, param1=p1, const2=2360, arithop=LlT, nullhandling=out
+p4= expr, param1=p2, param2=p3, arithop=mult
+#MgOH abundance
+p5 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2320, wradius=50
+p6= expr, param1=p5, const2=0.04, arithop=lgt, nullhandling=out
+p7=expr, param1=p4, param2=p6, arithop=mult
+#mask 2250 depth feature
+p8 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2250, wradius=20
+p9 = expr, param1=p8, const2=0.025, arithop=llt, nullhandling=both
+#mask 2380 depth feature
+p10 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2390, wradius=20
+p11 = expr, param1=p5, const2=0.1117, arithop=mult
+p12 = expr, param1=p11, const2= 0.0002, arithop=add
+p13 = expr, param1=p10, param2=p12, arithop=llt, nullhandling=both
+#combining above
+p14= expr, param1=p7, param2=p9, arithop=mult
+p15= expr, param1=p14, param2=p13, arithop=mult
+#asymmetry
+p16 = pfit, layer=ref, wmin=2120, wmax=2370, bktype=hull, bksub=div, order=4, product=asym
+p17 = expr, param1=p16, const2=1.13, arithop=lgt, nullhandling=out
+p18= expr, param1=p15, param2=p17, arithop=mult
+return= expr, param1=p18, param2=p5, arithop=mult
+
+
+name = Carbonate_Composition, 20
+description = Carbonate composition (Separating calcite, dolomite, siderite etc) (SWIR)
+Version = 1.0
+Category = published
+scalargroup = mineralogy:carbonates
+uuid = A115CC9E-6EE7-4E83-9026-7A994CB09A8C
+author = Based on Sonntag et al. (2012)
+#The 2330 wavelength masked by non-NULL abundance index (above)
+p1 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2320, wradius=50
+P2 = expr, param1=P1, const2=2295, arithop=LGT, nullhandling=out
+p3 = expr, param1=p1, const2=2360, arithop=LlT, nullhandling=out
+p4= expr, param1=p2, param2=p3, arithop=mult
+#MgOH abundance >0.04
+p5 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2320, wradius=50
+p6= expr, param1=p5, const2=0.04, arithop=lgt, nullhandling=out
+p7=expr, param1=p4, param2=p6, arithop=mult
+#mask 2250 depth feature
+p8 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2250, wradius=20
+p9 = expr, param1=p8, const2=0.025, arithop=llt, nullhandling=both
+#mask 2380 depth feature
+p10 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2390, wradius=20
+p11 = expr, param1=p5, const2=0.1117, arithop=mult
+p12 = expr, param1=p11, const2= 0.0002, arithop=add
+p13 = expr, param1=p10, param2=p12, arithop=llt, nullhandling=both
+#combining above
+p14= expr, param1=p7, param2=p9, arithop=mult
+p15= expr, param1=p14, param2=p13, arithop=mult
+#asymmetry
+p16 = pfit, layer=ref, wmin=2120, wmax=2370, bktype=hull, bksub=div, order=4, product=asym
+p17 = expr, param1=p16, const2=1.13, arithop=lgt, nullhandling=out
+p18= expr, param1=p15, param2=p17, arithop=mult
+#2330wvl
+p19 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2320, wradius=50
+return= expr, param1=p19, param2=p18, arithop=mult
+
+
+name = Chlorite-Epidote_Abundance,8
+description = Chlorite / epidote / biotite abundance index
+Version = 1.0
+Category = published
+uuid = E75AF318-BE8F-4F0D-A999-C7A017444762
+author = Based on Sonntag et al. (2012)
+#2240<2250wvl<2270
+p1 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2255, wradius=25
+P2 = expr, param1=P1, const2=2240, arithop=LGT, nullhandling=out
+p3 = expr, param1=p1, const2=2270, arithop=LlT, nullhandling=out
+p4= expr, param1=p2, param2=p3, arithop=mult
+#chlorite abundance
+p5 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2255, wradius=25
+p6= expr, param1=p5, const2=0.01, arithop=lgt, nullhandling=out
+p7=expr, param1=p5, param2=p6, arithop=mult
+return = expr, param1=P4, param2=P7, arithop=MULT
+
+
+name = Chlorite-Epidote_Composition,8
+description = Chlorite / epidote / biotite composition
+Version = 1.0
+Category = published
+uuid = 5F0D8E70-6C63-4715-913E-3FE67E555046
+author = Based on Sonntag et al. (2012)
+#2240<2250wvl<2270
+p1 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2255, wradius=25
+P2 = expr, param1=P1, const2=2240, arithop=LGT, nullhandling=out
+p3 = expr, param1=p1, const2=2270, arithop=LlT, nullhandling=out
+p4= expr, param1=p2, param2=p3, arithop=mult
+#chlorite abundance
+p5 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2255, wradius=25
+p6= expr, param1=p5, const2=0.01, arithop=lgt, nullhandling=out
+p7=expr, param1=p3, param2=p6, arithop=mult
+#2250wvl return
+return = expr, param1=P1, param2=P7, arithop=MULT
+
+
+name = Epidote_Abundance,12
+description = 2250nm Chlorite abundance index times (filtered by) a 1555nm (epidote-specific) depth index.
+Version = 1.0
+Category = published
+scalargroup = mineralogy:epidotes
+uuid = 5F0D8E70-6C63-4715-913E-3FE67E555046
+author = Based on Roache et al. (2011)
+#2240<2250wvl<2270
+p1 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2255, wradius=25
+P2 = expr, param1=P1, const2=2240, arithop=LGT, nullhandling=out
+p3 = expr, param1=p1, const2=2270, arithop=LlT, nullhandling=out
+p4 = expr, param1=p2, param2=p3, arithop=mult
+#chlorite abundance
+p5 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2255, wradius=25
+p6 = expr, param1=p5, const2=0.01, arithop=lgt, nullhandling=out
+p7 =expr, param1=p5, param2=p6, arithop=mult
+p8 = expr, param1=P4, param2=P7, arithop=MULT
+#epidote abundance
+p9 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=1555, wradius=25
+p10 = expr, param1=p9, const2=0.01, arithop=lgt, nullhandling=out
+p11 =expr, param1=p9, param2=p10, arithop=mult
+return = expr, param1=P8, param2=P11, arithop=MULT
+
+
+name = ISM_Area_vs_Depth,3
+description = Illite Spectral Maturity (has the best correlation with Kuebler Index according to Doublier)
+Version = 1.0
+Category = published
+scalargroup = mineralogy:micas (white)
+uuid = D04D10A8-D1BA-40C5-B4D7-C196CAE35827
+author = Doublier et al. (2010b)
+P1 = profile, stat=DEPTH, wcentre=2210.00, wradius=25.00, layer=REF, smooth=MED, fit=THREE, bkrem=DIV
+P2 = profile, stat=AREA, wcentre=2210.00, wradius=25.00, layer=REF, smooth=MED, fit=THREE, bkrem=DIV
+return = expr, param1=P2, param2=P1, arithop=DIV
+
+
+name = ISM_H2O,14
+description = Illite Spectral Maturity
+Version = 1.0
+Category = published
+scalargroup = mineralogy:micas (white)
+uuid = 5FD56087-F907-4246-8ADF-5D5925FEF98A
+author = CSIRO, based on Doublier et al (2010b)
+#P1=not-kaolin mask;  p2=mica-type mask;  p3=p1 and p2;  p5=white-mica-200 min-depth mask;  p9=unwanted-2200 mask;  p11=master mask
+p1 = ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, smallest=1.005
+p2 = ratio, wnum=2326, wnum2=2376, wdenom=2343, wdenom2=2359, biggest=0.035
+p3 = expr, param1=p1, mod1=unset, param2=p2, mod2=unset, arithop=mult, nullhandling=out
+p4 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2183, wradius=63
+p5 = expr, param1=p4, const2=0.05, arithop=lgt, nullhandling=out
+P6 = profile, layer=ref, stat=wvl@min, bkrem=div, fit=3, wcentre=2183, wradius=63
+p7 = expr, param1=p6, const2=2175, arithop=lgt, nullhandling=out
+p8 = expr, param1=p6, const2=2230, arithop=llt, nullhandling=out
+p9 = expr, param1=p7, param2=p8, arithop=mult
+p10 = expr, param1=p9, param2=p5, arithop=mult
+p11 = expr, param1=p10, param2=p3, arithop=mult
+#finally return masked_depth(2200) / depth(1900)
+p12 = expr, param1=p4, param2=p11, arithop=mult
+P13 = profile, stat=DEPTH, wcentre=1940.00, wradius=50.00, layer=REF, smooth=med, fit=THREE, bkrem=DIV
+return = expr, param1=P12, param2=P13, arithop=DIV
+
+
+name = White_Mica_Smectite_Abundance,7
+description = Abundance of white micas (e.g.  illite, muscovite, paragonite, brammalite, phengite, lepidolite, margarite) and smectites (montmorillonite, beidellite)
+Version = 1.0
+Category = published
+uuid = 927794ED-05D8-423D-87D6-DB44D7348159
+author = Based on Sonntag et al (2012)
+p1 = ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, smallest=1.005
+p2 = ratio, wnum=2326, wnum2=2376, wdenom=2343, wdenom2=2359, biggest=0.00035
+P3 = expr, param1=P1, mod1=unset, param2=P2, mod2=unset, arithop=MULT, nullhandling=out
+P4 = profile, stat=DEPTH, wcentre=2183.00, wradius=63.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+P5 = expr, param1=P4, const2=0.04, arithop=LGT, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=OUT
+P6 = expr, param1=P3, param2=P5, arithop=MULT, nullhandling=out
+return = expr, param1=P6, param2=P4, arithop=MULT
+
+
+name = White_Mica_Smectite_Composition,8
+description = Tschermak substitution of white micas, ranging from paragonite, brammalite, to illite, muscovite to phengite, and smectites, ranging from beidellite to montmorillonite.
+Version = 1.0
+Category = published
+uuid = DE273E87-FA35-4B14-B41A-38D15E615819
+author = Based on Sonntag et al (2012)
+p1 = ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179, smallest=1.005
+p2 = ratio, wnum=2326, wnum2=2376, wdenom=2343, wdenom2=2359, biggest=0.00035
+P3 = expr, param1=P1, mod1=unset, param2=P2, mod2=unset, arithop=MULT, nullhandling=out
+P4 = profile, stat=DEPTH, wcentre=2183.00, wradius=63.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+P5 = expr, param1=P4, const2=0.04, arithop=LGT, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=OUT
+P6 = expr, param1=P3, param2=P5, arithop=MULT, nullhandling=out
+P7 = profile, stat=WVL@MIN, wcentre=2183.00, wradius=63.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+return = expr, param1=P6, param2=P7, arithop=MULT
+
+name = 1480D,1
+description = Continuum removed depth of fourth-order polynomial, fitted between 1440 and 1520 nm.
+Version = 1.0
+Category = base
+UUID = A2E5E891-3874-4A7A-8AD9-68502F9EFD98
+Author = White et al. (2017)
+doclink = $TSGAPP/tsg8_base_scripts.htm#1480D
+return = pfit, layer=REF, wunits=NANOMETERS, inflex=NO, peaks=NO, wmin=1440.000000, wmax=1520.000000, fwmin=1460.000000, fwmax=1500.000000, product=DEPTH, root=AUTO, bktype=HULL, bksub=DIV, order=4, maxrmse=0.000000, minval=0.000000, minarea=0.000000, maxbkslope=0.000000
+
+name = 1480W,1
+description = Continuum removed depth of fourth-order polynomial, fitted between 1440 and 1520 nm.
+Version = 1.0
+Category = base
+UUID = B96BC72E-C3E4-4C4C-8ADB-05CF541EE322
+Author = Based on Chang et al (2011)
+return = pfit, layer=REF, wunits=NANOMETERS, inflex=NO, peaks=NO, wmin=1440.000000, wmax=1520.000000, fwmin=1460.000000, fwmax=1500.000000, product=WVL, root=AUTO, bktype=HULL, bksub=DIV, order=4, maxrmse=0.000000, minval=0.000000, minarea=0.000000, maxbkslope=0.000000
+
+name = 2160D2190,1
+description = Ratio giving the intensity of the 2160 absorption feature.
+Version = 1.0
+Category = base
+UUID = 4B17BBB5-4341-4329-AEA6-68F1B78316CA
+Author = Haest et al, (2012a,b)
+return = ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179
+
+name = 2200D,1
+description = Relative depth of the 2200 nm absorption for which the continuum is removed between 2120 and 2245, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+Version = 1.0
+Category = base
+UUID = 7BEFA1A6-23BF-468B-A65D-EF23B98EAFC1
+Author = Haest et al, (2012a,b)
+return = profile, stat=DEPTH, wcentre=2183.00, wradius=63.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+
+name = 2200W,1
+description = Wavelength of the 2200 nm absorption for which the continuum is removed between 2120 and 2245, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+Version = 1.0
+Category = base
+UUID = B0338D4C-56B3-4B72-9961-B0F8CDC8DC55
+Author = Haest et al, (2012a,b)
+return = profile, stat=WVL@MIN, wcentre=2183.00, wradius=63.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+
+name = 2250D,1
+description = Relative depth of the 2250 nm absorption for which the continuum is removed between 2230 and 2280, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+Version = 1.0
+Category = base
+UUID = 84248A96-C57F-4999-805E-78B8637E790D
+Author = concept based on McLeod et al. (1986)
+return = profile, stat=DEPTH, wcentre=2255.00, wradius=25.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+
+name = 2250W,1
+description = Wavelength of the 2250 nm absorption for which the continuum is removed between 2230 and 2280, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+Version = 1.0
+Category = base
+UUID = 92E93100-32FD-40BC-8915-993DF5254118
+Author = concept based on McLeod et al. (1986)
+return = profile, stat=WVL@MIN, wcentre=2255.00, wradius=25.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+
+name = 2290D,3
+description = Local-continuum-removed depth of deepest feature between 2270 and 2330 nm, filtered > 0.01.
+Version = 1.0
+Category = base
+UUID = 92C34E64-B063-4480-92E4-998F51B84096
+Author = Haest et al, (2012a,b)
+p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=2290, wradius=20
+P2 = expr, param1=P1, const2=0.01, arithop=LGT, nullhandling=out
+return = expr, param1=p1, param2=p2, arithop=mult
+
+name = 2320W,1
+description = Wavelength of the 2320 nm absorption for which the continuum is removed between 2295 and 2345, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+Version = 1.0
+Category = base
+UUID = 6C35DE12-8141-4839-9CBA-3BD072E4CC0D
+Author = further developed on base of Laukamp et al. (2012)
+return = profile, stat=Wvl@Min, wcentre=2320.00, wradius=25.00, layer=REF, smooth=NONE, fit=THREE, bkrem=DIV
+
+name = 2350D,1
+description = Ratio giving the depth of the 2350 feature.
+Version = 1.0
+Category = base
+UUID = C8EED4E8-4A6F-49C0-9091-EFF1B9F2668A
+Author = Haest et al, (2012a,b)
+return = ratio, wnum=2326, wnum2=2376, wdenom=2343, wdenom2=2359
+
+name = 2380D,1
+description = Ratio giving the depth of the 2380 feature.
+Version = 1.0
+Category = base
+UUID = C7708B54-8E70-437A-A4DB-B1430D1E0053
+Author = Haest et al, (2012a,b)
+return = ratio, wnum=2365, wnum2=2415, wdenom=2381, wdenom2=2390
+
+name = 6500P,1
+description = Relative height of the reflectance peak between 6300 and 6700 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+Version = 1.0
+Category = base
+UUID = 03A46035-2419-459E-8EF2-83CD4C74A068
+Author = n /a
+return = profile, stat=MAX, wcentre=6500.00, wradius=200.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+name = 9000P,1
+description = Relative height of the reflectance peak between 8900 and 9300 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+Version = 1.0
+Category = base
+UUID = 41A9184B-A180-4C01-8B0A-FD4BE2A10B02
+Author = Cudahy et al. (2009)
+return = profile, stat=max, wcentre=9100, wradius=200.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+name = 9600P,1
+description = Relative height of the reflectance peak between 9250 and 9950 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+Version = 1.0
+Category = base
+UUID = 233603D2-055C-4030-A605-BDF99D15A1EF
+Author = Cudahy et al. (2009)
+return = profile, stat=MAX, wcentre=9600.00, wradius=350.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+name = 9800P,1
+description = Relative height of the reflectance peak between 9665 and 9910 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+Version = 1.0
+Category = base
+UUID = 1C8D1D7A-FFD5-44CC-B115-1F0D8FB8D8F4
+Author = Cudahy et al. (2009)
+return = profile, stat=max, wcentre=9785, wradius=125.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+name = 11100P,1
+description = Relative height of the reflectance peak between 10800 and 11300 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+Version = 1.0
+Category = base
+UUID = 95B973F4-B88C-4B2C-9926-25BF4A2C257D
+Author = Laukamp et al. (2014)
+return = profile, stat=MAX, wcentre=11050.00, wradius=250.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+name = 14000W,1
+description = Wavelength of the reflectance low between 13000 and 14000 nm, determined using a 3 band polynomial fit around the band with the lowest reflectance
+Version = 1.0
+Category = base
+UUID = 49D8DD9F-C185-49E1-B826-B1AD94584751
+Author = n / a
+return = profile, stat=wvl@Min, wcentre=13750, wradius=250.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE

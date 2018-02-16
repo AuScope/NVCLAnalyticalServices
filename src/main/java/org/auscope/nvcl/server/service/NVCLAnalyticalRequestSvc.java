@@ -1,9 +1,6 @@
 package org.auscope.nvcl.server.service;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -13,17 +10,12 @@ import org.apache.logging.log4j.LogManager;
 import org.auscope.nvcl.server.service.SpringFrameworkJmsSender.ReferenceHolderMessagePostProcessor;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
-import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.ConfigVo;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-
-import javax.mail.internet.MimeMessage;
-
-import org.springframework.mail.javamail.MimeMessageHelper;
 /**
  * NVCLAnalyticalRequestSvc trigger actual services that perform the AnalyticalJobProcessor.
  * At the end, it will create a new message in the JMS status and result queue with status 

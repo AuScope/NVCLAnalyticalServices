@@ -1,7 +1,5 @@
 package org.auscope.nvcl.server.vo;
 
-import java.util.Hashtable;
-
 /**
  * AnalyticalJobStatusVo
  * and allow getting the values thru getter and setter method.

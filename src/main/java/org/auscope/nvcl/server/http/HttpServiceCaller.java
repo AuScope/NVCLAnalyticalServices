@@ -12,8 +12,6 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -24,6 +22,8 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -36,7 +36,8 @@ public class HttpServiceCaller {
      * if the logging level is set to TRACE
      */
     private static final int MAX_POST_BODY_LOGGING = 1024 * 100;
-    private final Log log = LogFactory.getLog(getClass());
+    //private final Log log = LogFactory.getLog(getClass());
+	private static final Logger logger = LogManager.getLogger(HttpServiceCaller.class);
     int connectionTimeOut;
 
     public HttpServiceCaller(int connectionTimeOut) {
@@ -71,8 +72,8 @@ public class HttpServiceCaller {
         //release the connection
         method.releaseConnection();
 
-        log.trace("XML response from server:");
-        log.trace("\n" + response);
+        logger.trace("XML response from server:");
+        logger.trace("\n" + response);
         //return it
         return response;
     }
@@ -152,7 +153,7 @@ public class HttpServiceCaller {
      * @param httpClient
      */
     private HttpResponse invokeTheMethod(HttpRequestBase method, HttpClient client) throws Exception {
-        log.debug("method=" + method.getURI());
+        logger.debug("method=" + method.getURI());
         HttpClient httpClient = null;
 
         if (client == null) {
@@ -172,14 +173,14 @@ public class HttpServiceCaller {
             httpClient = client;
         }
 
-        if (log.isTraceEnabled()) {
-            log.trace("Outgoing request headers: " + Arrays.toString(method.getAllHeaders()));
+        if (logger.isTraceEnabled()) {
+            logger.trace("Outgoing request headers: " + Arrays.toString(method.getAllHeaders()));
             if (method instanceof HttpPost) {
                 HttpEntity body = ((HttpPost) method).getEntity();
                 byte[] dataHead =  new byte[(int) Math.min(MAX_POST_BODY_LOGGING, body.getContentLength())];
                 IOUtils.read(body.getContent(), dataHead);
                 String content = new String(dataHead, Charsets.UTF_8);
-                log.trace("Outgoing POST body (UTF-8): " + content);
+                logger.trace("Outgoing POST body (UTF-8): " + content);
             }
         }
 
@@ -188,7 +189,7 @@ public class HttpServiceCaller {
 
         int statusCode = response.getStatusLine().getStatusCode();
         String statusCodeText = HttpStatus.getStatusText(statusCode);
-        log.trace("Status code text: '"+statusCodeText+"'");
+        logger.trace("Status code text: '"+statusCodeText+"'");
 
         if (statusCode != HttpStatus.SC_OK &&
                 statusCode != HttpStatus.SC_CREATED &&
@@ -203,7 +204,7 @@ public class HttpServiceCaller {
 
             // if the response is not OK then throw an error
 
-            log.error("Returned status line: " + response.getStatusLine() +
+            logger.error("Returned status line: " + response.getStatusLine() +
                     System.getProperty("line.separator") + "Returned response body: " + responseBody);
             throw new HttpException(statusCodeText);
         } else {

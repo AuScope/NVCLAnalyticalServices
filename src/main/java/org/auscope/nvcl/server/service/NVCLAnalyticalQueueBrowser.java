@@ -19,7 +19,6 @@ import javax.jms.Session;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
-import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;

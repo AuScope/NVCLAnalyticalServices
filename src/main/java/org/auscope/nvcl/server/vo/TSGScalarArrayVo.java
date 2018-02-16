@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class TSGScalarArrayVo {
-    private final Log log = LogFactory.getLog(getClass());
+    //private final Log log = LogFactory.getLog(getClass());
+	private static final Logger logger = LogManager.getLogger(TSGScalarArrayVo.class);
     private float interval = (float) 1.0;
     private float floorDepth = 99999;
     private float ceilingDepth = -99999;

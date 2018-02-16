@@ -9,9 +9,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.auscope.portal.core.util.DOMUtil;
 import org.auscope.nvcl.server.util.TsgMod;
 import org.auscope.nvcl.server.util.Utility;
@@ -36,7 +36,8 @@ import javax.xml.xpath.XPathExpression;
  */
 
 public class TSGModJobProcessor  extends IJobProcessor{
-    private final Log log = LogFactory.getLog(getClass());      
+	private static final Logger logger = LogManager.getLogger(TSGModJobProcessor.class);
+    //private final Log log = LogFactory.getLog(getClass());      
     private TsgMod tsgMod = new TsgMod(); 
     private String tsgScript;
     private boolean bProxy;
@@ -187,7 +188,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
 
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
-                log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
+                logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
                 String resultMsg = formatMessage(3) + ex.toString();
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
@@ -271,7 +272,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 } catch (Exception ex) {
                     // if exception happened, let it continue for next logid
                     System.out.println("*****************Exception: at 394****************");
-                    log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier, logid));
+                    logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier, logid));
                     // return false;
                 }
                 spectralData = null;

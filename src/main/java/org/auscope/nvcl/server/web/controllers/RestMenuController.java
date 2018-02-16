@@ -2,8 +2,6 @@ package org.auscope.nvcl.server.web.controllers;
 
 import java.awt.Menu;
 
-import org.auscope.nvcl.server.util.TsgMod;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,6 +11,8 @@ import java.util.List;
 
 import javax.jms.Destination;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
+import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
@@ -68,7 +69,11 @@ public class RestMenuController {
 //    public String index(HttpServletRequest request, HttpServletResponse response) {
 //
 //        return "index";
-//    }    
+//    }
+    @Autowired
+    @Qualifier(value = "tsgscripts")
+    private TSGScriptCache tsgscripts;
+    
     @RequestMapping("/submitNVCLAnalyticalJob.do")
     public AnalyticalJobResponse submitNVCLAnalyticalJob(
             @RequestParam(required = true, value = "serviceurls") String serviceUrls ,
@@ -228,41 +233,48 @@ public class RestMenuController {
         return gson.toJson(jobResultVo);
     }
     @RequestMapping("/getTsgAlgorithms.do")
-    public String getTsgAlgorithms( @RequestParam(value="tsgAlgName", defaultValue="tsg001") String tsgAlgName ) throws ServletException,
+    public String getTsgAlgorithms( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(required = false, value="tsgAlgName") String tsgAlgName,
+    		@RequestParam(required = false, value="outputFormat") String outputFormat) throws ServletException,
             IOException {
-        String tsgScript;
-        if (tsgAlgName.equalsIgnoreCase("Hematite-goethite_distr")) {
-            tsgScript = "name = Hematite-goethite_distr, 9\n" +
-            "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +
-            "p2= profile, layer=ref, stat=mean, wcentre=1650, wradius=0\n"+
-            "p3= profile, layer=ref, stat=mean, wcentre=450, wradius=0\n"+
-            "p4= expr, param1=p3, param2=p2, arithop=div\n"+
-            "p5 = expr, param1=p4, const2=1, arithop=lle, nullhandling=out\n"+
-            "p6= expr, param1=p5, param2=p1, arithop=mult\n"+
-            "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
-            "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
-            "return=expr, param1=p8, param2=p7, arithop=mult ";
-        } else if (tsgAlgName.equalsIgnoreCase("Kaolinite Crystallinity")) {
 
-            tsgScript = "name = Kaolinite Crystallinity,8\n" +
-            "description = Based on Pontual, Merry & Gamson, (1997), \"Regolith Logging\" in G-MEX Vol. 8, page 8-29, by Ausspec International Pty Ltd.   A combination of the 2180nm and 2160nm kaolinite slope indices that correlates with kaolinite crystallinity.  Index increases in v\n" +
-            "P1 = profile, stat=MEAN, wcentre=2184.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-            "P2 = profile, stat=MEAN, wcentre=2190.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-            "P3 = expr, param1=P1, param2=P2, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-            "P4 = profile, stat=MEAN, wcentre=2160.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-            "P5 = profile, stat=MEAN, wcentre=2177.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-            "P6 = expr, param1=P4, param2=P5, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-            "P7 = expr, param1=P6, param2=P3, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-            "return = expr, param1=P3, param2=P7, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE";
-        } else {
-            tsgScript = "Not defined";
-        }
- 
-        String algEncoded = tsgScript;
-        return algEncoded;
+    	if (tsgAlgName == null) {
+    		if (outputFormat!=null && outputFormat.equals("json"))
+    		{
+	    		Gson gson = new Gson();
+	    		response.setContentType("application/json");
+	    		return gson.toJson(tsgscripts.getScripts());
+    		}
+    		else return tsgscripts.getScripts().toString();
+    	}
+    	else if (tsgscripts.getScripts().containsKey(tsgAlgName)) 
+    	{
+    		if (outputFormat!=null && outputFormat.equals("json"))
+    		{
+    			Gson gson = new Gson();
+	    		response.setContentType("application/json");
+	    		return gson.toJson(tsgscripts.getScripts().get(tsgAlgName));
+    		}
+    		else return tsgscripts.getScripts().get(tsgAlgName);
+    	}
+        else return  "Not defined";
     }    
     
-        
+    @RequestMapping("/listTsgAlgorithms.do")
+    public String listTsgAlgorithms( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(required = false, value="outputFormat") String outputFormat) throws ServletException,
+        IOException {
+
+    	List<String> algnames = new ArrayList<String>();
+    	tsgscripts.getScripts().forEach((k,v) -> algnames.add(k));
+    	if (outputFormat!=null && outputFormat.equals("json"))
+    	{
+	    	Gson gson = new Gson();
+	    	response.setContentType("application/json");
+	    	return gson.toJson(algnames);
+    	}
+        else return algnames.toString();
+    }     
         
     @RequestMapping("/submitNVCLTSGModJob.do")
     public AnalyticalJobResponse submitNVCLTSGModJob(

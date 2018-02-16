@@ -3,25 +3,16 @@ package org.auscope.nvcl.server.service;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.auscope.portal.core.server.http.HttpServiceCaller;
-import org.auscope.portal.core.services.methodmakers.WFSGetFeatureMethodMaker;
-import org.auscope.portal.core.services.responses.ows.OWSExceptionParser;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.auscope.portal.core.util.DOMUtil;
-import org.auscope.nvcl.server.http.NVCLDataServiceMethodMaker;
-import org.auscope.nvcl.server.http.NVCLNamespaceContext;
 import org.auscope.nvcl.server.util.Utility;
-import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
-import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.BoreholeVo;
 import org.w3c.dom.Document;
@@ -39,7 +30,9 @@ import javax.xml.xpath.XPathExpression;
  */
 
 public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
-    private final Log log = LogFactory.getLog(getClass()); 
+   // private final Log log = LogFactory.getLog(getClass()); 
+	private static final Logger logger = LogManager.getLogger(NVCLAnalyticalJobProcessor.class);
+	
     private boolean isdecimalTypeScalar;    
     public NVCLAnalyticalJobProcessor() {
         this.isdecimalTypeScalar = false;
@@ -129,7 +122,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 method.releaseConnection();
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
-                log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
+                logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
                 String resultMsg = "Error:unknow exception:" + ex.toString();
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
@@ -272,7 +265,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 }catch (Exception ex) {
                     //if exception happened, let it continue for next logid
                     System.out.println("*****************Exception: at 394****************");
-                    log.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier,logid));
+                    logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier,logid));
                     //return false;
                 } 
             } //logid loop

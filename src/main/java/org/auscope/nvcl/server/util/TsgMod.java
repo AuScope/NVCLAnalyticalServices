@@ -1,18 +1,18 @@
 package org.auscope.nvcl.server.util;
 
 import java.io.*;
-import java.util.Arrays;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TsgMod {
     static {
          System.loadLibrary("TsgMod");
         System.out.println("TsgMod:load c lib");
     }
-    private final Log log = LogFactory.getLog(getClass());
+    //private final Log log = LogFactory.getLog(getClass());
     
+	private static final Logger logger = LogManager.getLogger(TsgMod.class);
+	
     private native int checkHandle(long h);
 
     private native long copyHandle(long h);

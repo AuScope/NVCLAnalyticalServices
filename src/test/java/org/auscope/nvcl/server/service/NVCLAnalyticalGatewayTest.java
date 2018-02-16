@@ -1,16 +1,12 @@
 package org.auscope.nvcl.server.service;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import javax.jms.Destination;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.auscope.nvcl.server.util.Utility;
-import org.auscope.nvcl.server.vo.AnalyticalJobStatusVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.ConfigVo;
 import org.junit.AfterClass;

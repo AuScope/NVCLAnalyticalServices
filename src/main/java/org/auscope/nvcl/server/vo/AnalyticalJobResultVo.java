@@ -3,9 +3,6 @@ package org.auscope.nvcl.server.vo;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.reflect.TypeToken.TypeSet;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * AnalyticalJobResultVo

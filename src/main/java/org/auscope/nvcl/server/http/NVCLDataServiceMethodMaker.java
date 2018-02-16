@@ -1,8 +1,6 @@
 package org.auscope.nvcl.server.http;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;

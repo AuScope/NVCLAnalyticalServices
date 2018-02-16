@@ -54,6 +54,8 @@
     <bean id="nvclAnalyticalGateway" class="org.auscope.nvcl.server.service.NVCLAnalyticalGateway">
         <property name="jmsTemplate" ref="jmsTemplate" />
     </bean>
+    
+    <bean id="tsgscripts" class="org.auscope.nvcl.server.service.TSGScriptCache" />
 
     <bean id="nvclAnalyticalMessageConverter"
         class="org.auscope.nvcl.server.service.NVCLAnalyticalMessageConverter" />
