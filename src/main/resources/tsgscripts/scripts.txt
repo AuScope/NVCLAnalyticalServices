@@ -291,7 +291,7 @@ Version = 1.0
 Category = base
 UUID = A2E5E891-3874-4A7A-8AD9-68502F9EFD98
 Author = White et al. (2017)
-doclink = $TSGAPP/tsg8_base_scripts.htm#1480D
+# doclink = $TSGAPP/tsg8_base_scripts.htm#1480D
 return = pfit, layer=REF, wunits=NANOMETERS, inflex=NO, peaks=NO, wmin=1440.000000, wmax=1520.000000, fwmin=1460.000000, fwmax=1500.000000, product=DEPTH, root=AUTO, bktype=HULL, bksub=DIV, order=4, maxrmse=0.000000, minval=0.000000, minarea=0.000000, maxbkslope=0.000000
 
 name = 1480W,1
