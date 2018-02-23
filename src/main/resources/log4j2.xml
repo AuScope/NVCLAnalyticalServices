@@ -20,9 +20,11 @@
 	</Appenders>
 	<Loggers>
 		<!-- uncomment bellow to enable debug logging -->
-		<Logger name="org.auscope" level="debug" additivity="false"> <AppenderRef ref="asyncAppender" /> </Logger>
+<!-- 		<Logger name="org.auscope" level="debug" additivity="false"> -->
+<!-- 			<AppenderRef ref="asyncAppender" /> -->
+<!-- 		</Logger> -->
 		<Root level="warn" includeLocation="true" additivity="false">
 			<AppenderRef ref="asyncAppender" />
-		</Root> 
+		</Root>
 	</Loggers>
 </Configuration>

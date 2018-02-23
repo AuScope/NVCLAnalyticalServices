@@ -268,6 +268,14 @@ public class NVCLAnalyticalQueueBrowser {
                                 System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
                             }
                         }
+                        for (BoreholeResultVo boreholeResultVo : jmsMsgVo.failedBoreholes) {
+                            String id = boreholeResultVo.getId();
+                            if (id.toLowerCase().contains(boreholeid.toLowerCase()))
+                            {
+                                msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
+                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                            }
+                        }
                     }
 
                 }

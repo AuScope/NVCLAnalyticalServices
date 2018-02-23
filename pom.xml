@@ -55,9 +55,9 @@
     </build>
     <repositories>
         <repository>
-            <id>cgsrv8.arrc.csiro.au</id>
+            <id>cgmaven.it.csiro.au</id>
             <name>AuScope Nexus - PortalRepo</name>
-            <url>http://cgsrv8.arrc.csiro.au/nexus/content/groups/PortalRepository/</url>
+            <url>https://cgmaven.it.csiro.au/nexus/content/groups/PortalRepository/</url>
             <snapshots>
                 <updatePolicy>always</updatePolicy>
             </snapshots>
