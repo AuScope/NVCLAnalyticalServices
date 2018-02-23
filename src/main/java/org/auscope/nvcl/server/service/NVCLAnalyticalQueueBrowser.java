@@ -1,5 +1,6 @@
 package org.auscope.nvcl.server.service;
 
+import java.io.File;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -260,20 +261,27 @@ public class NVCLAnalyticalQueueBrowser {
                         AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
                         String jobid = jmsMsgVo.getJobid();
                         String jobname = jmsMsgVo.getJobDescription();
+                    	String dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
                         for (BoreholeResultVo boreholeResultVo : jmsMsgVo.boreholes) {
                             String id = boreholeResultVo.getId();
                             if (id.toLowerCase().contains(boreholeid.toLowerCase()))
                             {
-                                msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
-                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
+                                if (new File(csvFile).exists()){
+	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
+	                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                }
                             }
                         }
                         for (BoreholeResultVo boreholeResultVo : jmsMsgVo.failedBoreholes) {
                             String id = boreholeResultVo.getId();
                             if (id.toLowerCase().contains(boreholeid.toLowerCase()))
                             {
-                                msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
-                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
+                                if (new File(csvFile).exists()){
+	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
+	                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                }
                             }
                         }
                     }

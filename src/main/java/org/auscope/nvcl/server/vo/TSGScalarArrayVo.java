@@ -143,8 +143,14 @@ public class TSGScalarArrayVo {
                 depth = spectralData.getDepth();
                 value = spectralData.getValue();
                 mask = spectralData.isMask();
-                String record = depth + "," + value + "," + mask ;
-                writer.writeNext(record.split(","));
+                // only write values if mask == true and the value is not NaN.
+                // The client should normally apply this masking but portal currently doesn't
+                // so its done here.
+                if (mask && !Double.isNaN(value))
+                {
+                	String record = depth + "," + value + "," + mask ;
+                	writer.writeNext(record.split(","));
+                }
             }
             writer.close();     
         } catch (IOException e) {
