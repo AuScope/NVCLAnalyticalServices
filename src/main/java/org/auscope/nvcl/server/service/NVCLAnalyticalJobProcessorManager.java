@@ -3,21 +3,29 @@ package org.auscope.nvcl.server.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 
 
 public class NVCLAnalyticalJobProcessorManager{
+	
+    private static final Logger logger = LogManager.getLogger(NVCLAnalyticalMessageConverter.class);
+	
     private List<IJobProcessor> processorList = new ArrayList<IJobProcessor>();
     private AnalyticalJobResultVo sumJobResultVo = new AnalyticalJobResultVo();
+    
     public AnalyticalJobResultVo getSumJobResultVo() {
         return this.sumJobResultVo;
     }
+    
     public boolean processRequest(AnalyticalJobVo messageVo) {
-        String serviceUrls = messageVo.getServiceUrls(); //"http://nvclwebservices.vm.csiro.au/geoserverBH/wfs";//"http://geology.data.nt.gov.au/geoserver/wfs"; //
+        String serviceUrls = messageVo.getServiceUrls();
         String requestType = messageVo.getRequestType();
-        if (serviceUrls == null)
+        if (Utility.stringIsBlankorNull(serviceUrls))
             return false;
         String[] serviceUrlArray = serviceUrls.split(",");
         sumJobResultVo.setEmail(messageVo.getEmail());
@@ -59,13 +67,12 @@ public class NVCLAnalyticalJobProcessorManager{
             }
         }catch(InterruptedException e)
         {
-           System.out.println("Thread interrupted.");
+           logger.error("Job processor thread interrupted.");
         }
         int boreholesSize = sumJobResultVo.boreholes.size();
         int failedBoreholesSize = sumJobResultVo.failedBoreholes.size();
         int errorBoreholesSize = sumJobResultVo.errorBoreholes.size();
-        System.out.println("total result:" + boreholesSize + ":" + failedBoreholesSize + ":" + errorBoreholesSize );
-        System.out.println("NVCLAnalyticalJobProcessorManager::processRequest:ended:");
+        logger.info("NVCLAnalyticalJobProcessorManager commplete. Boreholes that exceeded threshold: " + boreholesSize + ". Boreholes that fell below threshold : " + failedBoreholesSize + ". Boreholes that caused errors : " + errorBoreholesSize );
         return true;
     }
 }

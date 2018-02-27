@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.auscope.portal.core.util.DOMUtil;
 import org.auscope.nvcl.server.util.TsgMod;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
@@ -25,8 +24,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 /*
  * TSGModJobProcessor will process a TSGMod Analytical job(based on the live calculated scalar) from AnalyticalJobVo.
@@ -59,24 +60,22 @@ public class TSGModJobProcessor  extends IJobProcessor{
     }
     public void run()
     {
-        System.out.println("Thread:start:" + this.serviceUrls);
+    	logger.info("TSGModJobProcessor starting:" + this.serviceUrls);
         if (! getBoreholeList()) {
-            System.out.println("Failed:processor.getBoreholeList");
+        	logger.error("Failed:processor.getBoreholeList");
           }
           if (!getDataCollection()) {
-  
-              System.out.println("Failed:processor.getDataCollection");
+        	  logger.error("Failed:processor.getDataCollection");
             }
           if (!getSpectralData()) {
-              System.out.println("Failed:processor.getDownSampledData");            
+        	  logger.error("Failed:processor.getDownSampledData");            
           }
    
-          System.out.println("Thread:end:" + this.serviceUrls);
+          logger.info("TSGModJobProcessor finished");
     }
     public void setAnalyticalJob(AnalyticalJobVo messageVo) {
         byte[] byteTsgScript = Base64.getDecoder().decode(messageVo.getTsgScript());
         this.tsgScript = new String(byteTsgScript);
-//              System.out.println("Base64 decoded String (Basic) :" + decodedTsgScript);messageVo.getTsgScript();
         super.setAnalyticalJob(messageVo);
     }
 
@@ -89,31 +88,61 @@ public class TSGModJobProcessor  extends IJobProcessor{
     {
         String strLogIDMask = null;
         try {
-            XPathExpression exprMask;
-            exprMask = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
+        	
+        	XPathFactory factory = new org.apache.xpath.jaxp.XPathFactoryImpl();
+            XPath xPath = factory.newXPath();
+        	
+            XPathExpression exprMask = xPath.compile("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
             NodeList nodeListMask = (NodeList) exprMask.evaluate(doc, XPathConstants.NODESET);
-            XPathExpression exprLogIDMask = DOMUtil.compileXPathExpr("LogID");
-            XPathExpression exprLogNameMask = DOMUtil.compileXPathExpr("logName");
+            XPathExpression exprLogIDMask = Utility.compileXPathExpr("LogID");
+            XPathExpression exprLogNameMask = Utility.compileXPathExpr("logName");
             for (int j = 0; j < nodeListMask.getLength(); j++) {
                 Element eleLogIDMask = (Element) exprLogIDMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
                 String logid = eleLogIDMask.getFirstChild().getNodeValue(); 
                 Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
                 String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
-                //System.out.println(strLogNameMask);
                 if (strLogNameMask.equalsIgnoreCase("Final Mask")) {
                     strLogIDMask = logid;
-                    System.out.println("maskLogid:" + strLogIDMask );
+                    logger.debug("final mask scalar found with id "+ strLogIDMask);
                     break;
-                    //return strLogIDMask;
                 }
             }
         } catch ( Exception e) {
-            System.out.println("getFinalMaskLogid:exception");
-            e.printStackTrace();
-        }//DatasetCollection/Dataset/Logs/Log");//
-        
-        return strLogIDMask;
-        
+        	logger.warn("Couldn't get final mask log id.");
+        }
+        return strLogIDMask; 
+    }
+    
+    /**
+     * Get the base domain's logid from Document.
+     * Only required if the final mask is missing
+     *  @param doc    XML Document
+     * return finalMaskLogid String 
+     */    
+    private String getBaseDomainLogid(Document doc) 
+    {
+        String strLogIDMask = null;
+        try {
+            XPathExpression exprMask;
+            exprMask = Utility.compileXPathExpr("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
+            NodeList nodeListMask = (NodeList) exprMask.evaluate(doc, XPathConstants.NODESET);
+            XPathExpression exprLogIDMask = Utility.compileXPathExpr("LogID");
+            XPathExpression exprLogNameMask = Utility.compileXPathExpr("logName");
+            for (int j = 0; j < nodeListMask.getLength(); j++) {
+                Element eleLogIDMask = (Element) exprLogIDMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String logid = eleLogIDMask.getFirstChild().getNodeValue(); 
+                Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
+                String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
+                if (strLogNameMask.equalsIgnoreCase("Domain")) {
+                    strLogIDMask = logid;
+                    logger.debug("Domain scalar found with id "+ strLogIDMask);
+                    break;
+                }
+            }
+        } catch ( Exception e) {
+        	logger.warn("Couldn't get Domain log id.");
+        }
+        return strLogIDMask; 
     }
     /**
      * getDataCollection
@@ -131,17 +160,15 @@ public class TSGModJobProcessor  extends IJobProcessor{
             try {
                 HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
                 String responseString = httpServiceCaller.getMethodResponseAsString(method,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
-                Document responseDoc = DOMUtil.buildDomFromString(responseString);
-                //System.out.println(responseString);
-                XPathExpression expr = DOMUtil.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
+                Document responseDoc = Utility.buildDomFromString(responseString);
+                XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
-                XPathExpression exprLogID = DOMUtil.compileXPathExpr("logID");
-                XPathExpression exprLogName = DOMUtil.compileXPathExpr("logName");
-                XPathExpression exprSampleCount = DOMUtil.compileXPathExpr("sampleCount");
-                XPathExpression exprWavelengths = DOMUtil.compileXPathExpr("wavelengths");
+                XPathExpression exprLogID = Utility.compileXPathExpr("logID");
+                XPathExpression exprLogName = Utility.compileXPathExpr("logName");
+                XPathExpression exprSampleCount = Utility.compileXPathExpr("sampleCount");
+                XPathExpression exprWavelengths = Utility.compileXPathExpr("wavelengths");
                 boolean isError = true;
-                //logName=Reflectance  logID (sampleCount>0) wavelengths
-                // assume "Reflectance" pass it to the process in the swir/vnir parameter
+
                 for (int i = 0; i < nodeList.getLength(); i++) {  
                     Element eleLogID = (Element) exprLogID.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strLogID = eleLogID.getFirstChild().getNodeValue(); 
@@ -153,30 +180,26 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     Element eleWavelengths = (Element) exprWavelengths.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strWavelengths = eleWavelengths.getFirstChild().getNodeValue();
                     
-                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {//9873848a-4dd5-46ba-b76d-5ea0f4c622d
+                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        System.out.println("getDataCollection:Reflectance:boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
+                        logger.debug("getDataCollection:Reflectance:boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
                         
                         
                         //get final_mask logid
                         String finalMaskLogid = getFinalMaskLogid(responseDoc);
                         boreholeVo.setFinalMaskLogid(finalMaskLogid);                       
 
-//                        <Log>
-//                        <LogID>dd5c574e-7028-4077-a70e-f5d3430677d</LogID>
-//                        <logName>Final Mask</logName>
-//                        <ispublic>false</ispublic>
-//                        <logType>6</logType>
-//                        <algorithmoutID>0</algorithmoutID>
-//                        </Log>
+                        if (Utility.stringIsBlankorNull(finalMaskLogid))
+                        {
+                        	String domainLogid =getBaseDomainLogid(responseDoc);
+                        	boreholeVo.setDomainLogid(domainLogid);
+                        }
+                        
                         break;
                         
-                    } else {
-                        //System.out.println("LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount + ":" + strWavelengths); 
-                    }
-                   // System.out.println("exprLogID:" + strLogID + ":" + strLogName + ":" + strLogType + ":" + strAlgorithmoutID);                        
+                    }                         
                 }
                 if (isError) {
                     String resultMsg = formatMessage(0);
@@ -194,28 +217,29 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
         }
-        System.out.println("getDataCollection:Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
+        logger.debug("getDataCollection:Total spectalLogs:" + totalLogids + ":" + this.serviceUrls);
         return true;
     }
     /**
      * getSpectralData
      * It download the SpetralData based on logid. then it called the TSGMod to do the caculation. 
      * It download the finalMask and apply the finalMask on result. 
-     * It saved the result into jobResultVo(hitted or failed)
+     * It saved the result into jobResultVo(hit or missed)
      * @return true for successfully processing the information
      */     
     public boolean getSpectralData() {
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
-        System.out.println(Utility.getCurrentTime() + "getSpectralData:" + this.serviceUrls);
+        logger.debug( "getSpectralData:" + this.serviceUrls);
         for (BoreholeVo boreholeVo : boreholeList) {
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             if (boreholeVo.getStatus()!= 0) {
-                //System.out.println("skip: error borehole:" + boreholeVo.getHoleIdentifier() + ":status:" + boreholeVo.getStatus());
+                logger.debug("skip: error borehole:" + boreholeVo.getHoleIdentifier() + ":status:" + boreholeVo.getStatus());
                 continue;
             }
             String holeIdentifier = boreholeVo.getHoleIdentifier();
             String finalMaskLogid = boreholeVo.getFinalMaskLogid();
+            String domainlogid = boreholeVo.getDomainLogid();
             boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
@@ -230,14 +254,12 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 byte[] spectralData = new byte[sampleCount*waveLengthCount*4];
                 double[] tsgRV = new double[sampleCount];
                 ByteBuffer target = ByteBuffer.wrap(spectralData);     
-                System.out.println("=========================");
-                System.out.println(Utility.getCurrentTime() + "getSpectralData:start:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
 
-                // System.out.println("Stage3:process:borehole:" +
-                // holeIdentifier + "  logid:" + logid);
+                logger.debug("getSpectralData:start:BoreholeId:" + boreholeVo.getHoleIdentifier() + ":logid:" + logid);
+
                 try {
                     int step = 4000;
-                    System.out.println(Utility.getCurrentTime() + "getSpectralData:Downlaod Spectrum:" );
+                    logger.debug("getSpectralData:Downlaod Spectrum:" );
                     for (int i = 0; i < sampleCount; i = i + step) {
                         // LJ
                         // sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
@@ -253,27 +275,25 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         methodSpectralData.releaseConnection();
                         methodSpectralData = null;
                     }
-                    System.out.println(Utility.getCurrentTime() + "getSpectralData:Call TsgMod");
+                    logger.debug("getSpectralData:Call TsgMod");
                     tsgMod.parseOneScalarMethod(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
                     
                     ////////
-                    System.out.println(Utility.getCurrentTime() + "getSpectralData:getDownSampledData:");
-                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,holeIdentifier,finalMaskLogid );
+                    logger.debug("getSpectralData:getDownSampledData:");
+                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,holeIdentifier,finalMaskLogid,domainlogid );
                     ////////
                     if (isHit) {
                         resultMsg = formatMessage(1);
-                        boreholeVo.setStatus(2); // hitted status;
+                        boreholeVo.setStatus(2); // hit status;
                         jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(), resultMsg));
-                        System.out.println("***************getSpectralData:hitted:" + boreholeVo.getHoleIdentifier());
+                        logger.info("hit: " + boreholeVo.getHoleUrl());
                         break;
 
                     }
                     
                 } catch (Exception ex) {
                     // if exception happened, let it continue for next logid
-                    System.out.println("*****************Exception: at 394****************");
                     logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage3 for borehole:'%s' logid: '%s' failed", holeIdentifier, logid));
-                    // return false;
                 }
                 spectralData = null;
                 tsgRV = null;
@@ -283,75 +303,107 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 resultMsg = formatMessage(2);
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
-                System.out.println("*****************failed:" +boreholeVo.getHoleIdentifier());
+                logger.info("Miss: " +boreholeVo.getHoleIdentifier());
             }         
-            System.out.println("=========================");
         }//borehole loop  
-        System.out.println(Utility.getCurrentTime() + "getSpectralData:total Processed Logid:" + totalProcessedLogid );   
+        logger.debug( "getSpectralData:total Processed Logid:" + totalProcessedLogid );   
 
         return true;
     }
     
-    public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String holeIdentifier,String finalMaskLogid) {
+    public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String holeIdentifier,String finalMaskLogid, String domainlogid) {
         boolean isHit = false;
-        System.out.println(Utility.getCurrentTime() + "getDownSampledData:getFinalMask");
-        HttpRequestBase methodMask;
+        logger.debug("getDownSampledData:getFinalMask with id : "+finalMaskLogid);
+        HttpRequestBase methodMask,methodDomain;
         try {
-            methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
-            System.out.println(methodMask.getURI());
-            String strMask;
-            strMask = httpServiceCaller.getMethodResponseAsString(methodMask,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
-            methodMask.releaseConnection();
-            methodMask = null;
-    
-            String csvLine;
-    
-            BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
-            // startDepth, endDepth, final_mask(could be null)
-            TreeMap<String, Boolean> depthMaskMap = new TreeMap<String, Boolean>(); // depth:Mask;
-            csvLine = csvBuffer.readLine();// skip the header
-            //System.out.println("csv:" + csvLine);
-            int index = 0;
-
+        	TreeMap<String, Boolean> depthMaskMap = new TreeMap<String, Boolean>();
             TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
+        	if (!Utility.stringIsBlankorNull(finalMaskLogid))
+        	{
+	            methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
+	            logger.debug("getting mask data from " + methodMask.getURI());
+	            String strMask;
+	            strMask = httpServiceCaller.getMethodResponseAsString(methodMask,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
+	            methodMask.releaseConnection();
+	            methodMask = null;
+	    
+	            String csvLine;
+	    
+	            BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
+	            // startDepth, endDepth, final_mask(could be null)
 
-            while ((csvLine = csvBuffer.readLine()) != null) {
-                try {
-                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
-                    String depth = cells.get(0);
-                    boolean mask = false;
-                  //Lingbo some of mask could be "null" as well beside "0" or "1" 
-                    if (!cells.get(2).equalsIgnoreCase("0")){
-                        mask = true;
-                    }
-                    scalarArray.add(new TSGScalarVo(depth,mask,tsgRV[index]));
-                    depthMaskMap.put(depth, mask);
-                    index++;
-                } catch (Exception e) {
-                    System.out.println("Exception: on getDownSampledData.parseCSV" + csvLine);
-                    e.printStackTrace();
-                }
-                //System.out.println("csv:" + csvLine);
-                // csvClassfication="averageValue";    
-            }
-            csvBuffer = null;
-            System.out.println("lines read " + index);    
-            System.out.println(Utility.getCurrentTime() + "getDownSampledData:downSample:");
+	            csvLine = csvBuffer.readLine();// skip the header
+        	
+	            int index = 0;
+
+	
+	            while ((csvLine = csvBuffer.readLine()) != null) {
+	                try {
+	                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
+	                    String depth = cells.get(0);
+	                    boolean mask = false;
+	                  //Lingbo some of mask could be "null" as well beside "0" or "1" 
+	                    if (!cells.get(2).equalsIgnoreCase("0")){
+	                        mask = true;
+	                    }
+	                    scalarArray.add(new TSGScalarVo(depth,mask,tsgRV[index]));
+	                    depthMaskMap.put(depth, mask);
+	                    index++;
+	                } catch (Exception e) {
+	                    logger.error("Exception: on getDownSampledData.parseCSV" + csvLine);
+	                }
+	            }
+	            csvBuffer = null;
+	            logger.debug(index + " lines of mask values read ");  
+        	}
+        	else if (!Utility.stringIsBlankorNull(domainlogid))
+        	{
+	            methodDomain = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
+	            logger.debug("getting domain data from " + methodDomain.getURI());
+	            String strDomain;
+	            strDomain = httpServiceCaller.getMethodResponseAsString(methodDomain,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
+	            methodDomain.releaseConnection();
+	            methodDomain = null;
+	    
+	            String csvLine;
+	    
+	            BufferedReader csvBuffer = new BufferedReader(new StringReader(strDomain));
+	            // startDepth, endDepth, domain
+
+	            csvLine = csvBuffer.readLine();// skip the header
+        	
+	            int index = 0;
+
+	
+	            while ((csvLine = csvBuffer.readLine()) != null) {
+	                try {
+	                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
+	                    String depth = cells.get(0);
+	                    
+	                    scalarArray.add(new TSGScalarVo(depth,true,tsgRV[index]));
+	                    depthMaskMap.put(depth, true);
+	                    index++;
+	                } catch (Exception e) {
+	                    logger.error("Exception: on getDownSampledData.parseCSV" + csvLine);
+	                }  
+	            }
+	            csvBuffer = null;
+	            logger.debug(index + " lines of mask values read ");  
+        	}
+        	else throw new Exception("no Final Mask or Domain scalar was available to provide the required depth values.");
+            logger.debug( "getDownSampledData:downSample:");
             int sizeOfBin = scalarArray.downSample();
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
-            if (true) { //log.isDebugEnabled()) {
-                System.out.println(Utility.getCurrentTime() + "getDownSampledData:writeCSV:");
-                String filePath = dataPath + this.jobid;
-                Utility.createDirectorys(filePath);
-                String fileFullPath = filePath + "/" + holeIdentifier;
-                scalarArray.writeScalarCSV(fileFullPath + "-scalar.csv");
-                scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled.csv");
-            }
+  
+            logger.debug( Utility.getCurrentTime() + "getDownSampledData:writeCSV:");
+            String filePath = dataPath + this.jobid;
+            Utility.createDirectorys(filePath);
+            String fileFullPath = filePath + "/" + holeIdentifier;
+            scalarArray.writeScalarCSV(fileFullPath + "-scalar.csv");
+            scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled.csv");
             scalarArray = null;
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            System.out.println("Exception: on getDownSampledData");
-            e.printStackTrace();
+            logger.error("Exception: on getDownSampledData"+e.getMessage());
         }
         return isHit;
     }   
@@ -362,10 +414,10 @@ public class TSGModJobProcessor  extends IJobProcessor{
             resultMsg = "Error by with SampleCountZero";
             break;
         case 1: //Hit message
-            resultMsg = "Hitted by " +  " has value " +  this.logicalOp + " " + String.valueOf(this.value) + " " +  this.units;
+            resultMsg = "Hit with value " +  this.logicalOp + " " + String.valueOf(this.value) + " " +  this.units;
             break;
         case 2: //Fail message
-            resultMsg = "Failed by " + " has no value "  + this.logicalOp + " " + String.valueOf(this.value) + " " + this.units;
+            resultMsg = "Failed with no value "  + this.logicalOp + " " + String.valueOf(this.value) + " " + this.units;
             break;
         case 3:
             resultMsg = "Error:unknow exception:";

@@ -111,23 +111,6 @@ public class AnalyticalJobVo {
             return toString;
         }
 
-        public void setSampleNVCLAnalyticalVo() {
-            requestType = "ANALYTICAL";
-            jobid = "jobid-test-002";
-            jobDescription = "Analytical testing job002";
-            email = "lingbo.jiang@csiro.au";
-            serviceUrls="http://nvclwebservices.vm.csiro.au/geoserverBH/wfs";
-            algorithmOutputID = "108";
-            classification="Muscovite";
-            startDepth=0;
-            endDepth=999999;
-            logicalOp="gt";
-            value=6;
-            units="pct";
-            span=10;
-            filter="<ogc:Filter><PropertyIsEqualTo><PropertyName>gsmlp:nvclCollection</PropertyName><Literal>true</Literal></PropertyIsEqualTo></ogc:Filter>";
-        }
-
         public String getServiceUrls() {
             return serviceUrls;
         }

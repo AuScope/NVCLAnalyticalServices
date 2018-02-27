@@ -19,8 +19,9 @@ public class BoreholeVo {
     public List<String> logidList = new ArrayList<String> ();
     public List<SpectralLogVo> spectralLogList = new ArrayList<SpectralLogVo>();
     private String finalMaskLogid;
+    private String domainLogid;
   
-    public BoreholeVo(String holeIdentifier, String holeUrl, String serviceUrl, String serviceHost, String servicePathOfData) {
+	public BoreholeVo(String holeIdentifier, String holeUrl, String serviceUrl, String serviceHost, String servicePathOfData) {
         this.holeIdentifier = holeIdentifier;
         this.holeUrl = holeUrl;        
         this.status = 0;
@@ -73,4 +74,10 @@ public class BoreholeVo {
     public void setFinalMaskLogid(String finalMaskLogid) {
         this.finalMaskLogid = finalMaskLogid;
     }
+    public String getDomainLogid() {
+		return domainLogid;
+	}
+	public void setDomainLogid(String domainLogid) {
+		this.domainLogid = domainLogid;
+	}
 }

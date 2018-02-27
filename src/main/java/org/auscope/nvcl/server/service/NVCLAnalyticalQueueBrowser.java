@@ -19,6 +19,7 @@ import javax.jms.Session;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
@@ -43,35 +44,13 @@ public class NVCLAnalyticalQueueBrowser {
 
     private static final Logger logger = LogManager.getLogger(NVCLAnalyticalQueueBrowser.class);
     
-    /**
-     * Browse queue message(s) from both request and reply queue and set them
-     * to a Map.
-     * 
-     * @param  email   Requestor's email, use as key for retrieving
-     *                 queue message(s)  
-     * @return Map     Returning a map that consists of two lists : 
-     *                 a) a list of request message(s)
-     *                 b) a list of reply message(s)            
-     */
-    public Map<String, Object> browseMessage(String email, JmsTemplate jmsTemplate, 
-            Destination reqDestination, Destination repDestination) {
-        
-        Map<String, Object> msgMap = new HashMap<String, Object>();
-//        NVCLDownloadQueueBrowser nvclDownloadQueueBrowser = new NVCLDownloadQueueBrowser();
-//        nvclDownloadQueueBrowser.setJmsTemplate(jmsTemplate);
-//        List<JMSMessageVo> reqMsgList = (ArrayList<JMSMessageVo>) nvclDownloadQueueBrowser.browseQueueMessages(email,reqDestination);
-//        List<JMSMessageVo> repMsgList = (ArrayList<JMSMessageVo>) nvclDownloadQueueBrowser.browseQueueMessages(email,repDestination);
-//        msgMap.put("request",reqMsgList);
-//        msgMap.put("reply",repMsgList);
-        return msgMap;
-    }    
     public List<AnalyticalJobVo> browseQueueSubmit(final String email, final Destination destination) {
         List<AnalyticalJobVo> msgList = (ArrayList<AnalyticalJobVo>) this.jmsTemplate.execute(new SessionCallback<List<AnalyticalJobVo>>() {
 
             public List<AnalyticalJobVo> doInJms(Session session) throws JMSException {
                 int count = 0;
                 List<AnalyticalJobVo> msgList = new ArrayList<AnalyticalJobVo>();
-                logger.debug("browse message in : " + destination);
+                logger.debug("getting messages in the " + destination +" queue by email address");
                 String msgSelector = "JMSCorrelationID  = '" + email + "'";
                 QueueBrowser browser = session.createBrowser((Queue) destination, msgSelector);
                 Enumeration<?> messages = browser.getEnumeration();
@@ -79,7 +58,7 @@ public class NVCLAnalyticalQueueBrowser {
                     AnalyticalJobVo jmsMsgVo = new AnalyticalJobVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    // logger.debug("Message " + count + " : " + message);
+                    logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;   
                         // convert long to date
@@ -128,11 +107,8 @@ public class NVCLAnalyticalQueueBrowser {
             public List<AnalyticalJobVo> doInJms(Session session) throws JMSException {
                 int count = 0;
                 List<AnalyticalJobVo> msgList = new ArrayList<AnalyticalJobVo>();
-                logger.debug("browse message in : " + destination);
-                // QueueBrowser browser = session.createBrowser((Queue)
-                // destination);
-                // String msgSelector =
-                // "JMSMessageID  = 'ID:WALLABY-KH-3623-1255588969815-0:0:1:4:1'";
+                logger.debug("getting messages in the " + destination + " queue by email address");
+
                 String msgSelector = "JMSCorrelationID  = '" + email + "'";
                 QueueBrowser browser = session.createBrowser((Queue) destination, msgSelector);
                 Enumeration<?> messages = browser.getEnumeration();
@@ -140,7 +116,7 @@ public class NVCLAnalyticalQueueBrowser {
                     AnalyticalJobVo jmsMsgVo = new AnalyticalJobVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    // logger.debug("Message " + count + " : " + message);
+                    logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         // convert long to date
@@ -192,11 +168,7 @@ public class NVCLAnalyticalQueueBrowser {
             public List<AnalyticalJobResultVo> doInJms(Session session) throws JMSException {
                 int count = 0;
                 List<AnalyticalJobResultVo> msgList = new ArrayList<AnalyticalJobResultVo>();
-                logger.debug("browse message in : " + destination);
-                // QueueBrowser browser = session.createBrowser((Queue)
-                // destination);
-                // String msgSelector =
-                // "JMSMessageID  = 'ID:WALLABY-KH-3623-1255588969815-0:0:1:4:1'";
+                logger.debug("getting messages in the " + destination + " queue by email address");
                 String msgSelector = "JMSCorrelationID  = '" + jobid + "'";
                 QueueBrowser browser = session.createBrowser((Queue) destination, msgSelector);
                 Enumeration<?> messages = browser.getEnumeration();
@@ -204,7 +176,7 @@ public class NVCLAnalyticalQueueBrowser {
                     //AnalyticalJobResultVo jmsMsgVo = new AnalyticalJobResultVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    // logger.debug("Message " + count + " : " + message);
+                    logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         // convert long to date
@@ -213,12 +185,7 @@ public class NVCLAnalyticalQueueBrowser {
                         DateFormat df = DateFormat.getDateTimeInstance();
                         String newtimestamp = df.format(date);
                         String jobResult = mapMessage.getString("jobResult");
-                        AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
-//                        jmsMsgVo.setJobid(mapMessage.getString("jobid"));
-//                        jmsMsgVo.setJobDescription(mapMessage.getString("jobDescription"));                        
-//                        jmsMsgVo.setBoreholes(mapMessage.getString("boreholes"));         
-//                        jmsMsgVo.setFailedBoreholes(mapMessage.getString("failedboreholes"));   
-//                        jmsMsgVo.setErrorBoreholes(mapMessage.getString("errorboreholes"));         
+                        AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());         
                         msgList.add(0, jmsMsgVo);
                     }
 
@@ -240,13 +207,13 @@ public class NVCLAnalyticalQueueBrowser {
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
     }
-    public List<TSGJobVo> browseTsgJob(String boreholeid, Destination destination) {
+    public List<TSGJobVo> browseTsgJob(String boreholeid, String email, Destination destination) {
         List<TSGJobVo> msgList = (ArrayList<TSGJobVo>) this.jmsTemplate.execute(new SessionCallback<List<TSGJobVo>>() {
 
             public List<TSGJobVo> doInJms(Session session) throws JMSException {
                 int count = 0;
                 List<TSGJobVo> msgList = new ArrayList<TSGJobVo>();
-                logger.debug("browse message in : " + destination);
+                logger.debug("getting messages in the " + destination + " queue by email address");
 
                 QueueBrowser browser = session.createBrowser((Queue) destination);
                 Enumeration<?> messages = browser.getEnumeration();
@@ -254,11 +221,12 @@ public class NVCLAnalyticalQueueBrowser {
                     //AnalyticalJobResultVo jmsMsgVo = new AnalyticalJobResultVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    // logger.debug("Message " + count + " : " + message);
+                    logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
                         AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
+                        if (!Utility.stringIsBlankorNull(email) && !email.equals(jmsMsgVo.getEmail())) continue;
                         String jobid = jmsMsgVo.getJobid();
                         String jobname = jmsMsgVo.getJobDescription();
                     	String dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
@@ -269,7 +237,7 @@ public class NVCLAnalyticalQueueBrowser {
                                 String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
                                 if (new File(csvFile).exists()){
 	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
-	                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+	                                logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
                                 }
                             }
                         }
@@ -280,7 +248,7 @@ public class NVCLAnalyticalQueueBrowser {
                                 String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
                                 if (new File(csvFile).exists()){
 	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
-	                                System.out.println("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+	                            	logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
                                 }
                             }
                         }

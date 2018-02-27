@@ -4,6 +4,8 @@ import java.util.Base64;
 
 import javax.jms.Destination;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.ConfigVo;
@@ -25,6 +27,8 @@ import org.springframework.mail.MailSender;
 
 public class NVCLAnalyticalRequestSvcTest {
 
+	private static final Logger logger = LogManager.getLogger(NVCLAnalyticalRequestSvcTest.class);
+	
 	private static ApplicationContext ctx;
 
 	@BeforeClass
@@ -48,7 +52,7 @@ public class NVCLAnalyticalRequestSvcTest {
 	@Test
 	public void testProcessRequest() throws Exception {
 
-    	System.out.println("start testing ProcessRequest() method....");
+    	logger.info("start testing ProcessRequest() method....");
 		JmsTemplate jmsTemplate = (JmsTemplate) ctx.getBean("jmsTemplate");
 		Destination status = (Destination) ctx.getBean("nvclStatusDestination");
         Destination result = (Destination) ctx.getBean("nvclResultDestination");		
@@ -91,6 +95,6 @@ public class NVCLAnalyticalRequestSvcTest {
 		nvclAnalyticalRequestSvc.setConfig(configVo);
 		nvclAnalyticalRequestSvc.processRequest(jobVo);
 
-		System.out.println("message created... testing end ....");
+		logger.info("message created... testing end ....");
 	}
 }

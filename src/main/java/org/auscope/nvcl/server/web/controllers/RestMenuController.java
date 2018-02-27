@@ -65,11 +65,7 @@ public class RestMenuController {
     @Autowired
     @Qualifier(value = "nvclResultDestination")
     private Destination nvclResultDestination;    
-//    @RequestMapping("/")
-//    public String index(HttpServletRequest request, HttpServletResponse response) {
-//
-//        return "index";
-//    }
+
     @Autowired
     @Qualifier(value = "tsgscripts")
     private TSGScriptCache tsgscripts;
@@ -91,36 +87,41 @@ public class RestMenuController {
             @RequestParam(required = true, value = "logicalop") String logicalOp
             ) throws ServletException,
             IOException, SQLException, ParserConfigurationException, TransformerException {
-        // mandatory field : holeIdentifier - validate if holeIdentifier is null
         
         String jobid = Utility.getMD5HashValue();
         if (jobname.startsWith("test-"))
             jobid = jobname;
         if (Utility.stringIsBlankorNull(serviceUrls)) {
-            String errMsg = "jobid="+jobid +": holeidentifier is not valid.";
+            String errMsg = "serviceUrls are not valid.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
         if (!Utility.ValidateEmail(email)) {
-            String errMsg = "jobid="+jobid +": email is not valid.";
+            String errMsg = "email is not valid.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         } else {
             email = email.toLowerCase();
         }
         
-        if ((algorithmOutputID == null && logName == null) || 
-                (algorithmOutputID !=null && logName != null)) {
-            String errMsg = "jobid="+jobid +": you has to provide either logName or algorithmOutputID.";
+        if ((Utility.stringIsBlankorNull(algorithmOutputID) && Utility.stringIsBlankorNull(logName)) || 
+                (Utility.stringIsBlankorNull(algorithmOutputID) && Utility.stringIsBlankorNull(logName))) {
+            String errMsg = "you must to provide either a logName or a algorithmOutputID.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
         
-        if ( algorithmOutputID !=null && !Utility.checkAlgoutiIDs(algorithmOutputID)) {
-            String errMsg = "your algorithmOutputID="+algorithmOutputID +" is in wrong format.";
+        if (!Utility.checkAlgoutiIDs(algorithmOutputID)) {
+            String errMsg = "invalid algorithmOutputID : "+algorithmOutputID;
             return  new AnalyticalJobResponse("ERROR" , errMsg);            
         }
         
         if (filter == null || filter.isEmpty()) {
             filter ="<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
+
+        if (Utility.stringIsBlankorNull(units)) { 
+            String errMsg = "jobid="+jobid +": units is not valid.";
+            return  new AnalyticalJobResponse("ERROR" , errMsg);
+        }
+
 
         AnalyticalJobVo jobVo = new AnalyticalJobVo();
 
@@ -140,28 +141,18 @@ public class RestMenuController {
         jobVo.setValue(value);
         jobVo.setLogicalOp(logicalOp);
         jobVo.setStatus("Processing");
-        logger.debug("Get a job request ..." + jobVo.printVo());
-        System.out.println(jobVo.printVo());
+        logger.debug("New ANALYTICAL job message created : " + jobVo.printVo());
 
-        // url parameters validation start
-
-        // mandatory field : validate if email null or empty or missing
-
-        if (Utility.stringIsBlankorNull(units)) { 
-            String errMsg = "jobid="+jobid +": units is not valid.";
-            return  new AnalyticalJobResponse("ERROR" , errMsg);
-        }
-
-        logger.debug("Start create JMS message ...");
+        logger.debug("Adding ANALYTICAL job message to the queue.");
         nvclAnalyticalGateway.setDestination(nvclSubmitDestination);
         String messageID = nvclAnalyticalGateway.createNVCLAnalyticalReqMsg(jobVo);
 
         if (messageID == null) {
-            logger.error("Failed creating JMS message in queue ...");
-            return  new AnalyticalJobResponse("ERROR" ,"jobid="+jobid +": Failed creating JMS message in queue ...");
+            logger.error("Failed to create ANALYTICAL job message");
+            return  new AnalyticalJobResponse("ERROR" ,"Failed to create ANALYTICAL job message");
         }
 
-        logger.debug("JMS message created successfully ... ");
+        logger.debug("Successfully Added TSGMOD job message to the queue.");
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
@@ -171,14 +162,7 @@ public class RestMenuController {
         return  new AnalyticalJobResponse("SUCCESS" ,"jobid="+jobid +": Your job has been successfully submitted. Please check your jobs status later");
     } 
     
-//    @RequestMapping("/checkNVCLAnalyticalJob.do")
-//    public List < AnalyticalJobVo > checkNVCLAnalyticalJob(@RequestParam(value="email") String email ) 
-//            throws ServletException,IOException {         
-//        NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
-//        nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
-//        List<AnalyticalJobVo> jobList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueSubmit(email, nvclSubmitDestination);
-//        return jobList;
-//    }
+
     /**
      * Browse queue message(s) from both submit and status queue and merge them
      * to a AnalyticalJobVo List.
@@ -192,13 +176,17 @@ public class RestMenuController {
     @RequestMapping("/checkNVCLAnalyticalJobStatus.do")    
     public List < AnalyticalJobVo >  checkNVCLJobStatus(@RequestParam(value="email") String email ) 
             throws ServletException,IOException {     
-        logger.debug("in browseMessage...");
-        logger.debug("email : " + email);
-        logger.debug("jmsTemplate" + jmsTemplate);
-        logger.debug("nvclSubmitDestination : " + nvclSubmitDestination);
-        logger.debug("nvclStatusDestination : " + nvclStatusDestination);     
-    
-        email = email.toLowerCase();
+
+ 
+        if (!Utility.ValidateEmail(email)) {
+        	logger.debug("email is not valid.");
+            return null;
+        } else {
+            email = email.toLowerCase();
+        }
+        
+        logger.debug("getting messages from the submit and status queues for email : " + email);
+        
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
         List<AnalyticalJobVo> jobSubmitList = (ArrayList<AnalyticalJobVo>) nvclAnalyticalQueueBrowser.browseQueueSubmit(email, nvclSubmitDestination);
@@ -214,9 +202,14 @@ public class RestMenuController {
     }    
 
     @RequestMapping("/getNVCLAnalyticalJobResult.do")
-    public String getNVCLAnalyticalJobResult( @RequestParam(value="jobid", defaultValue="028c68636c05586c2985476dd7d7b069") String jobID ) throws ServletException,
+    public String getNVCLAnalyticalJobResult( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(required = false,value="jobid") String jobID ) throws ServletException,
             IOException {
 
+        if (Utility.stringIsBlankorNull(jobID)) {
+            return "jobID is not valid.";
+        }
+    	
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
         List<AnalyticalJobResultVo> jobResultList = (ArrayList<AnalyticalJobResultVo>) nvclAnalyticalQueueBrowser.browseQueueResult(jobID, nvclResultDestination);
@@ -224,12 +217,12 @@ public class RestMenuController {
         if (jobResultList == null) {
             logger.info("result queue is null");
         } else {
-            System.out.println("result queue is ****************");
             for (Iterator<?> it1 = jobResultList.iterator(); it1.hasNext();) {
                 jobResultVo = (AnalyticalJobResultVo) it1.next();
             }
         }      
         Gson gson = new Gson();
+        response.setContentType("application/json");
         return gson.toJson(jobResultVo);
     }
     @RequestMapping("/getTsgAlgorithms.do")
@@ -291,57 +284,39 @@ public class RestMenuController {
             @RequestParam(required = true, value = "value") float value, 
             @RequestParam(required = true, value = "logicalop") String logicalOp) throws ServletException,
             IOException, SQLException, ParserConfigurationException, TransformerException {
-        // mandatory field : holeIdentifier - validate if holeIdentifier is null
 
         String jobid = Utility.getMD5HashValue();
+        
         if (jobname.startsWith("test-"))
             jobid = jobname;
+        
         if (Utility.stringIsBlankorNull(serviceUrls)) {
-            String errMsg = "jobid=" + jobid + ": holeidentifier is not valid.";
+            String errMsg = "serviceUrls are not valid.";
             return new AnalyticalJobResponse("ERROR", errMsg);
         }
+        
         if (!Utility.ValidateEmail(email)) {
-            String errMsg = "jobid=" + jobid + ": email is not valid.";
+            String errMsg ="email is not valid.";
             return new AnalyticalJobResponse("ERROR", errMsg);
         } else {
             email = email.toLowerCase();
         }
 
-
-        if (filter == null || filter.isEmpty()) {
+        if (Utility.stringIsBlankorNull(filter)) {
             filter = "<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
         
-        float minDownSampleInterval = NVCLAnalyticalRequestSvc.config.getMinDownSampleInterval();
-        if (span < minDownSampleInterval ) {
-            span = minDownSampleInterval;
-        }
-        
-        
-        if (tsgScript == null || tsgScript.isEmpty()) {
-           
-/*            tsgScript = "name = Hematite-goethite_distr, 9\n" +
-                    "p1 = profile, layer=ref, stat=depth, bkrem=div, fit=3, wcentre=913, wradius=137\n" +
-                    "p2= profile, layer=ref, stat=mean, wcentre=1650, wradius=0\n"+
-                    "p3= profile, layer=ref, stat=mean, wcentre=450, wradius=0\n"+
-                    "p4= expr, param1=p3, param2=p2, arithop=div\n"+
-                    "p5 = expr, param1=p4, const2=1, arithop=lle, nullhandling=out\n"+
-                    "p6= expr, param1=p5, param2=p1, arithop=mult\n"+
-                    "p7= expr, param1=p6, const2=0.025, arithop=lgt, nullhandling=out\n"+
-                    "p8= pfit, layer=ref, wunits=nm, wmin=776, wmax=1050, bktype=hull, bksub=div, order=4, product=0, bktype=hull, bksub=div\n"+
-                    "return=expr, param1=p8, param2=p7, arithop=mult ";*/
-            
-            tsgScript = "name = Kaolinite Crystallinity,8\n" +
-"description = Based on Pontual, Merry & Gamson, (1997), \"Regolith Logging\" in G-MEX Vol. 8, page 8-29, by Ausspec International Pty Ltd.   A combination of the 2180nm and 2160nm kaolinite slope indices that correlates with kaolinite crystallinity.  Index increases in v\n" +
-"P1 = profile, stat=MEAN, wcentre=2184.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-"P2 = profile, stat=MEAN, wcentre=2190.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-"P3 = expr, param1=P1, param2=P2, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-"P4 = profile, stat=MEAN, wcentre=2160.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-"P5 = profile, stat=MEAN, wcentre=2177.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE\n" +
-"P6 = expr, param1=P4, param2=P5, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-"P7 = expr, param1=P6, param2=P3, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE\n" +
-"return = expr, param1=P3, param2=P7, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE";
+        float minDownSampleInterval = NVCLAnalyticalRequestSvc.config.getMinDownSampleInterval();     
+        span = Math.max(span, minDownSampleInterval);
 
+        if (Utility.stringIsBlankorNull(tsgScript)) {
+            String errMsg = "script is not valid.";
+            return new AnalyticalJobResponse("ERROR", errMsg);
+        }
+
+        if (Utility.stringIsBlankorNull(units)) {
+            String errMsg = "units is not valid.";
+            return new AnalyticalJobResponse("ERROR", errMsg);
         }
         // Encode using basic encoder
         String base64TsgScript = Base64.getEncoder().encodeToString(tsgScript.getBytes("utf-8"));
@@ -356,36 +331,23 @@ public class RestMenuController {
         jobVo.setFilter(filter);
         jobVo.setStartDepth(startDepth);
         jobVo.setEndDepth(endDepth);
-//        jobVo.setLogName(logName);
-//        jobVo.setClassification(classification);
-//        jobVo.setAlgorithmOutputID(algorithmOutputID);
         jobVo.setSpan(span);
         jobVo.setUnits(units);
         jobVo.setValue(value);
         jobVo.setLogicalOp(logicalOp);
         jobVo.setStatus("Processing");
-        logger.debug("Get a job request ..." + jobVo.printVo());
-        System.out.println(jobVo.printVo());
+        logger.debug("New TSGMOD job message created : " + jobVo.printVo());
 
-        // url parameters validation start
-
-        // mandatory field : validate if email null or empty or missing
-
-        if (Utility.stringIsBlankorNull(units)) {
-            String errMsg = "jobid=" + jobid + ": units is not valid.";
-            return new AnalyticalJobResponse("ERROR", errMsg);
-        }
-
-        logger.debug("Start create JMS message ...");
+        logger.debug("Adding TSGMOD job message to the queue.");
         nvclAnalyticalGateway.setDestination(nvclSubmitDestination);
         String messageID = nvclAnalyticalGateway.createNVCLAnalyticalReqMsg(jobVo);
 
         if (messageID == null) {
-            logger.error("Failed creating JMS message in queue ...");
-            return new AnalyticalJobResponse("ERROR", "jobid=" + jobid + ": Failed creating JMS message in queue ...");
+            logger.error("Failed to create TSGMOD job message");
+            return new AnalyticalJobResponse("ERROR", "jobid=" + jobid + ": Failed to create TSGMOD job message");
         }
 
-        logger.debug("JMS message created successfully ... ");
+        logger.debug("Successfully Added TSGMOD job message to the queue.");
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
@@ -395,22 +357,26 @@ public class RestMenuController {
         return new AnalyticalJobResponse("SUCCESS", "jobid=" + jobid + ": Your job has been successfully submitted. Please check your jobs status later");
     }
     @RequestMapping("/getTsgJobsByBoreholeid.do")
-    public String getTsgJobsByBoreholeid(@RequestParam(value = "boreholeid", defaultValue = "boreholeid") String boreholeid) throws ServletException, IOException {
-        TSGJobVo tsgJob = new TSGJobVo("boreholeid","jobid","jobName");
-        Gson gson = new Gson();
+    public String getTsgJobsByBoreholeid( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(value = "boreholeid", defaultValue = "boreholeid") String boreholeid,
+    		@RequestParam(required = false, value = "email") String email ) throws ServletException, IOException {
+    	
+    	
+    	if (Utility.stringIsBlankorNull(boreholeid)) return "boreholeid is not valid.";
+    	
+        if (!Utility.stringIsBlankorNull(email))
+        {
+        	if(!Utility.ValidateEmail(email)) return "email is not valid.";
+        	else email = email.toLowerCase();
+        }
         
         NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
         nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
-        List<TSGJobVo> tsgJobVoList = (ArrayList<TSGJobVo>) nvclAnalyticalQueueBrowser.browseTsgJob(boreholeid, nvclResultDestination);
-        TSGJobVo tsgJobVo = null;
-        if (tsgJobVoList == null) {
-            logger.info("result queue is null");
-        } else {
-            System.out.println("result queue is ****************");
-            for (Iterator<?> it1 = tsgJobVoList.iterator(); it1.hasNext();) {
-                tsgJobVo = (TSGJobVo) it1.next();
-            }
-        }      
+        
+        List<TSGJobVo> tsgJobVoList = (ArrayList<TSGJobVo>) nvclAnalyticalQueueBrowser.browseTsgJob(boreholeid, email, nvclResultDestination);
+   
+        Gson gson = new Gson();
+        response.setContentType("application/json");
         return gson.toJson(tsgJobVoList);
     }      
 

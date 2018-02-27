@@ -2,6 +2,8 @@ package org.auscope.nvcl.server.service;
 
 import static org.junit.Assert.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.junit.Test;
@@ -12,6 +14,8 @@ import org.junit.Test;
  * Author : Lingbo Jiang
  */
 public class NVCLAnalyticalJobProcessorTest {
+	
+	private static final Logger logger = LogManager.getLogger(NVCLAnalyticalJobProcessorTest.class);
     
     /*
      * test process AnalyticalJob request Search Dickite with logs with the name
@@ -48,7 +52,7 @@ public class NVCLAnalyticalJobProcessorTest {
         if (!processor.getDownSampledData()) {
             return;
         }
-        System.out.println("\nStage Finished:OK");
+        logger.info("Stage Finished:OK");
     }
     /*
      * test process AnalyticalJob request
@@ -84,7 +88,7 @@ public class NVCLAnalyticalJobProcessorTest {
         if (!processor.getDownSampledData()) {
             return;
         }
-        System.out.println("\nStage Finished:OK");
+        logger.info("Stage Finished:OK");
     }
 
     /*
@@ -113,10 +117,10 @@ public class NVCLAnalyticalJobProcessorTest {
 
         NVCLAnalyticalJobProcessorManager processorManager = new NVCLAnalyticalJobProcessorManager();
         if( !processorManager.processRequest(jobVo)) {
-            System.out.println("Error:processorManager.processRequest");
+        	logger.info("Error:processorManager.processRequest");
             return;       
         }        
-        System.out.println("OK:processorManager.processRequest");
+        logger.info("OK:processorManager.processRequest");
     }
     /*
      * test process AnalyticalJob request
@@ -153,7 +157,7 @@ public class NVCLAnalyticalJobProcessorTest {
         if (!processor.getSpectralData()) {
             return;
         }
-        System.out.println("\nStage Finished:OK");
+        logger.info("\nStage Finished:OK");
         
     }
     

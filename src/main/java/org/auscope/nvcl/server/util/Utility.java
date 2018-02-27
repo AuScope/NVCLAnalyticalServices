@@ -2,6 +2,7 @@ package org.auscope.nvcl.server.util;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
@@ -13,12 +14,24 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.apache.http.client.HttpClient;
 
 
@@ -254,4 +267,82 @@ public class Utility {
             }
             return true;
     }
+
+    /**
+     * Utility for accessing a consistent DocumentBuilderFactory (irregardless of what is on the classpath)
+     *
+     * @return
+     */
+    private static DocumentBuilderFactory getDocumentBuilderFactory() {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(
+                "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl", null);
+        return factory;
+}
+    
+    /**
+     * Compiles the specified XPath (as a string) into an XPathExpression.
+     *
+     * @param xPathStr
+     *            A string representing a valid XPath expression
+     * @param nc
+     *            The namespace that the xPathStr is referencing
+     * @return
+     * @throws XPathExpressionException
+     */
+    public static XPathExpression compileXPathExpr(String xPathStr, NamespaceContext nc)
+            throws XPathExpressionException {
+        //Use saxon explicitly for namespace aware XPath - it's much more performant
+        XPathFactory factory = new net.sf.saxon.xpath.XPathFactoryImpl();
+        XPath xPath = factory.newXPath();
+        xPath.setNamespaceContext(nc);
+        return xPath.compile(xPathStr);
+    }
+
+    /**
+     * Compiles the specified XPath (as a string) into an XPathExpression.
+     *
+     * @param xPathStr
+     *            A string representing a valid XPath expression
+     * @return
+     * @throws XPathExpressionException
+     */
+    public static XPathExpression compileXPathExpr(String xPathStr) throws XPathExpressionException {
+        //Use JAXP for namespace unaware xpath - saxon doesnt handle this sort of behaviour
+        //http://stackoverflow.com/questions/21118051/namespace-unaware-xpath-expression-fails-if-saxon-is-on-the-classpath
+        XPathFactory factory = new org.apache.xpath.jaxp.XPathFactoryImpl();
+        XPath xPath = factory.newXPath();
+        return xPath.compile(xPathStr);
+    }
+    
+    /**
+     * Given a String containing XML, parse it and return a DOM object representation (that is namespace aware).
+     *
+     * @param xmlString
+     *            A string containing valid XML
+     * @return
+     */
+    public static Document buildDomFromString(String xmlString) throws ParserConfigurationException, IOException,
+            SAXException {
+        return buildDomFromString(xmlString, true);
+    }
+
+    /**
+     * Given a String containing XML, parse it and return a DOM object representation
+     *
+     * @param xmlString
+     *            A string containing valid XML
+     * @param isNamespaceAware
+     *            Will this DOM document take into account namespaces?
+     * @return
+     */
+    public static Document buildDomFromString(String xmlString, boolean isNamespaceAware)
+            throws ParserConfigurationException, IOException, SAXException {
+        //build the XML dom
+        DocumentBuilderFactory factory = getDocumentBuilderFactory();
+        factory.setNamespaceAware(isNamespaceAware); // never forget this!
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputSource inputSource = new InputSource(new StringReader(xmlString.toString()));
+        Document doc = builder.parse(inputSource);
+        return doc;
+}
 }

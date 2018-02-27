@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import au.com.bytecode.opencsv.CSVWriter;
 
 public class TSGScalarArrayVo {
-    //private final Log log = LogFactory.getLog(getClass());
+
 	private static final Logger logger = LogManager.getLogger(TSGScalarArrayVo.class);
     private float interval = (float) 1.0;
     private float floorDepth = 99999;
@@ -51,9 +51,8 @@ public class TSGScalarArrayVo {
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            if (false) {//log.isDebugEnabled()) {
-                System.out.println(depth + "    " + value + "    " + scalar.isMask());
-            }
+            logger.debug(depth + "    " + value + "    " + scalar.isMask());
+
 
             if (depth >= depthStart && depth < depthEnd) {
                 if (!scalar.isMask()) //skip the masked one.
@@ -64,8 +63,7 @@ public class TSGScalarArrayVo {
                 if (count >0 && sumValue > 0.0) {        
                     float downSampledDepth = (depthStart + depthEnd)/2;
                     downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
-                    if (false) 
-                        System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue:" + sumValue/count + ":count:" + count);
+                    logger.debug("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue:" + sumValue/count + ":count:" + count);
                 }
                 depthStart = depthEnd;
                 depthEnd = (depthEnd + interval) > ceilingDepth ? ceilingDepth : (depthEnd + interval); //depthEnd + interval; 
@@ -73,7 +71,7 @@ public class TSGScalarArrayVo {
                 count = 0;
                 
             } else {
-                System.out.println("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
+            	logger.error("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
             }
         }
         
@@ -82,11 +80,9 @@ public class TSGScalarArrayVo {
         if (count >0 && sumValue > 0.0) {
             float downSampledDepth = (depthStart + depthEnd)/2;
             downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, sumValue/count,count));
-            if (false) {//log.isDebugEnabled()
-                System.out.println("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);
-            }            
+            logger.debug("Bin:" + downSampledDepth + ":count:"  + count + ":sumValue:" + sumValue + ":avgValue" + sumValue/count);      
         }
-        System.out.println("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
+        logger.debug("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
         return downSampledScalarArray.size();
         
     }
@@ -97,21 +93,20 @@ public class TSGScalarArrayVo {
             float downSampledDepth = floorDepth + i*interval;
             downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, 0,0));
         }
-        System.out.println("InitDownSampledScalarArraySize=" + downSampledScalarArray.size());
+        logger.debug("InitDownSampledScalarArraySize=" + downSampledScalarArray.size());
         
         float depth;
         double value;
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            if (false) {//log.isDebugEnabled()) {
-                System.out.println(depth + "    " + value + "    " + scalar.isMask());
-            }
+            logger.debug(depth + "    " + value + "    " + scalar.isMask());
+
             if (!scalar.isMask()) //skip the masked one.
                 continue;            
             int index = (int)((depth-floorDepth)/interval);
             if (index >= size)
-                System.out.println("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
+            	logger.error("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
                 
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(index);
             double sumValue = downSampledScalar.getValue() + value;
@@ -122,11 +117,9 @@ public class TSGScalarArrayVo {
         for (int i=0;i<size;i++) {
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
             downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
-            if (false) {//log.isDebugEnabled()
-                System.out.println("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );
-            }                        
+            logger.debug("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );                      
         }
-        System.out.println("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
+        logger.debug("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
         return downSampledScalarArray.size();
         
     }
@@ -208,7 +201,7 @@ public class TSGScalarArrayVo {
                         break;
                     }
                 }else {
-                    System.out.println("TSGScalarArrayVo:Exception: Unrecognize logicalOp:" + logicalOp);
+                	logger.error("TSGScalarArrayVo:Exception: Unrecognize logicalOp:" + logicalOp);
                 }
 
             } else if (units.equalsIgnoreCase("count")){
@@ -229,10 +222,10 @@ public class TSGScalarArrayVo {
                         break;
                     }
                 } else {
-                    System.out.println("TSGScalarArrayVo:Exception: Unrecognize logicalOp:" + logicalOp);
+                	logger.error("TSGScalarArrayVo:Exception: Unrecognize logicalOp:" + logicalOp);
                 }
             } else {
-                System.out.println("TSGScalarArrayVo:Exception: Unrecognize units:" + units);
+            	logger.error("TSGScalarArrayVo:Exception: Unrecognize units:" + units);
             }
         }
 
