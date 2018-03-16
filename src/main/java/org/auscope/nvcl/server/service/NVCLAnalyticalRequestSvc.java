@@ -34,38 +34,7 @@ public class NVCLAnalyticalRequestSvc {
 
 	public void processRequest(AnalyticalJobVo messageVo) {
 		logger.debug("in NVCLAnalyticalRequestSvc.processRequest...");
-//		String jobid = messageVo.getJobid();
-//		String jobDescription = messageVo.getJobDescription();
-//		AnalyticalJobStatusVo jobStatusVo = new AnalyticalJobStatusVo();
-//		jobStatusVo.setEmail(messageVo.getEmail());
-//		jobStatusVo.setJMSCorrelationID(messageVo.getEmail());
-//		jobStatusVo.setJobDescription(jobDescription);
-//		jobStatusVo.setJobid(jobid);
-		
-	    
-//	    
-//        NVCLAnalyticalJobProcessor processor = new NVCLAnalyticalJobProcessor();
-//        processor.setAnalyticalJob(messageVo);
-//        if (!processor.getBoreholeList()) {
-//          jobStatusVo.setStatus("Failed");
-//          jobStatusVo.setMessage("Failed:processor.processStage1");            
-//          logger.debug("Failed:processor.processStage1");
-//        }
-//        if (!processor.getDataCollection()) {
-//            jobStatusVo.setStatus("Failed");
-//            jobStatusVo.setMessage("Failed:processor.processStage2");             
-//            logger.debug("Failed:processor.processStage2");
-//          }
-//        if (!processor.getDownSampledData()) {
-//            logger.debug("Failed:processor.processStage3");
-//            jobStatusVo.setStatus("Failed");
-//            jobStatusVo.setMessage("Failed:processor.processStage3");            
-//        }
-//        if (!processor.processStage4()) {
-//            jobStatusVo.setStatus("Failed");
-//            jobStatusVo.setMessage("Failed:processor.processStage4");            
-//            logger.debug("Failed:processor.processStage4");
-//          }     
+   
         NVCLAnalyticalJobProcessorManager processorManager = new NVCLAnalyticalJobProcessorManager();
         messageVo.setJobStartTime(Utility.getCurrentTime());
         if( processorManager.processRequest(messageVo)) {            
@@ -89,7 +58,7 @@ public class NVCLAnalyticalRequestSvc {
 		// same as the request message id
 		try {			
 	        ReferenceHolderMessagePostProcessor messagePostProcessor = new ReferenceHolderMessagePostProcessor();
-	        int msgTTL = Integer.parseInt(this.config.getMsgTimetoLiveDays());//days.
+	        int msgTTL = Integer.parseInt(NVCLAnalyticalRequestSvc.config.getMsgTimetoLiveDays());//days.
 	        this.jmsTemplate.setTimeToLive(((long)msgTTL)*86400000);
 	        this.jmsTemplate.setExplicitQosEnabled(true);
 	        this.jmsTemplate.convertAndSend(this.status, messageVo, messagePostProcessor);
@@ -108,21 +77,7 @@ public class NVCLAnalyticalRequestSvc {
 	  else 
 	      logger.debug("Notification emails disabled, skipping email step.");
 	}
-	
-    private void sendResultRichEmail(AnalyticalJobResultVo messageVo, String jobResultUrl) {
-        
-
-
-//        MimeMessage mimeMessage = mailSender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "utf-8");
-//        String htmlMsg = "<h3>Hello World!</h3>";
-//        mimeMessage.setContent(htmlMsg, "text/html");
-//        helper.setTo("someone@abc.com");
-//        helper.setSubject("This is the test message for testing gmail smtp server using spring mail");
-//        helper.setFrom("abc@gmail.com");
-//        mailSender.send(mimeMessage);        
-
-    }	
+		
 	/**
 	  * sends an email to the requestor's email address indicating success and providing a download link
 	  * or in the case of failure describing next steps to request support.
@@ -150,7 +105,7 @@ public class NVCLAnalyticalRequestSvc {
 	        	+ "The visualization result link is :\n"
 	        	+ jobResultVisualUrl + "\n"
 	        	+"This link will remain available for download for "
-	        	+ this.config.getMsgTimetoLiveDays() +" days.\n\nTo view the content of these files you will need a json reader.";
+	        	+ NVCLAnalyticalRequestSvc.config.getMsgTimetoLiveDays() +" days.\n\nTo view the content of these files you will need a json reader.";
 	        	msgtext+="\n\n If you have any comments, suggestions or issues with the result please reply to this email.";
 	        	msg.setText(msgtext);
 
@@ -169,6 +124,12 @@ public class NVCLAnalyticalRequestSvc {
     private MailSender mailSender;
 	public void setMailSender(MailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+	//Injects dataaccess from Config.properties
+	
+	public static DataAccess dataAccess;
+	public void setDataAccess(DataAccess dataAccess) {
+			NVCLAnalyticalRequestSvc.dataAccess = dataAccess;
 	}
 	
 	//Injects config from Config.properties

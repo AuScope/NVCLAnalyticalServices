@@ -228,7 +228,8 @@ public class Utility {
      * @param ProxyIP
      * @param ProxyPort
      * @return HttpClient with Proxy settings.
-     */      
+     */   
+    /*  Proxy replaced by manual caching of web service results
     public static HttpClient getProxyHttpClient(String proxyIP,int proxyPort) {
         if (httpClient == null) {
             int connectionTimeOut = 90000;
@@ -247,7 +248,7 @@ public class Utility {
                     .build();       
         }
         return httpClient;
-    }
+    }*/
     public static String getCurrentTime() {
         String timeStamp = new SimpleDateFormat("MM/dd/yyyy HH.mm.ss").format(new java.util.Date());
         return timeStamp;

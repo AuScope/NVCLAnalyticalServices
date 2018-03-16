@@ -7,9 +7,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.http.HttpServiceCaller;
@@ -152,7 +149,7 @@ public class IJobProcessor extends Thread {
 
 	public boolean getBoreholeList() {
 		logger.debug("getting list of boreholes from service urls :" + this.serviceUrls);
-		HttpPost method = null;
+
 		for (String serviceUrl : this.serviceUrlsList) {
 			String serviceHost = Utility.getHost(serviceUrl);
 			String servicePathOfData;
@@ -164,11 +161,7 @@ public class IJobProcessor extends Thread {
 				servicePathOfData = "NVCLDataServices/";
 			}
 			try {
-				method = (HttpPost) this.makePostMethod(serviceUrl, this.layerName, this.filter, 0, null,
-						ResultType.Results, null, null);
-
-				String responseString = this.httpServiceCaller.getMethodResponseAsString(method);
-
+				String responseString = NVCLAnalyticalRequestSvc.dataAccess.makeWFSGetFeaturePostMethod(serviceUrl, this.layerName, this.filter);		
 				Document responseDoc = Utility.buildDomFromString(responseString);
 				checkForExceptionResponse(responseDoc);
 
@@ -191,11 +184,7 @@ public class IJobProcessor extends Thread {
 				}
 			} catch (Exception ex) {
 				logger.error("IJobProcessor::processStage1 for " + serviceUrl + " failed");
-			} finally {
-				if (method != null) {
-					method.releaseConnection();
-				}
-			}
+			} 
 		}
 		return true;
 	}
@@ -212,110 +201,6 @@ public class IJobProcessor extends Thread {
 		this.analyticalServiceUrl = analyticalServiceUrl;
 	}
 
-	public static final String WFS_VERSION = "1.1.0";
-
-	/**
-	 * An enumeration of the values that can be used for the 'resultType'
-	 * parameter
-	 *
-	 */
-	public enum ResultType {
-		/**
-		 * Requests the full set of results be returned
-		 */
-		Results,
-		/**
-		 * Requests that only the count of the results be returned
-		 */
-		Hits
-	}
-
-	/**
-	 * Creates a PostMethod given the following parameters.
-	 *
-	 * @param serviceUrl
-	 *            - required, exception thrown if not provided
-	 * @param featureType
-	 *            - required, exception thrown if not provided
-	 * @param filterString
-	 *            - optional - an OGC Filter String
-	 * @param maxFeatures
-	 *            - Set to non zero to specify a cap on the number of features
-	 *            to fetch
-	 * @param srsName
-	 *            - Can be null or empty
-	 * @param resultType
-	 *            - Can be null - The type of response set you wish to request
-	 *            (default is Results)
-	 * @param outputFormat
-	 *            - Can be null - The format you wish the response to take
-	 * @param startIndex
-	 *            - This is for services that supports paging.
-	 * @return
-	 */
-	public HttpRequestBase makePostMethod(String serviceUrl, String featureType, String filterString, int maxFeatures,
-			String srsName, ResultType resultType, String outputFormat, String startIndex) {
-
-		// Make sure the required parameters are given
-		if (featureType == null || featureType.equals("")) {
-			throw new IllegalArgumentException("featureType parameter can not be null or empty.");
-		}
-
-		if (serviceUrl == null || serviceUrl.equals("")) {
-			throw new IllegalArgumentException("serviceUrl parameter can not be null or empty.");
-		}
-
-		HttpPost httpMethod = new HttpPost(serviceUrl);
-
-		StringBuilder sb = new StringBuilder();
-		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		sb.append(String.format("<GetFeature service=\"WFS\" version=\"%1$s\"", WFS_VERSION));
-
-		if (maxFeatures > 0) {
-			sb.append(" maxFeatures=\"" + Integer.toString(maxFeatures) + "\"");
-		}
-
-		if (startIndex != null) {
-			sb.append(" startIndex=\"" + startIndex + "\"");
-		}
-
-		if (resultType != null) {
-			switch (resultType) {
-			case Hits:
-				sb.append(" resultType=\"hits\"");
-				break;
-			case Results:
-				sb.append(" resultType=\"results\"");
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown resultType " + resultType);
-			}
-		}
-		if (outputFormat != null && !outputFormat.isEmpty()) {
-			sb.append(" outputFormat=\"" + outputFormat + "\"");
-		}
-
-		sb.append(">\n");
-		sb.append("<Query typeName=\"" + featureType + "\"");
-
-		if (srsName != null && !srsName.isEmpty()) {
-			sb.append(" srsName=\"" + srsName + "\"");
-		}
-		sb.append(">");
-		if (filterString != null) {
-			sb.append(filterString.replaceAll("<[a-z]*:", "<").replaceAll("</[a-z]*:", "</"));
-		}
-		sb.append("</Query>\n");
-		sb.append("</GetFeature>");
-
-		logger.debug("Service URL:\n\t" + serviceUrl);
-		logger.debug("Get Feature Query:\n" + sb.toString());
-
-		// If this does not work, try params: "text/xml; charset=ISO-8859-1"
-		httpMethod.setEntity(new StringEntity(sb.toString(), "UTF-8"));
-
-		return httpMethod;
-	}
 
 	public void run() {
 		logger.info("IJobProcessor starting :");

@@ -147,8 +147,7 @@ public class TSGScalarArrayVo {
             }
             writer.close();     
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("failed to write CSV "+fileName+"Exception was:"+e);
         }                
         return scalarArray.size();        
     }
@@ -169,8 +168,7 @@ public class TSGScalarArrayVo {
             }
             writer.close();     
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error("failed to write CSV "+fileName+"Exception was:"+e);
         }                
         return downSampledScalarArray.size();        
     }
@@ -181,7 +179,6 @@ public class TSGScalarArrayVo {
         float ratio = (float) 0.0;
         /* Now, iterate over the map's contents, sorted by key. */
         for (TSGScalarVo spectralData : downSampledScalarArray) {
-            String depthS = spectralData.getDepthS();
             double value = spectralData.getValue();
             if (units.equalsIgnoreCase("pct")) {
                 if (logicalOp.equalsIgnoreCase("gt")) {

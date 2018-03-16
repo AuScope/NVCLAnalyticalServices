@@ -1,6 +1,5 @@
 package org.auscope.nvcl.server.util;
 
-import java.io.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +10,7 @@ public class TsgMod {
     static {
     	// note: library name is case sensitive and should be TsgMod.dll in windows and libTsgMod.so in linux
     	System.loadLibrary("TsgMod");
-        logger.info("TsgMod:load c lib");
+        logger.info("TsgMod:load c lib from "+System.getProperty("java.library.path"));
     }
 
     private native int checkHandle(long h);

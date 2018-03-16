@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.util.Utility;
@@ -32,6 +31,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
  
 	private static final Logger logger = LogManager.getLogger(NVCLAnalyticalJobProcessor.class);
 	
+	
     private boolean isdecimalTypeScalar;    
     public NVCLAnalyticalJobProcessor() {
         this.isdecimalTypeScalar = false;
@@ -45,7 +45,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
         	logger.error("Failed:processor.getBoreholeList");
           }
           if (!getDataCollection()) {
-        	  logger.error("Failed:processor.getDataCollection");
+        	  logger.error("Failed:processor.getDatasetContents");
             }
           if (!getDownSampledData()) {
         	  logger.error("Failed:processor.getDownSampledData");            
@@ -60,8 +60,9 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
             String holeIdentifier = boreholeVo.getHoleIdentifier();
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
-                HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
-                String responseString = httpServiceCaller.getMethodResponseAsString(method);
+                
+                String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
+                		
                 Document responseDoc = Utility.buildDomFromString(responseString);
                 XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/Logs/Log");
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
@@ -116,7 +117,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                     boreholeVo.setStatus(1); //error status;
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
-                method.releaseConnection();
+
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
                 logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
@@ -159,9 +160,9 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 totalProcessedLogid++;
                 logger.debug("Stage3:process:boreholeid: " + holeIdentifier + " logid: " + logid);
                 try {
-                    HttpRequestBase method = nvclMethodMaker.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
-                    String responseString = httpServiceCaller.getMethodResponseAsString(method);
-                    method.releaseConnection();                    
+                	
+                    String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
+                 
                     String csvLine;
 
                     BufferedReader csvBuffer = new BufferedReader(new StringReader(responseString)); 
@@ -169,9 +170,9 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                     TreeMap<String, Float> depthClassificationMap = new TreeMap<String, Float>();  
                     csvLine = csvBuffer.readLine();//skip the header
 
-                    int linesread=0;
+
                     while ((csvLine = csvBuffer.readLine()) != null) {
-                        linesread++;
+
                         List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
                         String depth = cells.get(0);
                         Float count =  0.0f;
@@ -268,8 +269,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 logger.info(resultMsg);
             }            
         }//borehole loop  
-        logger.info("total Processed Logid:" + totalProcessedLogid);   
-        logger.debug("Stage 3:OK:" + this.serviceUrls);
+        logger.info("Successfully retrieved data for " + totalProcessedLogid + " boreholes from " + this.serviceUrls);
         return true;
     }
     

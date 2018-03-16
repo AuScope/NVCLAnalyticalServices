@@ -78,7 +78,6 @@ public class MenuController {
      * @throws ServletException
      * @throws IOException
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @RequestMapping("/doDownloadscalar.do")
     public ModelAndView doDownloadscalar(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(required = true, value = "jobid") String jobid,

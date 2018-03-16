@@ -96,22 +96,15 @@
 	<p>Version 0.1.0</p>
 	<textarea rows="4" cols="160" style="border: none;">
     Filter sample:
-        <ogc:Filter><PropertyIsEqualTo><PropertyName>gsmlp:nvclCollection</PropertyName><Literal>true</Literal></PropertyIsEqualTo></ogc:Filter>
+
+        <ogc:Filter>
+			<PropertyIsEqualTo>
+				<PropertyName>gsmlp:nvclCollection</PropertyName>
+				<Literal>true</Literal>
+			</PropertyIsEqualTo>
+		</ogc:Filter>
     </textarea>
-    <textarea rows="15" cols="160" style="border: none;">
-    TsgScript sample:    
-        name = Kaolinite Crystallinity,8
-        description = Based on Pontual, Merry & Gamson, (1997), Regolith Logging in G-MEX Vol. 8, page 8-29, by Ausspec International Pty Ltd.   
-                      A combination of the 2180nm and 2160nm kaolinite slope indices that correlates with kaolinite crystallinity.  Index increases in v
-        P1 = profile, stat=MEAN, wcentre=2184.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE
-        P2 = profile, stat=MEAN, wcentre=2190.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE
-        P3 = expr, param1=P1, param2=P2, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE
-        P4 = profile, stat=MEAN, wcentre=2160.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE
-        P5 = profile, stat=MEAN, wcentre=2177.00, wradius=1.00, layer=HQUOT, smooth=NONE, fit=NONE, bkrem=NONE
-        P6 = expr, param1=P4, param2=P5, arithop=DIV, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE
-        P7 = expr, param1=P6, param2=P3, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE
-        return = expr, param1=P3, param2=P7, arithop=SUB, mod1=PLAIN, mod2=PLAIN, mainmod=PLAIN, nullhandling=NONE
-        </textarea>
+
 </body>
 </html>
 

@@ -13,14 +13,10 @@ public class ConfigVo {
     private boolean sendEmails;
     private String msgTimetoLiveDays;
     private String sysAdminEmail;
-    private String downloadURL;
     private String dataPath;    
     private String webappURL;
     private String portalURL;
     private float minDownSampleInterval;
-    private boolean useProxy;
-    private String proxyHost;
-    private int  proxyPort;
     
     public boolean getSendEmails() {
         return sendEmails;
@@ -40,12 +36,6 @@ public class ConfigVo {
     public void setSysAdminEmail(String sysAdminEmail) {
         this.sysAdminEmail = sysAdminEmail;
     }
-    public String getDownloadURL() {
-        return downloadURL;
-    }
-    public void setDownloadURL(String downloadURL) {
-        this.downloadURL = downloadURL;
-    }
     public String getWebappURL() {
         return webappURL;
     }
@@ -63,24 +53,6 @@ public class ConfigVo {
     }
     public void setMinDownSampleInterval(float minDownSampleInterval) {
         this.minDownSampleInterval = minDownSampleInterval;
-    }
-    public boolean isUseProxy() {
-        return useProxy;
-    }
-    public void setUseProxy(boolean useProxy) {
-        this.useProxy = useProxy;
-    }
-    public String getProxyHost() {
-        return proxyHost;
-    }
-    public void setProxyHost(String proxyHost) {
-        this.proxyHost = proxyHost;
-    }
-    public int getProxyPort() {
-        return proxyPort;
-    }
-    public void setProxyPort(int proxyPort) {
-        this.proxyPort = proxyPort;
     }
     public String getDataPath() {
         return dataPath;

@@ -9,7 +9,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.util.TsgMod;
@@ -20,6 +19,7 @@ import org.auscope.nvcl.server.vo.BoreholeVo;
 import org.auscope.nvcl.server.vo.SpectralLogVo;
 import org.auscope.nvcl.server.vo.TSGScalarArrayVo;
 import org.auscope.nvcl.server.vo.TSGScalarVo;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -36,26 +36,21 @@ import javax.xml.xpath.XPathFactory;
  * @author Peter Warren
  */
 
+@Component
 public class TSGModJobProcessor  extends IJobProcessor{
 	private static final Logger logger = LogManager.getLogger(TSGModJobProcessor.class);
     //private final Log log = LogFactory.getLog(getClass());      
     private TsgMod tsgMod = new TsgMod(); 
     private String tsgScript;
-    private boolean bProxy;
-    private String proxyHost;
-    private int    proxyPort;
     private String dataPath;
+    
+	    
     /**
      * Constructor Construct all the member variables.
      * 
      */    
     public TSGModJobProcessor() {
         dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
-        bProxy = NVCLAnalyticalRequestSvc.config.isUseProxy();
-        if (bProxy) {
-            proxyHost = NVCLAnalyticalRequestSvc.config.getProxyHost();
-            proxyPort = NVCLAnalyticalRequestSvc.config.getProxyPort();
-        }
 
     }
     public void run()
@@ -158,8 +153,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String holeIdentifier = boreholeVo.getHoleIdentifier();
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             try {
-                HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
-                String responseString = httpServiceCaller.getMethodResponseAsString(method,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
+                String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
                 Document responseDoc = Utility.buildDomFromString(responseString);
                 XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
@@ -206,8 +200,6 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     boreholeVo.setStatus(1); //error status;
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 }
-                method.releaseConnection();
-                method = null;
 
             }catch (Exception ex) {
                 // if Exception happened, log it and let it continue for the next borehole.
@@ -265,15 +257,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         // sample:http://geossdi.dmp.wa.gov.au/NVCLDataServices/getspectraldata.html?speclogid=baddb3ed-0872-460e-bacb-9da380fd1de
                         int start = i;
                         int end = (i + step > sampleCount) ? sampleCount - 1 : i + step - 1;
-                        int count = end - start + 1;
-                        HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end);
-                        if (this.bProxy) {
-                        target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort)));
-                        } else {
-                            target.put(httpServiceCaller.getMethodResponseAsBytes(methodSpectralData));
-                        }
-                        methodSpectralData.releaseConnection();
-                        methodSpectralData = null;
+                        target.put(NVCLAnalyticalRequestSvc.dataAccess.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end));
+
                     }
                     logger.debug("getSpectralData:Call TsgMod");
                     tsgMod.parseOneScalarMethod(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
@@ -314,19 +299,14 @@ public class TSGModJobProcessor  extends IJobProcessor{
     public boolean getDownSampledData(double[] tsgRV, int sampleCount, String nvclDataServiceUrl, String holeIdentifier,String finalMaskLogid, String domainlogid) {
         boolean isHit = false;
         logger.debug("getDownSampledData:getFinalMask with id : "+finalMaskLogid);
-        HttpRequestBase methodMask,methodDomain;
         try {
         	TreeMap<String, Boolean> depthMaskMap = new TreeMap<String, Boolean>();
             TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
         	if (!Utility.stringIsBlankorNull(finalMaskLogid))
         	{
-	            methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
-	            logger.debug("getting mask data from " + methodMask.getURI());
-	            String strMask;
-	            strMask = httpServiceCaller.getMethodResponseAsString(methodMask,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
-	            methodMask.releaseConnection();
-	            methodMask = null;
-	    
+
+	            String strMask = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, finalMaskLogid);
+
 	            String csvLine;
 	    
 	            BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
@@ -358,13 +338,9 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	}
         	else if (!Utility.stringIsBlankorNull(domainlogid))
         	{
-	            methodDomain = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, finalMaskLogid);
-	            logger.debug("getting domain data from " + methodDomain.getURI());
-	            String strDomain;
-	            strDomain = httpServiceCaller.getMethodResponseAsString(methodDomain,Utility.getProxyHttpClient(this.proxyHost, this.proxyPort));
-	            methodDomain.releaseConnection();
-	            methodDomain = null;
-	    
+
+	            String strDomain = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, finalMaskLogid);
+	            	    
 	            String csvLine;
 	    
 	            BufferedReader csvBuffer = new BufferedReader(new StringReader(strDomain));
@@ -392,7 +368,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	}
         	else throw new Exception("no Final Mask or Domain scalar was available to provide the required depth values.");
             logger.debug( "getDownSampledData:downSample:");
-            int sizeOfBin = scalarArray.downSample();
+
             isHit = scalarArray.query(this.units, this.logicalOp,this.value);
   
             logger.debug( Utility.getCurrentTime() + "getDownSampledData:writeCSV:");

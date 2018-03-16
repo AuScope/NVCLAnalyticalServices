@@ -70,6 +70,7 @@ public class RestMenuController {
     @Qualifier(value = "tsgscripts")
     private TSGScriptCache tsgscripts;
     
+    
     @RequestMapping("/submitNVCLAnalyticalJob.do")
     public AnalyticalJobResponse submitNVCLAnalyticalJob(
             @RequestParam(required = true, value = "serviceurls") String serviceUrls ,
@@ -103,12 +104,12 @@ public class RestMenuController {
         }
         
         if ((Utility.stringIsBlankorNull(algorithmOutputID) && Utility.stringIsBlankorNull(logName)) || 
-                (Utility.stringIsBlankorNull(algorithmOutputID) && Utility.stringIsBlankorNull(logName))) {
-            String errMsg = "you must to provide either a logName or a algorithmOutputID.";
+                (!Utility.stringIsBlankorNull(algorithmOutputID) && !Utility.stringIsBlankorNull(logName))) {
+            String errMsg = "you must to provide either a logName or an algorithmOutputID.";
             return  new AnalyticalJobResponse("ERROR" , errMsg);
         }
         
-        if (!Utility.checkAlgoutiIDs(algorithmOutputID)) {
+        if (!Utility.stringIsBlankorNull(algorithmOutputID) && !Utility.checkAlgoutiIDs(algorithmOutputID)) {
             String errMsg = "invalid algorithmOutputID : "+algorithmOutputID;
             return  new AnalyticalJobResponse("ERROR" , errMsg);            
         }

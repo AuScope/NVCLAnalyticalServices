@@ -4,8 +4,13 @@
 sysadmin.email=<SYSADMIN EMAIL>
 # webapp.url is the externally resolvable url of the NVCLAnalyticalServices
 webapp.url=http://<HOSTNAME>/NVCLAnalyticalServices/
+# data.path is the local path to store the TSG calculation result.
+data.path=<DATA_PATH>
+# portal.url is the Auscope-portal url for constructing the url of analyticalJob visualization result.
+portal.url=http://portal.auscope.org/portal/gmap.html
 # msgTimetoLiveDays is the number of days data files will remain in cache before being cleaned up.
 msgTimetoLiveDays=30
+tsg.downsample.minInterval=0.1
 # smtp.enabled enables email notifications when data files are prepared.
 smtp.enabled=true
 # smtp.host is your email server's host name
@@ -16,10 +21,7 @@ smtp.password=<email password>
 # smtp.useauth enables authentication on the email server.
 smtp.useauth=false
 # smtp.enabledebug turns on email debuging, this can help with email server configuration issues
-smtp.enabledebug=true
-activemq.brokerurl= tcp://<HOSTNAME>:<HOSTPORT>
-queue.submit=<queue submit>
-queue.status=<queue status>
-queue.result=<queue result>
-# geoserver.url is the internally resolvable url of your geoserver instance and usually should remain as localhost:8080...
-geoserver.url=http://localhost:8080/geoserver/wfs
+smtp.enabledebug=false
+activemq.brokerurl= tcp://<HOSTNAME>:<PORT>
+# path to store cached data downloads
+dataCachePath = <CACHE_PATH>

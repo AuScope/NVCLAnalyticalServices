@@ -5,10 +5,7 @@ import java.sql.Date;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -179,11 +176,6 @@ public class NVCLAnalyticalQueueBrowser {
                     logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
-                        // convert long to date
-                        long timestamp = mapMessage.getJMSTimestamp();
-                        Date date = new Date(timestamp);
-                        DateFormat df = DateFormat.getDateTimeInstance();
-                        String newtimestamp = df.format(date);
                         String jobResult = mapMessage.getString("jobResult");
                         AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());         
                         msgList.add(0, jmsMsgVo);
