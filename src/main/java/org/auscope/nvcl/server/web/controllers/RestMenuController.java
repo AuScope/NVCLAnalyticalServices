@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 /**
  * restful Controller that handles all {@link Menu}-related requests
  *
@@ -46,6 +47,8 @@ import com.google.gson.Gson;
 public class RestMenuController {
     private static final Logger logger = LogManager.getLogger(RestMenuController.class);    
 
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+    
     @Autowired
     @Qualifier(value = "nvclAnalyticalGateway")
     private NVCLAnalyticalGateway nvclAnalyticalGateway;
@@ -175,7 +178,7 @@ public class RestMenuController {
      *                 b) a list of status message(s)            
      */
     @RequestMapping("/checkNVCLAnalyticalJobStatus.do")    
-    public List < AnalyticalJobVo >  checkNVCLJobStatus(@RequestParam(value="email") String email ) 
+    public String  checkNVCLJobStatus(HttpServletRequest request, HttpServletResponse response,@RequestParam(value="email") String email ) 
             throws ServletException,IOException {     
 
  
@@ -199,7 +202,9 @@ public class RestMenuController {
                 jobStatusList.add(0,jobVo);
             }
         }
-        return jobStatusList;
+        response.setContentType("application/json");
+        return gson.toJson(jobStatusList);
+
     }    
 
     @RequestMapping("/getNVCLAnalyticalJobResult.do")
@@ -222,7 +227,6 @@ public class RestMenuController {
                 jobResultVo = (AnalyticalJobResultVo) it1.next();
             }
         }      
-        Gson gson = new Gson();
         response.setContentType("application/json");
         return gson.toJson(jobResultVo);
     }
@@ -235,7 +239,6 @@ public class RestMenuController {
     	if (tsgAlgName == null) {
     		if (outputFormat!=null && outputFormat.equals("json"))
     		{
-	    		Gson gson = new Gson();
 	    		response.setContentType("application/json");
 	    		return gson.toJson(tsgscripts.getScripts());
     		}
@@ -245,7 +248,6 @@ public class RestMenuController {
     	{
     		if (outputFormat!=null && outputFormat.equals("json"))
     		{
-    			Gson gson = new Gson();
 	    		response.setContentType("application/json");
 	    		return gson.toJson(tsgscripts.getScripts().get(tsgAlgName));
     		}
@@ -263,7 +265,6 @@ public class RestMenuController {
     	tsgscripts.getScripts().forEach((k,v) -> algnames.add(k));
     	if (outputFormat!=null && outputFormat.equals("json"))
     	{
-	    	Gson gson = new Gson();
 	    	response.setContentType("application/json");
 	    	return gson.toJson(algnames);
     	}
@@ -376,7 +377,6 @@ public class RestMenuController {
         
         List<TSGJobVo> tsgJobVoList = (ArrayList<TSGJobVo>) nvclAnalyticalQueueBrowser.browseTsgJob(boreholeid, email, nvclResultDestination);
    
-        Gson gson = new Gson();
         response.setContentType("application/json");
         return gson.toJson(tsgJobVoList);
     }      
