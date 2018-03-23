@@ -37,9 +37,9 @@ package org.auscope.nvcl.server.vo;
 //</wfs:GetFeature>"
 
 public class AnalyticalJobVo {
-        private String JMSTimestamp;
-        private String JMSMsgID;
-        private String JMSCorrelationID;
+        private String jmstimestamp;
+        private String jmsmsgID;
+        private String jmscorrelationID;
     
         //Spring will populate these fields through Dependency Injection.
         private String jobid;
@@ -290,27 +290,27 @@ public class AnalyticalJobVo {
         }
 
         public String getJMSTimestamp() {
-            return JMSTimestamp;
+            return jmstimestamp;
         }
 
         public void setJMSTimestamp(String jMSTimestamp) {
-            JMSTimestamp = jMSTimestamp;
+            jmstimestamp = jMSTimestamp;
         }
 
         public String getJMSMsgID() {
-            return JMSMsgID;
+            return jmsmsgID;
         }
 
         public void setJMSMsgID(String jMSMsgID) {
-            JMSMsgID = jMSMsgID;
+            jmsmsgID = jMSMsgID;
         }
 
         public String getJMSCorrelationID() {
-            return JMSCorrelationID;
+            return jmscorrelationID;
         }
 
         public void setJMSCorrelationID(String jMSCorrelationID) {
-            JMSCorrelationID = jMSCorrelationID;
+            jmscorrelationID = jMSCorrelationID;
         }
 
         public String getTsgScript() {
