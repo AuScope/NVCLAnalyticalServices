@@ -316,9 +316,9 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	
 	            int index = 0;
 
-	
-	            while ((csvLine = csvBuffer.readLine()) != null) {
-	                try {
+	            try {	
+	                while ((csvLine = csvBuffer.readLine()) != null) {
+
 	                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
 	                    String depth = cells.get(0);
 	                    boolean mask = false;
@@ -329,9 +329,10 @@ public class TSGModJobProcessor  extends IJobProcessor{
 	                    scalarArray.add(new TSGScalarVo(depth,mask,tsgRV[index]));
 	                    depthMaskMap.put(depth, mask);
 	                    index++;
-	                } catch (Exception e) {
-	                    logger.error("Exception: on getDownSampledData.parseCSV" + csvLine);
 	                }
+				}					
+				catch (Exception e) {
+	                logger.error("Exception: on getDownSampledData.parseCSV service url = "+nvclDataServiceUrl+" masklogid=" + finalMaskLogid);
 	            }
 	            csvBuffer = null;
 	            logger.debug(index + " lines of mask values read ");  
@@ -339,7 +340,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	else if (!Utility.stringIsBlankorNull(domainlogid))
         	{
 
-	            String strDomain = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, finalMaskLogid);
+	            String strDomain = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, domainlogid);
 	            	    
 	            String csvLine;
 	    
@@ -350,27 +351,31 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	
 	            int index = 0;
 
-	
-	            while ((csvLine = csvBuffer.readLine()) != null) {
-	                try {
+	            try {	
+					while ((csvLine = csvBuffer.readLine()) != null) {
+
 	                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
 	                    String depth = cells.get(0);
 	                    
 	                    scalarArray.add(new TSGScalarVo(depth,true,tsgRV[index]));
 	                    depthMaskMap.put(depth, true);
 	                    index++;
-	                } catch (Exception e) {
-	                    logger.error("Exception: on getDownSampledData.parseCSV" + csvLine);
-	                }  
+	                } 
 	            }
+				catch (Exception e) {
+	                logger.error("Exception: on getDownSampledData.parseCSV service url = "+nvclDataServiceUrl+" domlogid=" + finalMaskLogid);
+	            }  
 	            csvBuffer = null;
-	            logger.debug(index + " lines of mask values read ");  
+	            logger.debug(index + " lines of domain values read ");  
         	}
         	else throw new Exception("no Final Mask or Domain scalar was available to provide the required depth values.");
             logger.debug( "getDownSampledData:downSample:");
-
-            isHit = scalarArray.query(this.units, this.logicalOp,this.value);
-  
+			try {
+				isHit = scalarArray.query(this.units, this.logicalOp,this.value);
+			}
+			catch (Exception e) {
+				logger.error("Exception: on evaluating comparison result"+e);
+			}
             logger.debug( Utility.getCurrentTime() + "getDownSampledData:writeCSV:");
             String filePath = dataPath + this.jobid;
             Utility.createDirectorys(filePath);
@@ -379,7 +384,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled.csv");
             scalarArray = null;
         } catch (Exception e) {
-            logger.error("Exception: on getDownSampledData"+e.getMessage());
+            logger.error("Exception: on getDownSampledData general failure "+e);
         }
         return isHit;
     }   
