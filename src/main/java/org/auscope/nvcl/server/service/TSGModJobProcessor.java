@@ -370,6 +370,13 @@ public class TSGModJobProcessor  extends IJobProcessor{
         	}
         	else throw new Exception("no Final Mask or Domain scalar was available to provide the required depth values.");
             logger.debug( "getDownSampledData:downSample:");
+            
+			try {
+	            int sizeOfBin = scalarArray.downSample();
+			}
+			catch (Exception e) {
+				logger.error("Exception: on scalarArray.downSample()"+e);
+			}
 			try {
 				isHit = scalarArray.query(this.units, this.logicalOp,this.value);
 			}
