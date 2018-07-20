@@ -5,7 +5,7 @@
 	<groupId>org.auscope.nvcl</groupId>
 	<artifactId>NVCLAnalyticalServices</artifactId>
 	<packaging>war</packaging>
-	<version>0.1.0</version>
+	<version>1.0.0</version>
 	<name>NVCLAnalyticalServices</name>
 	<url>http://maven.apache.org</url>
 
@@ -17,7 +17,6 @@
 	<properties>
 		<targetJdk>1.8</targetJdk>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<portal.core.version>1.6.0-SNAPSHOT</portal.core.version>
 		<jetty.version>9.3.14.v20161028</jetty.version>
 	</properties>
 	<dependencyManagement>
