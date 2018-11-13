@@ -1,6 +1,7 @@
 package org.auscope.nvcl.server.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -228,7 +229,16 @@ public class NVCLAnalyticalQueueBrowser {
                             {
                                 String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
                                 if (new File(csvFile).exists()){
-	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
+									TSGJobVo jobVo = new TSGJobVo(boreholeid, jobid, jobname);
+									String bPublished = Boolean.toString(true);
+									try {
+										bPublished = SparkeyServiceSingleton.getInstance().get(jobid);
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									jobVo.setPublished(bPublished);
+									msgList.add(0, jobVo);
 	                                logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
                                 }
                             }

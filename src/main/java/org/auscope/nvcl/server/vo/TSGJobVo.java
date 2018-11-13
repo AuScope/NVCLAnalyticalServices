@@ -11,6 +11,7 @@ public class TSGJobVo {
     private String jobid;
     private String jobName;
     private String tsgScript;
+    private String published = Boolean.toString(true);
     public TSGJobVo(String boreholeid,String jobid,String jobName) {
         this.setBoreholeid(boreholeid);
         this.setJobid(jobid);
@@ -48,5 +49,13 @@ public class TSGJobVo {
     public void setTsgScript(String tsgScript) {
         this.tsgScript = tsgScript;
     }
+
+	public String getPublished() {
+		return published;
+	}
+
+	public void setPublished(String published) {
+		this.published = published;
+	}
   
 }

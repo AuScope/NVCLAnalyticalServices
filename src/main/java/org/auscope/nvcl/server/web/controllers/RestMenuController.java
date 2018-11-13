@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
+import org.auscope.nvcl.server.service.SparkeyServiceSingleton;
 import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
@@ -379,6 +380,19 @@ public class RestMenuController {
    
         response.setContentType("application/json");
         return gson.toJson(tsgJobVoList);
+    }      
+    @RequestMapping("/publishNvclJob.do")
+    public String publishNvclJob( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(required = true, value = "jobid", defaultValue = "jobid") String jobid,
+    		@RequestParam(required = true, value = "publish") Boolean bPublish) throws ServletException, IOException {
+    	
+    	
+    	if (Utility.stringIsBlankorNull(jobid)) return "jobid is not valid.";
+    	
+    	SparkeyServiceSingleton.getInstance().put(jobid,Boolean.toString(bPublish));
+
+        response.setContentType("application/json");
+        return gson.toJson(bPublish);
     }      
 
 }
