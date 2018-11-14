@@ -17,6 +17,7 @@ public class ConfigVo {
     private String webappURL;
     private String portalURL;
     private float minDownSampleInterval;
+    private String sparkeyDataPath;
     
     public boolean getSendEmails() {
         return sendEmails;
@@ -60,4 +61,10 @@ public class ConfigVo {
     public void setDataPath(String dataPath) {
         this.dataPath = dataPath;
     }
+	public String getSparkeyDataPath() {
+		return sparkeyDataPath;
+	}
+	public void setSparkeyDataPath(String sparkeyDataPath) {
+		this.sparkeyDataPath = sparkeyDataPath;
+	}
 }

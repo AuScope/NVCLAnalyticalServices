@@ -6,6 +6,7 @@ sysadmin.email=<SYSADMIN EMAIL>
 webapp.url=http://<HOSTNAME>/NVCLAnalyticalServices/
 # data.path is the local path to store the TSG calculation result.
 data.path=<DATA_PATH>
+sparkey.DataPath=<DATA_PATH>/NVCLAnalyticalServices.spi
 # portal.url is the Auscope-portal url for constructing the url of analyticalJob visualization result.
 portal.url=http://portal.auscope.org/portal/gmap.html
 # msgTimetoLiveDays is the number of days data files will remain in cache before being cleaned up.

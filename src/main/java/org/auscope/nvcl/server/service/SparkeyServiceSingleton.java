@@ -8,7 +8,7 @@ public class SparkeyServiceSingleton {
 	private SparkeyReader reader;
 	private SparkeyWriter writer;
 	private SparkeyLogIterator logIterator;
-	
+	private static String sparkeyFilePath;
 	private static SparkeyServiceSingleton instance = null;
     
     //private constructor to avoid client applications to use constructor
@@ -18,7 +18,8 @@ public class SparkeyServiceSingleton {
     	if (instance == null) {
     		instance = new SparkeyServiceSingleton();
     		try {
-				instance.init("NVCLAnalyticalServices.spi");
+    			sparkeyFilePath = NVCLAnalyticalRequestSvc.config.getSparkeyDataPath();
+				instance.init(sparkeyFilePath);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -32,15 +33,18 @@ public class SparkeyServiceSingleton {
 		File indexFile = new File(sparkeyFileName);
 		this.writer = Sparkey.appendOrCreate(indexFile, CompressionType.SNAPPY, 512);	
 		this.writer.setFsync(true);
-	    this.reader = Sparkey.open(indexFile);
 		this.logIterator = new SparkeyLogIterator(Sparkey.getLogFile(indexFile));
 	}
 
 	public String get(String key) throws IOException {
+		File spiFile = new File(SparkeyServiceSingleton.sparkeyFilePath);
+	    this.reader = Sparkey.open(spiFile);
 		String value = this.reader.getAsString(key);
 		if (value == null) {
 			value = Boolean.toString(false);
 		}
+		this.reader.close();
+		spiFile = null;
 		return value;
 	}
 
