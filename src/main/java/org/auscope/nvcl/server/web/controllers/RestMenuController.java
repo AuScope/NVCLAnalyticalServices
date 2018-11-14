@@ -394,5 +394,16 @@ public class RestMenuController {
         response.setContentType("application/json");
         return gson.toJson(bPublish);
     }      
+    @RequestMapping("/getNvclJobPublishStatus.do")
+    public String publishNvclJob( HttpServletRequest request, HttpServletResponse response,
+    		@RequestParam(required = true, value = "jobid", defaultValue = "jobid") String jobid) throws ServletException, IOException {
+    	
+    	
+    	if (Utility.stringIsBlankorNull(jobid)) return "jobid is not valid.";
+    	
+    	String publishStatus = SparkeyServiceSingleton.getInstance().get(jobid);
 
+        response.setContentType("application/json");
+        return gson.toJson(publishStatus);
+    }   
 }

@@ -18,7 +18,7 @@ public class SparkeyServiceSingleton {
     	if (instance == null) {
     		instance = new SparkeyServiceSingleton();
     		try {
-				instance.init("nvcl2.spi");
+				instance.init("NVCLAnalyticalServices.spi");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

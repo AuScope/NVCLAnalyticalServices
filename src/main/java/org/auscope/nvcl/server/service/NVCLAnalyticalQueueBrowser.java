@@ -234,7 +234,7 @@ public class NVCLAnalyticalQueueBrowser {
 									try {
 										bPublished = SparkeyServiceSingleton.getInstance().get(jobid);
 									} catch (IOException e) {
-										// TODO Auto-generated catch block
+		                                logger.debug("Exception:SparkeyServiceSingleton.getInstance().get" + jobid);
 										e.printStackTrace();
 									}
 									jobVo.setPublished(bPublished);
