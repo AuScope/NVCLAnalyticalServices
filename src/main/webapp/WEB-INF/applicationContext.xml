@@ -22,7 +22,7 @@
         <property name="webappURL" value="${webapp.url}" /> 
         <property name="portalURL" value="${portal.url}" />         
         <property name="minDownSampleInterval" value="${tsg.downsample.minInterval}" />
-        <property name="sparkeyDataPath" value="${sparkey.DataPath}" />
+        <property name="sparkeyDataPath" value="${sparkey.dataPath}" />
     </bean>
 
     <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
