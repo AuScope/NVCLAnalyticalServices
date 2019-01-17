@@ -219,27 +219,37 @@ public class NVCLAnalyticalQueueBrowser {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
                         AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
-                        if (!Utility.stringIsBlankorNull(email) && !email.equals(jmsMsgVo.getEmail())) continue;
                         String jobid = jmsMsgVo.getJobid();
                         String jobname = jmsMsgVo.getJobDescription();
-                    	String dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
+                        String dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
+                    
+                        String sPublished = Boolean.toString(false);
+                        try {
+                            sPublished = SparkeyServiceSingleton.getInstance().get(jobid);
+                        } catch (IOException e) {
+                            logger.debug("Exception:SparkeyServiceSingleton.getInstance().get" + jobid);
+                            e.printStackTrace();
+                        }
+                        Boolean bPublished = Boolean.getBoolean(sPublished);
                         for (BoreholeResultVo boreholeResultVo : jmsMsgVo.boreholes) {
                             String id = boreholeResultVo.getId();
                             if (id.toLowerCase().contains(boreholeid.toLowerCase()))
                             {
                                 String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
                                 if (new File(csvFile).exists()){
-									TSGJobVo jobVo = new TSGJobVo(boreholeid, jobid, jobname);
-									String bPublished = Boolean.toString(true);
-									try {
-										bPublished = SparkeyServiceSingleton.getInstance().get(jobid);
-									} catch (IOException e) {
-		                                logger.debug("Exception:SparkeyServiceSingleton.getInstance().get" + jobid);
-										e.printStackTrace();
-									}
-									jobVo.setPublished(bPublished);
-									msgList.add(0, jobVo);
-	                                logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                    TSGJobVo jobVo = new TSGJobVo(boreholeid, jobid, jobname);
+                                    jobVo.setPublished(sPublished);
+                                    if (bPublished) {
+                                        //request public job
+                                        msgList.add(0, jobVo);
+                                        logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                    } else {
+                                        if (!Utility.stringIsBlankorNull(email) && email.equals(jmsMsgVo.getEmail())) {
+                                            //the owner request private job
+                                            msgList.add(0, jobVo);
+                                            logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -249,8 +259,19 @@ public class NVCLAnalyticalQueueBrowser {
                             {
                                 String csvFile = dataPath + jobid + "/" + boreholeid + "-scalar.csv";
                                 if (new File(csvFile).exists()){
-	                            	msgList.add(0, new TSGJobVo(boreholeid,jobid,jobname));
-	                            	logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                    TSGJobVo jobVo = new TSGJobVo(boreholeid, jobid, jobname);
+                                    jobVo.setPublished(sPublished);
+                                    if (bPublished) {
+                                        //request public job
+                                        msgList.add(0, jobVo);
+                                        logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                    } else {
+                                        if (!Utility.stringIsBlankorNull(email) && email.equals(jmsMsgVo.getEmail())) {
+                                            //the owner request private job
+                                            msgList.add(0, jobVo);
+                                            logger.debug("boreholeid:" + boreholeid + ",jobid:" + jobid + ",jobname:" + jobname);
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -361,7 +361,7 @@ public class RestMenuController {
     }
     @RequestMapping("/getTsgJobsByBoreholeid.do")
     public String getTsgJobsByBoreholeid( HttpServletRequest request, HttpServletResponse response,
-    		@RequestParam(value = "boreholeid", defaultValue = "boreholeid") String boreholeid,
+    		@RequestParam(required = true, value = "boreholeid") String boreholeid,
     		@RequestParam(required = false, value = "email") String email ) throws ServletException, IOException {
     	
     	
