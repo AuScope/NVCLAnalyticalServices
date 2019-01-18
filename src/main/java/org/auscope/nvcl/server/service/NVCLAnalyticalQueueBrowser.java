@@ -230,7 +230,7 @@ public class NVCLAnalyticalQueueBrowser {
                             logger.debug("Exception:SparkeyServiceSingleton.getInstance().get" + jobid);
                             e.printStackTrace();
                         }
-                        Boolean bPublished = Boolean.getBoolean(sPublished);
+                        Boolean bPublished = Boolean.parseBoolean(sPublished);
                         for (BoreholeResultVo boreholeResultVo : jmsMsgVo.boreholes) {
                             String id = boreholeResultVo.getId();
                             if (id.toLowerCase().contains(boreholeid.toLowerCase()))
