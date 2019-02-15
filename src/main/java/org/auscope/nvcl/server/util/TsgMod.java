@@ -11,24 +11,26 @@ public class TsgMod {
     	// note: library name is case sensitive and should be TsgMod.dll in windows and libTsgMod.so in linux
     	System.loadLibrary("TsgMod");
         logger.info("TsgMod:load c lib from "+System.getProperty("java.library.path"));
+        
     }
-
+    public native int testTsg(long h);
+    
     private native int checkHandle(long h);
 
     private native long copyHandle(long h);
 
     private native int freeHandle(long h);
 
-    private native long parseOneBatchScript(String jbtxt, float[] jwvl, int libwuflags, int hdr, int strict, int extra);
+    private native long parseOneBatchScript(String jbtxt, float[] jwvl, int libwuflags, float[] jwvl2, int libwuflags2, int hdr, int strict, int extra);
 
-    private native long parseOneScalarMethod(String jbtxt, float[] jwvl, int libwuflags, int strict);
+    private native long parseOneScalarMethod(String jbtxt, float[] jwvl, int libwuflags,  float[] jwvl2, int libwuflags2, int strict);
 
     private native double batchCalcOne(long h, float[] spv);
 
-    private native double scalarCalcOne(long h, float[] spv);
+    private native double scalarCalcOne(long h, float[] spv, float[] spv2);
 
-    private native int scalarCalcMany(long h, double[] retv, float[] spv, int nch, int nsp);
-
+    private native int scalarCalcMany(long h, double[] retv, float[] spv, float[] spv2, int nch, int nsp);    
+   
     public boolean parseOneScalarMethod(double[] rv,String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount, float value, float pctBench) {
         int nsp = samplecount;///* 99 sample count*/ 
         int nch = wavelenthscount;//531;/*wvl count*/
@@ -38,12 +40,11 @@ public class TsgMod {
             if (script == null) {
                 return false;
             }
-
-            long h = parseOneBatchScript(script, wvl, 64,  0, 1, 1);
+            long h = parseOneBatchScript(script, wvl, 64, null, 0, 0, 1, 1);
             logger.debug("TsgMod:parseOneBatchScript: " + h);
             if (h > 0){
                 checkHandle(h);
-                scalarCalcMany(h, rv, spv, nch, nsp);
+                scalarCalcMany(h, rv, spv, null, nch, nsp);
 
                 for (int i = 0; i < nsp; i++) {
                     if (!Double.isNaN(rv[i])) {

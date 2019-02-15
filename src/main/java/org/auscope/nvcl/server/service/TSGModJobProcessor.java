@@ -43,6 +43,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
     private TsgMod tsgMod = new TsgMod(); 
     private String tsgScript;
     private String dataPath;
+    private String wvLogname = "Reflectance";
     
 	    
     /**
@@ -71,6 +72,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
     public void setAnalyticalJob(AnalyticalJobVo messageVo) {
         byte[] byteTsgScript = Base64.getDecoder().decode(messageVo.getTsgScript());
         this.tsgScript = new String(byteTsgScript);
+        if (this.tsgScript.contains("Spectype = TIR")) {
+            this.wvLogname = "Base Refl";
+        } else {
+            this.wvLogname = "Reflectance";
+        }
         super.setAnalyticalJob(messageVo);
     }
 
@@ -174,11 +180,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     Element eleWavelengths = (Element) exprWavelengths.evaluate(nodeList.item(i), XPathConstants.NODE);
                     String strWavelengths = eleWavelengths.getFirstChild().getNodeValue();
                     
-                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase("Reflectance")) {
+                    if (intSampleCount > 0 && strLogName.equalsIgnoreCase(this.wvLogname)) {
                         boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
                         isError = false;
                         totalLogids++;                        
-                        logger.debug("getDataCollection:Reflectance:boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
+                        logger.debug("getDataCollection:" + this.wvLogname + ":boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
                         
                         
                         //get final_mask logid
