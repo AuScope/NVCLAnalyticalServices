@@ -1,13 +1,15 @@
 package org.auscope.nvcl.server.web.controllers;
 
 import java.awt.Menu;
-
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.jms.Destination;
 import javax.servlet.ServletException;
@@ -24,10 +26,12 @@ import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
 import org.auscope.nvcl.server.service.SparkeyServiceSingleton;
 import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.util.Utility;
+import org.auscope.nvcl.server.util.ZipUtil;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;
+import org.auscope.portal.server.domain.nvcldataservice.AnalyticalJobResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
@@ -405,5 +409,22 @@ public class RestMenuController {
 
         response.setContentType("application/json");
         return gson.toJson(publishStatus);
-    }   
+    }
+    //Download TsgModJob's scalar csv.
+    @RequestMapping("/downloadTsgJobData.do")
+    public void downloadTsgJobData(@RequestParam("jobid") String jobId, HttpServletResponse response) throws Exception {
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition","inline; filename=nvclanalytics-" + jobId + ".zip;");
+        ZipOutputStream zout = new ZipOutputStream(response.getOutputStream());
+        try{
+            File jobFolder = new File ( NVCLAnalyticalRequestSvc.config.getDataPath() + jobId );
+            if (jobFolder.isDirectory()) {
+                ZipUtil.addFolderToZip(jobFolder, jobFolder.getName(), zout);
+            }
+            zout.finish();
+            zout.flush();
+        } finally {
+            zout.close();
+        }
+    }    
 }
