@@ -13,23 +13,23 @@ public class TsgMod {
         logger.info("TsgMod:load c lib from "+System.getProperty("java.library.path"));
         
     }
-    public native int testTsg(long h);
+    private native int testTsg(long h);    
     
+    private native long testParseOneBatchScript(String jbtxt, float[] jwvl, int libwuflags, float[] jwvl2, int libwuflags2,int hdr, int strict, int extra);
+  
     private native int checkHandle(long h);
 
     private native long copyHandle(long h);
 
     private native int freeHandle(long h);
 
-    private native long parseOneBatchScript(String jbtxt, float[] jwvl, int libwuflags, float[] jwvl2, int libwuflags2, int hdr, int strict, int extra);
-
     private native long parseOneScalarMethod(String jbtxt, float[] jwvl, int libwuflags,  float[] jwvl2, int libwuflags2, int strict);
 
     private native double batchCalcOne(long h, float[] spv);
 
     private native double scalarCalcOne(long h, float[] spv, float[] spv2);
-
-    private native int scalarCalcMany(long h, double[] retv, float[] spv, float[] spv2, int nch, int nsp);    
+    
+    private native int scalarCalcMany(long h, double[] retv, float[] spv,  float[] spv2,byte[] mask, int nch, int nsp);    
    
     public boolean parseOneScalarMethod(double[] rv,String script,float[] wvl,int wavelenthscount,float[] spv ,int samplecount, float value, float pctBench) {
         int nsp = samplecount;///* 99 sample count*/ 
@@ -40,12 +40,14 @@ public class TsgMod {
             if (script == null) {
                 return false;
             }
-            long h = parseOneBatchScript(script, wvl, 64, null, 0, 0, 1, 1);
+ //           checkHandle(5555);
+            long h = testParseOneBatchScript(script, wvl, 64, null, 0, 0, 1, 1);
+          //  long h = parseScript(script, wvl, 64, null, 0, 0, 1, 1);
             logger.debug("TsgMod:parseOneBatchScript: " + h);
             if (h > 0){
-                checkHandle(h);
-                scalarCalcMany(h, rv, spv, null, nch, nsp);
-
+                //checkHandle(h);
+                int ret = scalarCalcMany(h, rv, spv, null,null, nch, nsp);
+                System.out.println("scalarCalcMany:" + ret);
                 for (int i = 0; i < nsp; i++) {
                     if (!Double.isNaN(rv[i])) {
                         if (rv[i] > value)

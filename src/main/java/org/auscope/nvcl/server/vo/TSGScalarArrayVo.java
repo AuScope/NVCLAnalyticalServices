@@ -100,7 +100,7 @@ public class TSGScalarArrayVo {
         for (TSGScalarVo scalar : scalarArray) {
             depth = scalar.getDepth();
             value = scalar.getValue();
-            logger.debug(depth + "    " + value + "    " + scalar.isMask());
+            //logger.debug(depth + "    " + value + "    " + scalar.isMask());
 
             if (!scalar.isMask()) //skip the masked one.
                 continue;            
@@ -117,7 +117,7 @@ public class TSGScalarArrayVo {
         for (int i=0;i<size;i++) {
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
             downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
-            logger.debug("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );                      
+            //logger.debug("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );                      
         }
         logger.debug("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
         return downSampledScalarArray.size();

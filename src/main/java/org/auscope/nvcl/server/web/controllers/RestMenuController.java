@@ -31,7 +31,6 @@ import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;
-import org.auscope.portal.server.domain.nvcldataservice.AnalyticalJobResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;

@@ -73,6 +73,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
         byte[] byteTsgScript = Base64.getDecoder().decode(messageVo.getTsgScript());
         this.tsgScript = new String(byteTsgScript);
         if (this.tsgScript.contains("Spectype = TIR")) {
+            this.tsgScript = this.tsgScript.replaceAll("Spectype.*=.*TIR\n","#Spectype = TIR\n");             
             this.wvLogname = "Base Refl";
         } else {
             this.wvLogname = "Reflectance";
@@ -158,6 +159,11 @@ public class TSGModJobProcessor  extends IJobProcessor{
         for (BoreholeVo boreholeVo : boreholeList) {
             String holeIdentifier = boreholeVo.getHoleIdentifier();
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
+            //test for andulsite only
+            logger.debug(holeIdentifier);
+//            if (!holeIdentifier.contains("MIN_001587"))
+//                continue;
+            /////////////////////////
             try {
                 String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
                 Document responseDoc = Utility.buildDomFromString(responseString);
@@ -294,7 +300,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 resultMsg = formatMessage(2);
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
-                logger.info("Miss: " +boreholeVo.getHoleIdentifier());
+             //   logger.info("Miss: " +boreholeVo.getHoleIdentifier());
             }         
         }//borehole loop  
         logger.debug( "getSpectralData:total Processed Logid:" + totalProcessedLogid );   
