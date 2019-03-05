@@ -15,6 +15,7 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.command.ActiveMQQueue;
 import org.auscope.nvcl.server.service.DataAccess;
+import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalMessageConverter;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
@@ -37,6 +38,7 @@ public class NvclAnalyticalServicesApplication {
     private NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = null;
     private MessageListenerAdapter nvclAnalyticalRequestListener = null;
     private SimpleMessageListenerContainer nvclAnalyticalRequestContainer = null;
+    private NVCLAnalyticalGateway nvclAnalyticalGateway =null;
     
 	public static void main(String[] args) {
 		SpringApplication.run(NvclAnalyticalServicesApplication.class, args);
@@ -177,6 +179,16 @@ public class NvclAnalyticalServicesApplication {
         }
         else
             return this.nvclAnalyticalRequestContainer;
+    }
+    @Bean
+    public NVCLAnalyticalGateway nvclAnalyticalGateway(ConnectionFactory connectionFactory){
+        if (this.nvclAnalyticalGateway==null) {
+            this.nvclAnalyticalGateway = new NVCLAnalyticalGateway();
+            this.nvclAnalyticalGateway.setJmsTemplate(jmsTemplate(connectionFactory));
+            return this.nvclAnalyticalGateway;
+        }
+        else
+            return this.nvclAnalyticalGateway;
     }
     
 }
