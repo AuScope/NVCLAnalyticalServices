@@ -22,7 +22,7 @@ public class ConfigVo {
     @Value("${sysadmin.email}")	
     private String sysAdminEmail;
 
-    @Value("${dataCachePath}")
+    @Value("${data.path}")
     private String dataPath;
 
     @Value("${webapp.url}")
