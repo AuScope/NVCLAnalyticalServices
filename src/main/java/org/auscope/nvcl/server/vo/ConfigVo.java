@@ -30,6 +30,9 @@ public class ConfigVo {
     
     @Value("${portal.url}")
     private String portalURL;
+
+    @Value("${dataCachePath}")
+    private String dataCachePath;
     
     @Value("${tsg.downsample.minInterval}")
     private float minDownSampleInterval;
@@ -66,6 +69,12 @@ public class ConfigVo {
     }
     public void setPortalURL(String portalURL) {
         this.portalURL = portalURL;
+    }
+    public String getDataCachePath() {
+        return dataCachePath;
+    }
+    public void setDataCachePath(String dataCachePath) {
+        this.dataCachePath = dataCachePath;
     }
     public float getMinDownSampleInterval() {
         return minDownSampleInterval;

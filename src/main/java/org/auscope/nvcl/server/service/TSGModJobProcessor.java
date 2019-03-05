@@ -1,6 +1,5 @@
 package org.auscope.nvcl.server.service;
 
-
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
@@ -8,6 +7,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.TreeMap;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,15 +23,9 @@ import org.auscope.nvcl.server.vo.BoreholeVo;
 import org.auscope.nvcl.server.vo.SpectralLogVo;
 import org.auscope.nvcl.server.vo.TSGScalarArrayVo;
 import org.auscope.nvcl.server.vo.TSGScalarVo;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
 
 /*
  * TSGModJobProcessor will process a TSGMod Analytical job(based on the live calculated scalar) from AnalyticalJobVo.
@@ -36,7 +34,6 @@ import javax.xml.xpath.XPathFactory;
  * @author Peter Warren
  */
 
-@Component
 public class TSGModJobProcessor  extends IJobProcessor{
 	private static final Logger logger = LogManager.getLogger(TSGModJobProcessor.class);
     //private final Log log = LogFactory.getLog(getClass());      
@@ -384,7 +381,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             logger.debug( "getDownSampledData:downSample:");
             
 			try {
-	            int sizeOfBin = scalarArray.downSample();
+	            scalarArray.downSample();
 			}
 			catch (Exception e) {
 				logger.error("Exception: on scalarArray.downSample()"+e);

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.jms.Destination;
@@ -29,9 +28,9 @@ import org.auscope.nvcl.server.service.SparkeyServiceSingleton;
 import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.util.Utility;
 import org.auscope.nvcl.server.util.ZipUtil;
-import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
+import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -21,7 +21,6 @@ public class SparkeyServiceSingleton {
     			sparkeyFilePath = NVCLAnalyticalRequestSvc.config.getSparkeyDataPath();
 				instance.init(sparkeyFilePath);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
     	}

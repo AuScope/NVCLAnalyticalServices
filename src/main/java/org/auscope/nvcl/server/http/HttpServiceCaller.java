@@ -8,7 +8,7 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-import org.apache.commons.io.Charsets;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
@@ -179,7 +179,7 @@ public class HttpServiceCaller {
                 HttpEntity body = ((HttpPost) method).getEntity();
                 byte[] dataHead =  new byte[(int) Math.min(MAX_POST_BODY_LOGGING, body.getContentLength())];
                 IOUtils.read(body.getContent(), dataHead);
-                String content = new String(dataHead, Charsets.UTF_8);
+                String content = new String(dataHead);
                 logger.trace("Outgoing POST body (UTF-8): " + content);
             }
         }

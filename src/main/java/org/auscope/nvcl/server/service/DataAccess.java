@@ -3,6 +3,8 @@ package org.auscope.nvcl.server.service;
 import java.io.File;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -50,12 +52,12 @@ public class DataAccess {
 		File f = new File(cachePath + "//" + getDatasetCollectionPath + "//" + host + "//" + holeIdentifier);
 		if (f.exists() && !f.isDirectory()) {
 			logger.debug("Read dataset info from cache for hole " + host + ":" + holeIdentifier);
-			return FileUtils.readFileToString(f);
+			return FileUtils.readFileToString(f,Charset.defaultCharset());
 		} else {
 			HttpRequestBase method = nvclMethodMaker.getDatasetCollectionMethod(nvclDataServiceUrl, holeIdentifier);
 
 			String result = httpServiceCaller.getMethodResponseAsString(method);
-			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result);
+			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result,Charset.defaultCharset());
 			logger.debug("fetched and saved to cache dataset info for hole " + host + ":" + holeIdentifier);
 			method.releaseConnection();
 
@@ -90,12 +92,12 @@ public class DataAccess {
 		File f = new File(cachePath + "//" + getScalarData + "//" + host + "//" + logid);
 		if (f.exists() && !f.isDirectory()) {
 			logger.debug("Read scalar data from cache for logid " + host + ":" + logid);
-			return FileUtils.readFileToString(f);
+			return FileUtils.readFileToString(f,Charset.defaultCharset());
 		} else {
 			HttpRequestBase methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, logid);
 
 			String result = httpServiceCaller.getMethodResponseAsString(methodMask);
-			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result);
+			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result,Charset.defaultCharset());
 			logger.debug("fetched and saved to cache scalar data for logid " + host + ":" + logid);
 			methodMask.releaseConnection();
 			return null;
@@ -108,13 +110,13 @@ public class DataAccess {
 		File f = new File(cachePath + "//" + getDownSampScalarData + "//" + host + "//" + logid+"//"+span+"//"+startDepth+"_"+endDepth+"."+outputFormat);
 		if (f.exists() && !f.isDirectory()) {
 			logger.debug("Read down sampled scalar data from cache for logid " + host + ":" + logid + " start:" + startDepth + " end:"+endDepth +" outputformat:"+outputFormat);
-			return FileUtils.readFileToString(f);
+			return FileUtils.readFileToString(f,Charset.defaultCharset());
 		} else {
 
 			HttpRequestBase method = nvclMethodMaker.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth,
 					endDepth, outputFormat);
 			String result = httpServiceCaller.getMethodResponseAsString(method);
-			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result);
+			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result,Charset.defaultCharset());
 			logger.debug("fetched and saved to cache down sampled scalar data for logid " + host + ":" + logid+ " start:" + startDepth + " end:"+endDepth +" outputformat:"+outputFormat);
 			method.releaseConnection();
 			return result;

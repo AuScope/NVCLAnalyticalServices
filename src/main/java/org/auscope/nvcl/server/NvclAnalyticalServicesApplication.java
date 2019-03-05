@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.SimpleMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
@@ -46,7 +47,7 @@ public class NvclAnalyticalServicesApplication {
 		SpringApplication.run(NvclAnalyticalServicesApplication.class, args);
 	}
 
-    @Bean
+    @Bean("createConfig")
     @ConfigurationProperties
 	public ConfigVo createConfig() {
         if (this.config==null) {
@@ -57,6 +58,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
 	public TSGScriptCache tsgscripts() {
         if (this.tsgscripts==null) {
             this.tsgscripts = new TSGScriptCache();
@@ -67,6 +69,7 @@ public class NvclAnalyticalServicesApplication {
 
 
     @Bean
+    @DependsOn({"createConfig"})
     public MessageConverter nvclAnalyticalMessageConverter() {
         if (this.nvclAnalyticalMessageConverter==null) {
             this.nvclAnalyticalMessageConverter = new NVCLAnalyticalMessageConverter();
@@ -78,6 +81,7 @@ public class NvclAnalyticalServicesApplication {
     }
     
     @Bean
+    @DependsOn({"createConfig"})
     public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory){
         if (this.jmsTemplate==null) {
             this.jmsTemplate = new JmsTemplate();
@@ -90,6 +94,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     @ConfigurationProperties(prefix = "smtp")
     public JavaMailSenderImpl mailSender(){
         if (this.mailSender==null) {
@@ -101,6 +106,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     public ActiveMQQueue nvclSubmitDestination(){
         if (this.nvclSubmitDestination==null) {
             this.nvclSubmitDestination = new ActiveMQQueue("nvcl.submit.queue");
@@ -111,6 +117,7 @@ public class NvclAnalyticalServicesApplication {
     }
     
     @Bean
+    @DependsOn({"createConfig"})
     public ActiveMQQueue nvclStatusDestination(){
         if (this.nvclStatusDestination==null) {
             this.nvclStatusDestination = new ActiveMQQueue("nvcl.status.queue");
@@ -121,6 +128,7 @@ public class NvclAnalyticalServicesApplication {
     }
     
     @Bean
+    @DependsOn({"createConfig"})
     public ActiveMQQueue nvclResultDestination(){
         if (this.nvclResultDestination==null) {
             this.nvclResultDestination = new ActiveMQQueue("nvcl.result.queue");
@@ -131,15 +139,18 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     public DataAccess dataAccess(){
         if (this.dataAccess==null) {
             this.dataAccess = new DataAccess();
+            this.dataAccess.setCachePath(this.config.getDataCachePath());
             return this.dataAccess;
         }
         else
             return this.dataAccess;
     }
     @Bean
+    @DependsOn({"createConfig"})
     public NVCLAnalyticalRequestSvc nvclAnalyticalRequestSvc(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalRequestSvc==null) {
             this.nvclAnalyticalRequestSvc = new NVCLAnalyticalRequestSvc();
@@ -156,6 +167,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     public NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalQueueBrowser==null) {
             this.nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
@@ -167,6 +179,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     public MessageListenerAdapter nvclAnalyticalRequestListener(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalRequestListener==null) {
             this.nvclAnalyticalRequestListener = new MessageListenerAdapter();
@@ -181,6 +194,7 @@ public class NvclAnalyticalServicesApplication {
     }
 
     @Bean
+    @DependsOn({"createConfig"})
     public SimpleMessageListenerContainer nvclAnalyticalRequestContainer(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalRequestContainer==null) {
             this.nvclAnalyticalRequestContainer = new SimpleMessageListenerContainer();
@@ -193,6 +207,7 @@ public class NvclAnalyticalServicesApplication {
             return this.nvclAnalyticalRequestContainer;
     }
     @Bean
+    @DependsOn({"createConfig"})
     public NVCLAnalyticalGateway nvclAnalyticalGateway(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalGateway==null) {
             this.nvclAnalyticalGateway = new NVCLAnalyticalGateway();
