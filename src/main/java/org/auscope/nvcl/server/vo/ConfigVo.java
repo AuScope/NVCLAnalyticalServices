@@ -1,22 +1,40 @@
 package org.auscope.nvcl.server.vo;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 /**
- * ConfigVo
- * Manage the Config file and allow getting the values thru getter and setter method.
+ * ConfigVo Manage the Config file and allow getting the values thru getter and
+ * setter method.
  * 
  * @author Lingbo Jiang
  */
 
-
+@Component
 public class ConfigVo {
     //Spring will populate these fields from config.properties through Dependency Injection.
+    @Value("${smtp.enabled}")
     private boolean sendEmails;
+
+    @Value("${msgTimetoLiveDays}")
     private String msgTimetoLiveDays;
+    
+    @Value("${sysadmin.email}")	
     private String sysAdminEmail;
-    private String dataPath;    
+
+    @Value("${dataCachePath}")
+    private String dataPath;
+
+    @Value("${webapp.url}")
     private String webappURL;
+    
+    @Value("${portal.url}")
     private String portalURL;
+    
+    @Value("${tsg.downsample.minInterval}")
     private float minDownSampleInterval;
+    
+    @Value("${sparkey.dataPath}")
     private String sparkeyDataPath;
     
     public boolean getSendEmails() {

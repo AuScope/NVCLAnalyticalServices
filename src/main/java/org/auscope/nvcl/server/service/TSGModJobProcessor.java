@@ -91,8 +91,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
         String strLogIDMask = null;
         try {
         	
-        	XPathFactory factory = new org.apache.xpath.jaxp.XPathFactoryImpl();
-            XPath xPath = factory.newXPath();
+
+            XPath xPath = XPathFactory.newInstance().newXPath();
         	
             XPathExpression exprMask = xPath.compile("DatasetCollection/Dataset/Logs/Log"); //"DatasetCollection/Dataset/SpectralLogs/SpectralLog");//
             NodeList nodeListMask = (NodeList) exprMask.evaluate(doc, XPathConstants.NODESET);

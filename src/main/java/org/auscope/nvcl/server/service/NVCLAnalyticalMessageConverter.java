@@ -13,7 +13,8 @@ import org.springframework.jms.support.converter.MessageConverter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * This class perform message conversion through Spring's MessageConverter interface.
@@ -38,11 +39,11 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
     }
 
     /*
-     * Convert Message to Object. In this application - will be triggered before
-     * a new message in nvcl.request.queue being processed by the
-     * NVCLAnalyticalRequestSvc.processRequest(MessageVo messageVo) method. It
-     * will read the message from the message body and store them into messageVo
-     * object, pass it to processRequest(MessageVo messageVo) for processing.
+     * Convert Message to Object. In this application - will be triggered before a
+     * new message in nvcl.request.queue being processed by the
+     * NVCLAnalyticalRequestSvc.processRequest(MessageVo messageVo) method. It will
+     * read the message from the message body and store them into messageVo object,
+     * pass it to processRequest(MessageVo messageVo) for processing.
      */
     public Object fromMessage(Message message) throws JMSException, MessageConversionException {
 
@@ -54,7 +55,8 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
         }
         MapMessage mapMessage = (MapMessage) message;
         AnalyticalJobVo messageVo = new AnalyticalJobVo();
-        if (mapMessage.getString("requestType").equals("ANALYTICAL") || mapMessage.getString("requestType").equals("TSGMOD")) {
+        if (mapMessage.getString("requestType").equals("ANALYTICAL")
+                || mapMessage.getString("requestType").equals("TSGMOD")) {
             messageVo.setRequestType(mapMessage.getString("requestType"));
             messageVo.setTsgScript(mapMessage.getString("tsgScript"));
             messageVo.setJobid(mapMessage.getString("jobid"));
@@ -77,17 +79,18 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
     }
 
     /*
-     * Converts Object (ConfigVo or MessageVo) to Message In this application,
-     * it will be triggered before creating new message in the specified request
-     * queue (convert AnalyticalJobVo object to message) and specified reply
-     * queue (convert AnalyticalJobStatusVo to message) and specified result
-     * queue (convert AnalyticalJobResultVo object to message).
+     * Converts Object (ConfigVo or MessageVo) to Message In this application, it
+     * will be triggered before creating new message in the specified request queue
+     * (convert AnalyticalJobVo object to message) and specified reply queue
+     * (convert AnalyticalJobStatusVo to message) and specified result queue
+     * (convert AnalyticalJobResultVo object to message).
      */
     public Message toMessage(Object object, Session session) throws JMSException, MessageConversionException {
 
         logger.debug("Converting object (" + object + ") to message ... !");
 
-        if (!(object instanceof AnalyticalJobVo) && !(object instanceof AnalyticalJobStatusVo) && !(object instanceof AnalyticalJobResultVo)) {
+        if (!(object instanceof AnalyticalJobVo) && !(object instanceof AnalyticalJobStatusVo)
+                && !(object instanceof AnalyticalJobResultVo)) {
             throw new MessageConversionException("Object is neither a AnalyticalJobVo or AnalyticalJobStatusVo");
         }
 
@@ -138,7 +141,11 @@ public class NVCLAnalyticalMessageConverter implements MessageConverter {
             AnalyticalJobResultVo messageVo = (AnalyticalJobResultVo) object;
             MapMessage message = session.createMapMessage();
             message.setJMSCorrelationID(messageVo.getJobid());
-            message.setString("jobResult", new Gson().toJson(messageVo));
+            try {
+                message.setString("jobResult", new ObjectMapper().writeValueAsString(messageVo));
+            } catch (JsonProcessingException e) {
+                logger.error(e.getLocalizedMessage());
+            }
             return message;
         }
         return null;

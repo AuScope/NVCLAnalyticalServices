@@ -8,12 +8,12 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
@@ -188,7 +188,7 @@ public class HttpServiceCaller {
         HttpResponse response = httpClient.execute(method);
 
         int statusCode = response.getStatusLine().getStatusCode();
-        String statusCodeText = HttpStatus.getStatusText(statusCode);
+        String statusCodeText = response.getStatusLine().getReasonPhrase();
         logger.trace("Status code text: '"+statusCodeText+"'");
 
         if (statusCode != HttpStatus.SC_OK &&

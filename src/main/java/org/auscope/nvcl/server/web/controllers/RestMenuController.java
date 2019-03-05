@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
@@ -38,8 +40,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 /**
  * restful Controller that handles all {@link Menu}-related requests
  *
@@ -51,7 +51,7 @@ import com.google.gson.GsonBuilder;
 public class RestMenuController {
     private static final Logger logger = LogManager.getLogger(RestMenuController.class);    
 
-    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+    private static final ObjectMapper jsonObjectMapper = new ObjectMapper();
     
     @Autowired
     @Qualifier(value = "nvclAnalyticalGateway")
@@ -207,7 +207,7 @@ public class RestMenuController {
             }
         }
         response.setContentType("application/json");
-        return gson.toJson(jobStatusList);
+        return jsonObjectMapper.writeValueAsString(jobStatusList);
 
     }    
 
@@ -232,7 +232,7 @@ public class RestMenuController {
             }
         }      
         response.setContentType("application/json");
-        return gson.toJson(jobResultVo);
+        return jsonObjectMapper.writeValueAsString(jobResultVo);
     }
     @RequestMapping("/getTsgAlgorithms.do")
     public String getTsgAlgorithms( HttpServletRequest request, HttpServletResponse response,
@@ -244,7 +244,7 @@ public class RestMenuController {
     		if (outputFormat!=null && outputFormat.equals("json"))
     		{
 	    		response.setContentType("application/json");
-	    		return gson.toJson(tsgscripts.getScripts());
+	    		return jsonObjectMapper.writeValueAsString(tsgscripts.getScripts());
     		}
     		else return tsgscripts.getScripts().toString();
     	}
@@ -253,7 +253,7 @@ public class RestMenuController {
     		if (outputFormat!=null && outputFormat.equals("json"))
     		{
 	    		response.setContentType("application/json");
-	    		return gson.toJson(tsgscripts.getScripts().get(tsgAlgName));
+	    		return jsonObjectMapper.writeValueAsString(tsgscripts.getScripts().get(tsgAlgName));
     		}
     		else return tsgscripts.getScripts().get(tsgAlgName);
     	}
@@ -270,7 +270,7 @@ public class RestMenuController {
     	if (outputFormat!=null && outputFormat.equals("json"))
     	{
 	    	response.setContentType("application/json");
-	    	return gson.toJson(algnames);
+	    	return jsonObjectMapper.writeValueAsString(algnames);
     	}
         else return algnames.toString();
     }     
@@ -382,7 +382,7 @@ public class RestMenuController {
         List<TSGJobVo> tsgJobVoList = (ArrayList<TSGJobVo>) nvclAnalyticalQueueBrowser.browseTsgJob(boreholeid, email, nvclResultDestination);
    
         response.setContentType("application/json");
-        return gson.toJson(tsgJobVoList);
+        return jsonObjectMapper.writeValueAsString(tsgJobVoList);
     }      
     @RequestMapping("/publishNvclJob.do")
     public String publishNvclJob( HttpServletRequest request, HttpServletResponse response,
@@ -395,7 +395,7 @@ public class RestMenuController {
     	SparkeyServiceSingleton.getInstance().put(jobid,Boolean.toString(bPublish));
 
         response.setContentType("application/json");
-        return gson.toJson(bPublish);
+        return jsonObjectMapper.writeValueAsString(bPublish);
     }      
     @RequestMapping("/getNvclJobPublishStatus.do")
     public String publishNvclJob( HttpServletRequest request, HttpServletResponse response,
@@ -407,7 +407,7 @@ public class RestMenuController {
     	String publishStatus = SparkeyServiceSingleton.getInstance().get(jobid);
 
         response.setContentType("application/json");
-        return gson.toJson(publishStatus);
+        return jsonObjectMapper.writeValueAsString(publishStatus);
     }
     //Download TsgModJob's scalar csv.
     @RequestMapping("/downloadTsgJobData.do")

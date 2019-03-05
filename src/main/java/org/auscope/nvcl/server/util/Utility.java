@@ -292,9 +292,7 @@ public class Utility {
      */
     public static XPathExpression compileXPathExpr(String xPathStr, NamespaceContext nc)
             throws XPathExpressionException {
-        //Use saxon explicitly for namespace aware XPath - it's much more performant
-        XPathFactory factory = new net.sf.saxon.xpath.XPathFactoryImpl();
-        XPath xPath = factory.newXPath();
+        XPath xPath = XPathFactory.newInstance().newXPath();
         xPath.setNamespaceContext(nc);
         return xPath.compile(xPathStr);
     }
@@ -308,10 +306,7 @@ public class Utility {
      * @throws XPathExpressionException
      */
     public static XPathExpression compileXPathExpr(String xPathStr) throws XPathExpressionException {
-        //Use JAXP for namespace unaware xpath - saxon doesnt handle this sort of behaviour
-        //http://stackoverflow.com/questions/21118051/namespace-unaware-xpath-expression-fails-if-saxon-is-on-the-classpath
-        XPathFactory factory = new org.apache.xpath.jaxp.XPathFactoryImpl();
-        XPath xPath = factory.newXPath();
+        XPath xPath = XPathFactory.newInstance().newXPath();
         return xPath.compile(xPathStr);
     }
     

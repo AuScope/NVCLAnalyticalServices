@@ -25,8 +25,10 @@ import org.auscope.nvcl.server.vo.TSGJobVo;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.SessionCallback;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * A service that read messages in a JMS queue filter by JMSCorrelationID (same
@@ -178,7 +180,12 @@ public class NVCLAnalyticalQueueBrowser {
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
-                        AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());         
+                        AnalyticalJobResultVo jmsMsgVo=null;
+						try {
+							jmsMsgVo = new ObjectMapper().readValue(jobResult, AnalyticalJobResultVo.class);
+						} catch (IOException e) {
+							logger.error(e.getLocalizedMessage());
+						}  
                         msgList.add(0, jmsMsgVo);
                     }
 
@@ -218,7 +225,13 @@ public class NVCLAnalyticalQueueBrowser {
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
-                        AnalyticalJobResultVo jmsMsgVo = new Gson().fromJson(jobResult, new TypeToken<AnalyticalJobResultVo>() {}.getType());
+                        AnalyticalJobResultVo jmsMsgVo;
+                        try {
+                            jmsMsgVo = new ObjectMapper().readValue(jobResult, AnalyticalJobResultVo.class);
+                        } catch (IOException e1) {
+                            logger.error("failed to process JSON message " + e1.getLocalizedMessage() );
+                            return null;
+                        }
                         String jobid = jmsMsgVo.getJobid();
                         String jobname = jmsMsgVo.getJobDescription();
                         String dataPath = NVCLAnalyticalRequestSvc.config.getDataPath();
