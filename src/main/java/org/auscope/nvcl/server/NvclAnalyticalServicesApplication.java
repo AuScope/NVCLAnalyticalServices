@@ -19,6 +19,7 @@ import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalMessageConverter;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
+import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.vo.ConfigVo;
 
 @SpringBootApplication
@@ -39,6 +40,7 @@ public class NvclAnalyticalServicesApplication {
     private MessageListenerAdapter nvclAnalyticalRequestListener = null;
     private SimpleMessageListenerContainer nvclAnalyticalRequestContainer = null;
     private NVCLAnalyticalGateway nvclAnalyticalGateway =null;
+    private TSGScriptCache tsgscripts = null;
     
 	public static void main(String[] args) {
 		SpringApplication.run(NvclAnalyticalServicesApplication.class, args);
@@ -53,6 +55,16 @@ public class NvclAnalyticalServicesApplication {
         }
         else return this.config;
     }
+
+    @Bean
+	public TSGScriptCache tsgscripts() {
+        if (this.tsgscripts==null) {
+            this.tsgscripts = new TSGScriptCache();
+            return this.tsgscripts;
+        }
+        else return this.tsgscripts;
+    }
+
 
     @Bean
     public MessageConverter nvclAnalyticalMessageConverter() {
