@@ -8,6 +8,8 @@ package org.auscope.nvcl.server.vo;
 public class BoreholeResultVo {
     private String id;
     private String msg;
+    public BoreholeResultVo() {
+    }
     public BoreholeResultVo(String id, String msg) {
         this.id = id;
         this.msg = msg;
