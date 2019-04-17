@@ -415,7 +415,9 @@ public class RestMenuController {
         response.setHeader("Content-Disposition","inline; filename=nvclanalytics-" + jobId + ".zip;");
         ZipOutputStream zout = new ZipOutputStream(response.getOutputStream());
         try{
-            File jobFolder = new File ( NVCLAnalyticalRequestSvc.config.getDataPath() + jobId );
+            String jobFolderPath = NVCLAnalyticalRequestSvc.config.getDataPath() + jobId;
+            logger.info("jobFolderPath=" + jobFolderPath);
+            File jobFolder = new File (jobFolderPath);
             if (jobFolder.isDirectory()) {
                 ZipUtil.addFolderToZip(jobFolder, jobFolder.getName(), zout);
             }
