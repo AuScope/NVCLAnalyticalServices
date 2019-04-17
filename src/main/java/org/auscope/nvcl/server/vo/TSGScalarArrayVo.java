@@ -116,7 +116,11 @@ public class TSGScalarArrayVo {
         
         for (int i=0;i<size;i++) {
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
-            downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
+            if (downSampledScalar.getCount() == 0) {
+                downSampledScalar.setValue(Double.NaN);
+            } else {
+                downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
+            }
             //logger.debug("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );                      
         }
         logger.debug("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
