@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -62,7 +63,7 @@ public class NVCLAnalyticalQueueBrowser {
                         // convert long to date
                         long timestamp = mapMessage.getJMSTimestamp();
                         Date date = new Date(timestamp);
-                        DateFormat df = DateFormat.getDateTimeInstance();
+                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
                         String newtimestamp = df.format(date);
                         jmsMsgVo.setJMSTimestamp(newtimestamp);
                         jmsMsgVo.setJMSMsgID(mapMessage.getJMSMessageID());
@@ -120,7 +121,7 @@ public class NVCLAnalyticalQueueBrowser {
                         // convert long to date
                         long timestamp = mapMessage.getJMSTimestamp();
                         Date date = new Date(timestamp);
-                        DateFormat df = DateFormat.getDateTimeInstance();
+                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
                         String newtimestamp = df.format(date);
                         jmsMsgVo.setJMSTimestamp(newtimestamp);
                         jmsMsgVo.setJMSMsgID(mapMessage.getJMSMessageID());

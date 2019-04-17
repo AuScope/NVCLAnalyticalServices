@@ -28,3 +28,4 @@ HELP.md
 /.nb-gradle/
 activemq-data/
 NVCLAnalyticalServices.log
+cache/

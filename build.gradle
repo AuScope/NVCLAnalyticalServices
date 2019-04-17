@@ -6,11 +6,11 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'org.auscope.nvcl'
-version = '0.0.1-SNAPSHOT'
+
 sourceCompatibility = '11'
 bootJar {
     baseName = 'NVCLAnalyticalServices'
-    version =  '1.0.0'
+    version =  '1.1.0'
     launchScript()
 }
 
