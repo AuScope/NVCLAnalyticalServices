@@ -88,8 +88,8 @@ public class NVCLAnalyticalRequestSvc {
 	private void sendResultEmail(AnalyticalJobResultVo messageVo, String jobResultUrl, String jobStartTime,String jobEndTime) {
 	    
 	    SimpleMailMessage msg = new SimpleMailMessage();
-	    //http://auscope-portal-dev.arrc.csiro.au/gmap.html?nvclanid=8f664b74ed93bd5892307a0b4fb20dee&nvclanemail=Josh.Vote@csiro.au
-	    String jobResultVisualUrl = config.getPortalURL() + "?nvclanid=" + messageVo.getJobid() + "&nvclanemail=" + messageVo.getEmail();
+	    //http://auscope-portal-dev.arrc.csiro.au/gmap.html?nvclanid=8f664b74ed93bd5892307a0b4fb20dee
+	    String jobResultVisualUrl = config.getPortalURL() + "?nvclanid=" + messageVo.getJobid();
 	    
 	    try {
 	        msg.setTo(messageVo.getEmail());
