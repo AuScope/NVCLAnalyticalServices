@@ -31,7 +31,7 @@ public class CleanUpFolderJob {
 		this.days = days;
 	}
 
- 	@Scheduled(cron="30 * * * * *")
+ 	@Scheduled(cron="0 0 1 * * ?")
 	protected void executeInternal() throws JobExecutionException {
 		int dataFoldersCleaned = 0;
 		logger.debug("Data Folder cleaner running");
