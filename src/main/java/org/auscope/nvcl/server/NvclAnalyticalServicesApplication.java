@@ -11,6 +11,8 @@ import org.springframework.jms.listener.SimpleMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.jms.ConnectionFactory;
 
@@ -46,7 +48,16 @@ public class NvclAnalyticalServicesApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(NvclAnalyticalServicesApplication.class, args);
 	}
-
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("*");
+            }
+        };
+    }
+    
     @Bean("createConfig")
     @ConfigurationProperties
 	public ConfigVo createConfig() {
