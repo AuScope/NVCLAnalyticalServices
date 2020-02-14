@@ -474,7 +474,7 @@ public class NVCLDataServiceMethodMaker {
         return method;
     }
 
-    public static final String WFS_VERSION = "1.1.0";
+    public static final String WFS_VERSION = "1.0.0";
 
 	/**
 	 * An enumeration of the values that can be used for the 'resultType'
@@ -515,8 +515,8 @@ public class NVCLDataServiceMethodMaker {
 	 *            - This is for services that supports paging.
 	 * @return
 	 */
-	public HttpRequestBase makePostMethod(String serviceUrl, String featureType, String filterString, int maxFeatures,
-			String srsName, ResultType resultType, String outputFormat, String startIndex) {
+	public HttpRequestBase makePostMethod(String serviceUrl, String wfsVersion, String featureType, String filterString, int maxFeatures,
+			String srsName, ResultType resultType, String outputFormat, int startIndex) {
 
 		// Make sure the required parameters are given
 		if (featureType == null || featureType.equals("")) {
@@ -531,14 +531,14 @@ public class NVCLDataServiceMethodMaker {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		sb.append(String.format("<GetFeature service=\"WFS\" version=\"%1$s\"", WFS_VERSION));
+		sb.append(String.format("<GetFeature service=\"WFS\" version=\"%1$s\"", wfsVersion)); // WFS_VERSION));
 
 		if (maxFeatures > 0) {
 			sb.append(" maxFeatures=\"" + Integer.toString(maxFeatures) + "\"");
 		}
 
-		if (startIndex != null) {
-			sb.append(" startIndex=\"" + startIndex + "\"");
+		if (startIndex >= 0) {
+			sb.append(" startIndex=\"" + Integer.toString(startIndex) + "\"");
 		}
 
 		if (resultType != null) {

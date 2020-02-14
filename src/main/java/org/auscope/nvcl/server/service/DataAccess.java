@@ -123,8 +123,11 @@ public class DataAccess {
 		}
 	}
 
-	public String makeWFSGetFeaturePostMethod(String serviceUrl, String layerName, String filter) throws ConnectException, ConnectTimeoutException, UnknownHostException, Exception {
-		HttpPost method = (HttpPost) nvclMethodMaker.makePostMethod(serviceUrl, layerName, filter, 0, null,ResultType.Results, null, null);
+	public String makeWFSGetFeaturePostMethod(String serviceUrl, String wfsVersion, String outputFormat, String layerName, String filter, int maxFeatures, int startIndex) throws ConnectException, ConnectTimeoutException, UnknownHostException, Exception {
+		HttpPost method = (HttpPost) nvclMethodMaker.makePostMethod(serviceUrl,  wfsVersion, layerName, filter, maxFeatures, null,ResultType.Results, outputFormat, startIndex);
+		System.out.println("debug:");
+		System.out.println(method.toString());
+
 		// this result will not be cached as it will change regularly and is only performed once per serviceUrl anyway
 		String result = this.httpServiceCaller.getMethodResponseAsString(method);
 		method.releaseConnection();

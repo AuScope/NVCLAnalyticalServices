@@ -1,6 +1,9 @@
 package org.auscope.nvcl.server.service;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.xpath.XPathConstants;
@@ -20,6 +23,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVParser;
 /*
  * IJobProcessor the base class for JobProcessor
  * it is extends from Thread class. 
@@ -152,40 +157,68 @@ public class IJobProcessor extends Thread {
 
 		for (String serviceUrl : this.serviceUrlsList) {
 			String serviceHost = Utility.getHost(serviceUrl);
-			String servicePathOfData;
-			// NSW NVCL dataservices are running on the NVCLDownloadServices
-			// path
-			if (serviceUrls.contains("auscope.dpi.nsw.gov.au")) {
-				servicePathOfData = "NVCLDownloadServices/";
+			String servicePathOfData = "NVCLDataServices/";
+			int count = 0;
+			String wfsVersion = "1.0.0";
+			String outputFormat = "csv";
+			String responseString;
+			int startIndex = 0;
+			int maxFeatures = 10000;
+			int pageCount = maxFeatures;
+			int totalCount = 0;
+			int pages = 0 ;			
+			if (this.filter.indexOf("ogc:Intersects") < 0) {
+				//normal filter use 1.1.0
+				startIndex = -1;
+				maxFeatures = -1;
+				wfsVersion = "1.1.0";
+				pageCount = maxFeatures;
 			} else {
-				servicePathOfData = "NVCLDataServices/";
+				//polygon filter use 1.0.0
+				startIndex = 0;
+				maxFeatures = 10000;
+				wfsVersion = "1.0.0";	
+				pageCount = maxFeatures;
 			}
+
 			try {
-				String responseString = NVCLAnalyticalRequestSvc.dataAccess.makeWFSGetFeaturePostMethod(serviceUrl, this.layerName, this.filter);		
-				Document responseDoc = Utility.buildDomFromString(responseString);
-				checkForExceptionResponse(responseDoc);
-
-				XPathExpression exp = Utility.compileXPathExpr(
-						"/*[local-name() = 'FeatureCollection']/*[local-name() = 'featureMembers']/*[local-name() = 'BoreholeView']/*[local-name() = 'identifier']");
-				NodeList publishedDatasets = (NodeList) exp.evaluate(responseDoc, XPathConstants.NODESET);
-				logger.debug(publishedDatasets.getLength() + " boreholes returned from " + serviceHost);
-				for (int i = 0; i < publishedDatasets.getLength(); i++) {
-					Element eleHoleUrl = (Element) publishedDatasets.item(i);
-					String holeUrl = eleHoleUrl.getFirstChild().getNodeValue();
-					if (holeUrl != null) {
-						String[] urnBlocks = holeUrl.split("/");
-						if (urnBlocks.length > 1) {
-							String holeIdentifier = urnBlocks[urnBlocks.length - 1];
-							boreholeList.add(new BoreholeVo(holeIdentifier, holeUrl, serviceUrl, serviceHost,
-									servicePathOfData));
+				while (pageCount == maxFeatures){
+					logger.info("getBoreholeList:page:"  + pages + ":pageCount:" + pageCount);
+					pages++;
+					pageCount = 0;
+					responseString = NVCLAnalyticalRequestSvc.dataAccess.makeWFSGetFeaturePostMethod(serviceUrl, wfsVersion, outputFormat, this.layerName, this.filter, maxFeatures, startIndex);		
+					startIndex += maxFeatures ;
+					String csvLine[];
+					CSVReader reader = new CSVReader(new StringReader(responseString), CSVParser.DEFAULT_SEPARATOR, CSVParser.DEFAULT_QUOTE_CHARACTER, CSVParser.DEFAULT_ESCAPE_CHARACTER);
+					csvLine = reader.readNext();//skip the header
+					while ((csvLine = reader.readNext()) != null) {
+						pageCount++;
+						totalCount++;
+						if (csvLine.length < 34) {
+							logger.error("getBoreholeList:wrong csv:"  + serviceUrl + ":" + Arrays.toString(csvLine));
+							continue;
 						}
+						String nvclCollection = csvLine[28];
+						String holeUrl = csvLine[6];
+						if (holeUrl != null && "true".equalsIgnoreCase(nvclCollection)) {
+							String[] urnBlocks = holeUrl.split("/");
+							if (urnBlocks.length > 1) {
+								String holeIdentifier = urnBlocks[urnBlocks.length - 1];
+								boreholeList.add(new BoreholeVo(holeIdentifier, holeUrl, serviceUrl, serviceHost, servicePathOfData));
+								count++;
+							}
+						}					
 					}
-
+					reader.close();
+					reader = null;
 				}
 			} catch (Exception ex) {
 				logger.error("IJobProcessor::processStage1 for " + serviceUrl + " failed");
 			} 
+			logger.info("IJobProcessor getBoreholeList total:" + serviceUrl + ":count:" + count + ":totalCount:" + totalCount);
+
 		}
+		
 		return true;
 	}
 
