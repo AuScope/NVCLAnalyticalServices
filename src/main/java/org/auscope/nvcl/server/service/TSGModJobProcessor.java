@@ -393,11 +393,12 @@ public class TSGModJobProcessor  extends IJobProcessor{
 				logger.error("Exception: on evaluating comparison result"+e);
 			}
             logger.debug( Utility.getCurrentTime() + "getDownSampledData:writeCSV:");
+            String host = Utility.getHostOnly(nvclDataServiceUrl);
             String filePath = dataPath + this.jobid;
             Utility.createDirectorys(filePath);
             String fileFullPath = filePath + "/" + holeIdentifier;
             scalarArray.writeScalarCSV(fileFullPath + "-scalar.csv");
-            scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled.csv");
+            scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled-" + host + ".csv");
             scalarArray = null;
         } catch (Exception e) {
             logger.error("Exception: on getDownSampledData general failure "+e);
