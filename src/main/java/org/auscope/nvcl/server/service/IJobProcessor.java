@@ -191,15 +191,27 @@ public class IJobProcessor extends Thread {
 					String csvLine[];
 					CSVReader reader = new CSVReader(new StringReader(responseString), CSVParser.DEFAULT_SEPARATOR, CSVParser.DEFAULT_QUOTE_CHARACTER, CSVParser.DEFAULT_ESCAPE_CHARACTER);
 					csvLine = reader.readNext();//skip the header
+					//find nvclCollection & Indentifier index
+					int iNvclCollection = 0;
+					int iIndentifier = 0;
+					for (int i = 0; i< csvLine.length; i++) {
+						if (csvLine[i].equalsIgnoreCase("gsmlp:nvclCollection"))
+							iNvclCollection= i;
+						else if (csvLine[i].equalsIgnoreCase("gsmlp:identifier"))
+							iIndentifier= i;							
+					}
+					if (iNvclCollection == 0 || iIndentifier ==0)
+						continue;					
+					//
 					while ((csvLine = reader.readNext()) != null) {
 						pageCount++;
 						totalCount++;
-						if (csvLine.length < 34) {
+						if (csvLine.length < iNvclCollection) {
 							logger.error("getBoreholeList:wrong csv:"  + serviceUrl + ":" + Arrays.toString(csvLine));
 							continue;
 						}
-						String nvclCollection = csvLine[28];
-						String holeUrl = csvLine[6];
+						String nvclCollection = csvLine[iNvclCollection];
+						String holeUrl = csvLine[iIndentifier];
 						if (holeUrl != null && "true".equalsIgnoreCase(nvclCollection)) {
 							String[] urnBlocks = holeUrl.split("/");
 							if (urnBlocks.length > 1) {
