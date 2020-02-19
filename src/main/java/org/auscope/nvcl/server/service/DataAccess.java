@@ -75,8 +75,11 @@ public class DataAccess {
 		} else {
 			HttpRequestBase methodSpectralData = nvclMethodMaker.getSpectralDataMethod(nvclDataServiceUrl, logid, start,
 					end);
-
+			logger.debug("starting request");
 			byte[] result = httpServiceCaller.getMethodResponseAsBytes(methodSpectralData);
+			logger.debug("going to sleep");
+			Thread.sleep(2000);
+			logger.debug("waking up!");
 			if(result.length>0) FileUtils.writeByteArrayToFile(f, result);
 			logger.debug("fetched and saved to cache spectral data for logid " + host + ":" + logid + " start:" + start
 					+ " end:" + end);
@@ -97,10 +100,15 @@ public class DataAccess {
 			HttpRequestBase methodMask = nvclMethodMaker.getDownloadScalarsMethod(nvclDataServiceUrl, logid);
 
 			String result = httpServiceCaller.getMethodResponseAsString(methodMask);
-			if(!Utility.stringIsBlankorNull(result)) FileUtils.writeStringToFile(f, result,Charset.defaultCharset());
-			logger.debug("fetched and saved to cache scalar data for logid " + host + ":" + logid);
+			if(!Utility.stringIsBlankorNull(result)){
+				FileUtils.writeStringToFile(f, result,Charset.defaultCharset());
+				logger.debug("fetched and saved to cache scalar data for logid " + host + ":" + logid);
+			}
+			else {
+				logger.debug("failed to get mask data with id "+logid+" from host"+host);
+			}
 			methodMask.releaseConnection();
-			return null;
+			return result;
 		}
 	}
 
