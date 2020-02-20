@@ -1,5 +1,6 @@
 name = Hm-Go_Distr, 6
 description = Continuum removed wavelength of the 900 nm absorption minimum calculated using a fitted 4th order polynomial between 776-1150nm.
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:iron oxides
@@ -16,6 +17,7 @@ return=expr, param1=p4, param2=p5, arithop=mult
 
 name = Kaolin_Abundance,3
 description = Normalized depth of a fitted 4th order polynomial between 2120 and 2245 nm, aka 2200D
+#Spectype = VSWIR
 Version = 2.0
 Category = published
 scalargroup = mineralogy:kaolins
@@ -28,6 +30,7 @@ return=expr, param1=p1, mod1=unset, param2=p2, arithop=mult, nullhandling=both
 
 name = Kaolin_Crystallinity,8
 description = Composition and crystallinity of kaolin group minerals ranging from well-ordered kaolinite to halloysite to dickite (and nacrite)
+#Spectype = VSWIR
 Version = 2.0
 Category = published
 scalargroup = mineralogy:kaolins
@@ -46,6 +49,7 @@ return= expr, param1=p5, param2=p7, arithop=mult
 
 name = Ferric_Oxide_Abundance, 3
 description = Continuum removed depth of the 900 nm absorption calculated using a fitted 2nd order polynomial between 776 and 1050 nm
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:iron oxides
@@ -59,6 +63,7 @@ return= expr, param1=p2, mod1=set, param2=p1, arithop=mult, nullhandling=out
 
 name = Amph_Talc_Abundance,5
 description = Amphibole and talc abundance index with kaolin masking
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = A24997DB-55F4-4A1F-AF5B-D8914A68B6E3
@@ -73,6 +78,7 @@ return = expr, param1=P3, param2=P4, arithop=MULT, mod1=PLAIN, mod2=PLAIN, mainm
 
 name = Amph_Talc_Composition,7
 description = Amphibole and talc composition with kaolin masking
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = AF15A753-8CFB-4CBD-ABFF-C8248F87DFF0
@@ -89,6 +95,7 @@ return = expr, param1=P5, param2=P6, arithop=MULT
 
 name = Carbonate_Abundance,19
 description = Carbonate abundance index (SWIR)
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:carbonates
@@ -123,6 +130,7 @@ return= expr, param1=p18, param2=p5, arithop=mult
 
 name = Carbonate_Composition, 20
 description = Carbonate composition (Separating calcite, dolomite, siderite etc) (SWIR)
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:carbonates
@@ -159,6 +167,7 @@ return= expr, param1=p19, param2=p18, arithop=mult
 
 name = Chlorite-Epidote_Abundance,8
 description = Chlorite / epidote / biotite abundance index
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = E75AF318-BE8F-4F0D-A999-C7A017444762
@@ -177,6 +186,7 @@ return = expr, param1=P4, param2=P7, arithop=MULT
 
 name = Chlorite-Epidote_Composition,8
 description = Chlorite / epidote / biotite composition
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = 5F0D8E70-6C63-4715-913E-3FE67E555046
@@ -196,6 +206,7 @@ return = expr, param1=P1, param2=P7, arithop=MULT
 
 name = Epidote_Abundance,12
 description = 2250nm Chlorite abundance index times (filtered by) a 1555nm (epidote-specific) depth index.
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:epidotes
@@ -220,6 +231,7 @@ return = expr, param1=P8, param2=P11, arithop=MULT
 
 name = ISM_Area_vs_Depth,3
 description = Illite Spectral Maturity (has the best correlation with Kuebler Index according to Doublier)
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:micas (white)
@@ -232,6 +244,7 @@ return = expr, param1=P2, param2=P1, arithop=DIV
 
 name = ISM_H2O,14
 description = Illite Spectral Maturity
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 scalargroup = mineralogy:micas (white)
@@ -257,6 +270,7 @@ return = expr, param1=P12, param2=P13, arithop=DIV
 
 name = White_Mica_Smectite_Abundance,7
 description = Abundance of white micas (e.g.  illite, muscovite, paragonite, brammalite, phengite, lepidolite, margarite) and smectites (montmorillonite, beidellite)
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = 927794ED-05D8-423D-87D6-DB44D7348159
@@ -272,6 +286,7 @@ return = expr, param1=P6, param2=P4, arithop=MULT
 
 name = White_Mica_Smectite_Composition,8
 description = Tschermak substitution of white micas, ranging from paragonite, brammalite, to illite, muscovite to phengite, and smectites, ranging from beidellite to montmorillonite.
+#Spectype = VSWIR
 Version = 1.0
 Category = published
 uuid = DE273E87-FA35-4B14-B41A-38D15E615819
@@ -287,6 +302,7 @@ return = expr, param1=P6, param2=P7, arithop=MULT
 
 name = 1480D,1
 description = Continuum removed depth of fourth-order polynomial, fitted between 1440 and 1520 nm.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = A2E5E891-3874-4A7A-8AD9-68502F9EFD98
@@ -296,6 +312,7 @@ return = pfit, layer=REF, wunits=NANOMETERS, inflex=NO, peaks=NO, wmin=1440.0000
 
 name = 1480W,1
 description = Continuum removed depth of fourth-order polynomial, fitted between 1440 and 1520 nm.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = B96BC72E-C3E4-4C4C-8ADB-05CF541EE322
@@ -304,6 +321,7 @@ return = pfit, layer=REF, wunits=NANOMETERS, inflex=NO, peaks=NO, wmin=1440.0000
 
 name = 2160D2190,1
 description = Ratio giving the intensity of the 2160 absorption feature.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 4B17BBB5-4341-4329-AEA6-68F1B78316CA
@@ -312,6 +330,7 @@ return = ratio, wnum=2138, wnum2=2190, wdenom=2156, wdenom2=2179
 
 name = 2200D,1
 description = Relative depth of the 2200 nm absorption for which the continuum is removed between 2120 and 2245, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 7BEFA1A6-23BF-468B-A65D-EF23B98EAFC1
@@ -320,6 +339,7 @@ return = profile, stat=DEPTH, wcentre=2183.00, wradius=63.00, layer=REF, smooth=
 
 name = 2200W,1
 description = Wavelength of the 2200 nm absorption for which the continuum is removed between 2120 and 2245, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = B0338D4C-56B3-4B72-9961-B0F8CDC8DC55
@@ -328,6 +348,7 @@ return = profile, stat=WVL@MIN, wcentre=2183.00, wradius=63.00, layer=REF, smoot
 
 name = 2250D,1
 description = Relative depth of the 2250 nm absorption for which the continuum is removed between 2230 and 2280, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 84248A96-C57F-4999-805E-78B8637E790D
@@ -336,6 +357,7 @@ return = profile, stat=DEPTH, wcentre=2255.00, wradius=25.00, layer=REF, smooth=
 
 name = 2250W,1
 description = Wavelength of the 2250 nm absorption for which the continuum is removed between 2230 and 2280, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 92E93100-32FD-40BC-8915-993DF5254118
@@ -344,6 +366,7 @@ return = profile, stat=WVL@MIN, wcentre=2255.00, wradius=25.00, layer=REF, smoot
 
 name = 2290D,3
 description = Local-continuum-removed depth of deepest feature between 2270 and 2330 nm, filtered > 0.01.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 92C34E64-B063-4480-92E4-998F51B84096
@@ -354,6 +377,7 @@ return = expr, param1=p1, param2=p2, arithop=mult
 
 name = 2320W,1
 description = Wavelength of the 2320 nm absorption for which the continuum is removed between 2295 and 2345, determined using a 3 band polynomial fit around the band with the lowest reflectance.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = 6C35DE12-8141-4839-9CBA-3BD072E4CC0D
@@ -362,6 +386,7 @@ return = profile, stat=Wvl@Min, wcentre=2320.00, wradius=25.00, layer=REF, smoot
 
 name = 2350D,1
 description = Ratio giving the depth of the 2350 feature.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = C8EED4E8-4A6F-49C0-9091-EFF1B9F2668A
@@ -370,6 +395,7 @@ return = ratio, wnum=2326, wnum2=2376, wdenom=2343, wdenom2=2359
 
 name = 2380D,1
 description = Ratio giving the depth of the 2380 feature.
+#Spectype = VSWIR
 Version = 1.0
 Category = base
 UUID = C7708B54-8E70-437A-A4DB-B1430D1E0053
@@ -378,6 +404,7 @@ return = ratio, wnum=2365, wnum2=2415, wdenom=2381, wdenom2=2390
 
 name = 6500P,1
 description = Relative height of the reflectance peak between 6300 and 6700 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 03A46035-2419-459E-8EF2-83CD4C74A068
@@ -386,6 +413,7 @@ return = profile, stat=MAX, wcentre=6500.00, wradius=200.00, layer=TCREF, smooth
 
 name = 9000P,1
 description = Relative height of the reflectance peak between 8900 and 9300 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 41A9184B-A180-4C01-8B0A-FD4BE2A10B02
@@ -394,6 +422,7 @@ return = profile, stat=max, wcentre=9100, wradius=200.00, layer=TCREF, smooth=NO
 
 name = 9600P,1
 description = Relative height of the reflectance peak between 9250 and 9950 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 233603D2-055C-4030-A605-BDF99D15A1EF
@@ -402,6 +431,7 @@ return = profile, stat=MAX, wcentre=9600.00, wradius=350.00, layer=TCREF, smooth
 
 name = 9800P,1
 description = Relative height of the reflectance peak between 9665 and 9910 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 1C8D1D7A-FFD5-44CC-B115-1F0D8FB8D8F4
@@ -410,6 +440,7 @@ return = profile, stat=max, wcentre=9785, wradius=125.00, layer=TCREF, smooth=NO
 
 name = 11100P,1
 description = Relative height of the reflectance peak between 10800 and 11300 nm, determined using a 3 band polynomial fit around the band with the highest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 95B973F4-B88C-4B2C-9926-25BF4A2C257D
@@ -418,6 +449,7 @@ return = profile, stat=MAX, wcentre=11050.00, wradius=250.00, layer=TCREF, smoot
 
 name = 14000W,1
 description = Wavelength of the reflectance low between 13000 and 14000 nm, determined using a 3 band polynomial fit around the band with the lowest reflectance
+#Spectype = TIR
 Version = 1.0
 Category = base
 UUID = 49D8DD9F-C185-49E1-B826-B1AD94584751
