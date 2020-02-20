@@ -455,3 +455,10 @@ Category = base
 UUID = 49D8DD9F-C185-49E1-B826-B1AD94584751
 Author = n / a
 return = profile, stat=wvl@Min, wcentre=13750, wradius=250.00, layer=TCREF, smooth=NONE, fit=THREE, bkrem=NONE
+
+TSG Specialist Scalar Command Set
+Commands = 1
+name = SWIR_TSA_3,1
+#Spectype = VSWIR
+#outputFormat = Complex
+return = auxm, layer=REF, auxlib=$systsaswir.hdr, algo=tsa, nmix=3, method=scores, level=group, wmin1=1304, wmax1=2496
