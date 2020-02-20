@@ -69,8 +69,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
     public void setAnalyticalJob(AnalyticalJobVo messageVo) {
         byte[] byteTsgScript = Base64.getDecoder().decode(messageVo.getTsgScript());
         this.tsgScript = new String(byteTsgScript);
-        if (this.tsgScript.contains("Spectype = TIR")) {
-            this.tsgScript = this.tsgScript.replaceAll("Spectype.*=.*TIR\n","#Spectype = TIR\n");             
+        if (this.tsgScript.contains("Spectype = TIR")) {            
             this.wvLogname = "Base Refl";
         } else {
             this.wvLogname = "Reflectance";
