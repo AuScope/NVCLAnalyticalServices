@@ -239,7 +239,7 @@ public class RestMenuController {
     		@RequestParam(required = false, value="outputFormat") String outputFormat) throws ServletException,
             IOException {
 
-    	if (tsgAlgName == null) {
+        if (tsgAlgName == null) {
     		if (outputFormat!=null && outputFormat.equals("json"))
     		{
 	    		response.setContentType("application/json");
@@ -256,7 +256,13 @@ public class RestMenuController {
     		}
     		else return tsgscripts.getScripts().get(tsgAlgName);
     	}
-        else return  "Not defined";
+        else 
+        {
+            if (outputFormat!=null && outputFormat.equals("json"))	{
+                return  jsonObjectMapper.writeValueAsString("Not defined");
+            }
+            else return "Not defined";
+        }
     }    
     
     @RequestMapping("/listTsgAlgorithms.do")
