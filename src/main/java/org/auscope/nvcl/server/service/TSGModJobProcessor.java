@@ -99,7 +99,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 String logid = eleLogIDMask.getFirstChild().getNodeValue(); 
                 Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
                 String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
-                if (strLogNameMask.equalsIgnoreCase("Final Mask")) {
+                if (strLogNameMask.replaceAll(" ","").replaceAll("_","").compareToIgnoreCase("FinalMask")==0) {
                     strLogIDMask = logid;
                     logger.debug("final mask scalar found with id "+ strLogIDMask);
                     break;
@@ -131,7 +131,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                 String logid = eleLogIDMask.getFirstChild().getNodeValue(); 
                 Element eleLogNameMask = (Element) exprLogNameMask.evaluate(nodeListMask.item(j), XPathConstants.NODE);
                 String strLogNameMask = eleLogNameMask.getFirstChild().getNodeValue();     
-                if (strLogNameMask.equalsIgnoreCase("Domain")) {
+                if (strLogNameMask.toLowerCase().contains("mask") ) {//equalsIgnoreCase("Domain")) {
                     strLogIDMask = logid;
                     logger.debug("Domain scalar found with id "+ strLogIDMask);
                     break;
@@ -157,14 +157,18 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             //test for andulsite only
             logger.debug(holeIdentifier);
-//            if (!holeIdentifier.contains("MIN_001587"))
-//                continue;
+            // if (!holeIdentifier.contains("44653"))
+            //    continue;
             /////////////////////////
             try {
                 String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
                 Document responseDoc = Utility.buildDomFromString(responseString);
                 XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/SpectralLogs/SpectralLog");//DatasetCollection/Dataset/Logs/Log");//
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
+                if ( nodeList.getLength() == 0) {
+                    logger.debug("getDataCollection: No dataset for serviceUrl:" + nvclDataServiceUrl + " :boreholeid:" + holeIdentifier);                                            
+                    continue;
+                }
                 XPathExpression exprLogID = Utility.compileXPathExpr("logID");
                 XPathExpression exprLogName = Utility.compileXPathExpr("logName");
                 XPathExpression exprSampleCount = Utility.compileXPathExpr("sampleCount");

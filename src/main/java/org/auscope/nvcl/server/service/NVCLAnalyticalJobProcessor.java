@@ -66,6 +66,10 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 Document responseDoc = Utility.buildDomFromString(responseString);
                 XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/Logs/Log");
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
+                if ( nodeList.getLength() == 0) {
+                    logger.debug("getDataCollection: No dataset for serviceUrl:" + nvclDataServiceUrl + " :boreholeid:" + holeIdentifier);                                            
+                    continue;
+                }                
                 XPathExpression exprLogID = Utility.compileXPathExpr("LogID");
                 XPathExpression exprLogName = Utility.compileXPathExpr("logName");
                 XPathExpression exprLogType = Utility.compileXPathExpr("logType");
