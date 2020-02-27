@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.jms.Destination;
@@ -31,6 +32,7 @@ import org.auscope.nvcl.server.util.ZipUtil;
 import org.auscope.nvcl.server.vo.AnalyticalJobResponse;
 import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
+import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -233,6 +235,7 @@ public class RestMenuController {
         response.setContentType("application/json");
         return jsonObjectMapper.writeValueAsString(jobResultVo);
     }
+    
     @RequestMapping("/getTsgAlgorithms.do")
     public String getTsgAlgorithms( HttpServletRequest request, HttpServletResponse response,
     		@RequestParam(required = false, value="tsgAlgName") String tsgAlgName,
@@ -414,6 +417,62 @@ public class RestMenuController {
         response.setContentType("application/json");
         return jsonObjectMapper.writeValueAsString(publishStatus);
     }
+    /**
+     * Downloads results of NVCL processing job
+     * @param jobId
+     *            job id NVCL processing job
+     * @param returns results as a byte stream encoded in zip format, containing csv files
+     * @throws Exception
+     */     
+    @RequestMapping("/downloadNVCLJobResult.do")
+    public void downloadNVCLJobResult(@RequestParam("jobid") String jobId, HttpServletResponse response) throws Exception {
+       // AnalyticalJobResults results = this.dataService2_0.getProcessingResults(jobId);
+
+        if (Utility.stringIsBlankorNull(jobId)) {
+            return;
+        }
+
+        NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = new NVCLAnalyticalQueueBrowser();
+        nvclAnalyticalQueueBrowser.setJmsTemplate(jmsTemplate);
+        List<AnalyticalJobResultVo> jobResultList = (ArrayList<AnalyticalJobResultVo>) nvclAnalyticalQueueBrowser.browseQueueResult(jobId, nvclResultDestination);
+        AnalyticalJobResultVo jobResultVo = null;
+        if (jobResultList == null) {
+            logger.info("result queue is null");
+        } else {
+            for (Iterator<?> it1 = jobResultList.iterator(); it1.hasNext();) {
+                jobResultVo = (AnalyticalJobResultVo) it1.next();
+            }
+        } 
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition","inline; filename=nvclanalytics-" + jobId + ".zip;");
+        ZipOutputStream zout = new ZipOutputStream(response.getOutputStream());
+
+        try{
+            zout.putNextEntry(new ZipEntry("passIds.csv"));
+            for (BoreholeResultVo borehole : jobResultVo.boreholes) {
+                zout.write((borehole.toString() + '\n').getBytes());
+            }
+            zout.closeEntry();
+
+            zout.putNextEntry(new ZipEntry("failIds.csv"));
+            for (BoreholeResultVo borehole : jobResultVo.failedBoreholes) {
+                zout.write((borehole.toString() + '\n').getBytes());
+            }
+            zout.closeEntry();
+
+            zout.putNextEntry(new ZipEntry("errorIds.csv"));
+            for (BoreholeResultVo borehole :jobResultVo.errorBoreholes) {
+                zout.write((borehole.toString() + '\n').getBytes());
+            }
+            zout.closeEntry();
+
+            zout.finish();
+            zout.flush();
+        } finally {
+            zout.close();
+        }
+    }
+
     //Download TsgModJob's scalar csv.
     @RequestMapping("/downloadTsgJobData.do")
     public void downloadTsgJobData(@RequestParam("jobid") String jobId, HttpServletResponse response) throws Exception {

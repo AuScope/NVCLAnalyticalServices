@@ -26,4 +26,7 @@ public class BoreholeResultVo {
     public void setMsg(String msg) {
         this.msg = msg;
     }
+    public String toString() {
+        return this.id + ',' + this.msg;
+    }    
 }
