@@ -11,7 +11,9 @@ public class SpectralLogVo {
     private int sampleCount;
     private String wavelengths;
     private float[] wvl;
-    public SpectralLogVo(String logID, String sampleCount, String wavelengths) {
+    private String logName;
+    public SpectralLogVo(String logID, String sampleCount, String wavelengths, String logName) {
+        this.logName = logName;
         this.setLogID(logID);
         int iSampleCount = Integer.parseInt(sampleCount);
         this.setSampleCount(iSampleCount);
@@ -43,5 +45,8 @@ public class SpectralLogVo {
     }
     public void setWavelengths(String wavelengths) {
         this.wavelengths = wavelengths;
-    }    
+    }
+    public String getLogName() {
+        return this.logName;
+    } 
 }

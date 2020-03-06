@@ -157,8 +157,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
             //test for andulsite only
             logger.debug(holeIdentifier);
-            // if (!holeIdentifier.contains("44653"))
-            //    continue;
+            // if (!holeIdentifier.contains("WTB5")) // 44653"))
+            //   continue;
             /////////////////////////
             try {
                 String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
@@ -187,7 +187,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
                     String strWavelengths = eleWavelengths.getFirstChild().getNodeValue();
                     
                     if (intSampleCount > 0 && strLogName.equalsIgnoreCase(this.wvLogname)) {
-                        boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths));
+                        boreholeVo.spectralLogList.add(new SpectralLogVo(strLogID,strSampleCount,strWavelengths,this.wvLogname));
                         isError = false;
                         totalLogids++;                        
                         logger.debug("getDataCollection:" + this.wvLogname + ":boreholeid:" + holeIdentifier + ":LogID:" + strLogID + ":" + strLogName + ":" + strSampleCount );
@@ -234,6 +234,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
     public boolean getSpectralData() {
         String resultMsg = "InitMessage";
         int totalProcessedLogid = 0;
+
+        ////////
         logger.debug( "getSpectralData:" + this.serviceUrls);
         for (BoreholeVo boreholeVo : boreholeList) {
             String nvclDataServiceUrl = boreholeVo.getServiceHost() + boreholeVo.getServicePathOfData();
@@ -247,7 +249,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
             boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
-            
+            //assume only one spectra per borehole at the moment
+            assert(boreholeVo.spectralLogList.size() == 1);
             for(SpectralLogVo spectralLog : boreholeVo.spectralLogList) {
 
                 totalProcessedLogid++;
@@ -272,12 +275,23 @@ public class TSGModJobProcessor  extends IJobProcessor{
                         target.put(NVCLAnalyticalRequestSvc.dataAccess.getSpectralDataMethod(nvclDataServiceUrl, logid, start, end));
 
                     }
-                    logger.debug("getSpectralData:Call TsgMod");
-                    tsgMod.parseOneScalarMethod(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
-                    
-                    ////////
-                    logger.debug("getSpectralData:getDownSampledData:");
-                    isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,holeIdentifier,finalMaskLogid,domainlogid );
+                    if (this.tsgScript.indexOf("outputFormat = Complex") < 0) { //TSG
+                        // tsgMod.parseTSGScript(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData2D(spectralData, waveLengthCount), sampleCount, value, (float) 0.2);
+                        tsgMod.parseTSGScript(tsgRV, this.tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData(spectralData), sampleCount, value, (float) 0.2);
+
+                        ////////
+                        logger.debug("getSpectralData:Call TsgMod:TSG");
+
+                        isHit = getDownSampledData (tsgRV,sampleCount,nvclDataServiceUrl,holeIdentifier,finalMaskLogid,domainlogid );                        
+                    } else { //TSA
+                        String filePath = dataPath + jobid;
+                        Utility.createDirectorys(filePath);
+                        String host = Utility.getHostOnly(nvclDataServiceUrl);
+                        String fileFullPath = filePath + "/" + holeIdentifier + "-TsaScalar-" + host +".csv";
+                        isHit = tsgMod.parseTSAScript(fileFullPath,tsgScript, wvl, waveLengthCount, Utility.getFloatSpectralData2D(spectralData, waveLengthCount),sampleCount); //sampleCount);
+                        logger.debug("getSpectralData:Call TsgMod:TSA");
+                    }
+
                     ////////
                     if (isHit) {
                         resultMsg = formatMessage(1);

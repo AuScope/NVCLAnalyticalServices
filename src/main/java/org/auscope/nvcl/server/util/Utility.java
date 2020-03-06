@@ -231,6 +231,28 @@ public class Utility {
      * @param array of byte
      * @return array of float
      */     
+    public static float[][] getFloatSpectralData2D(byte[] spectraldata,int spectrumWidth) {
+        int x = (spectraldata.length/4)/spectrumWidth;
+        int y = spectrumWidth;
+        float[][] specfloats = new float[x][y];
+        for(int j=0;j<x;j++) {
+            for (int i=0;i<y;i++){
+                ByteBuffer buffer = ByteBuffer.wrap(spectraldata,(y*j+i)*4,4).order(ByteOrder.LITTLE_ENDIAN);
+                specfloats[j][i]= buffer.getFloat();
+            }
+        }
+        // verify 2d is equal 1d 
+        // float[] spv2 = Utility.getFloatSpectralData(spectraldata);
+        // for(int j=0;j<x;j++) {
+        //     for (int i=0;i<y;i++){
+        //         if (Math.abs(spv2[j*y+i] - specfloats[j][i]) > 0.0001)
+        //             System.out.println("Not equal:" + spv2[j*y+i] + ":" + specfloats[j][i]);
+        //     }
+        // }        
+
+        return specfloats;
+    }
+
     public static float[] getFloatSpectralData(byte[] spectraldata) {
         float[] specfloats = new float[spectraldata.length/4];
         for (int i=0;i<spectraldata.length;i+=4){
@@ -239,6 +261,7 @@ public class Utility {
         }
         return specfloats;
     }
+
     /**
      * Get HttpClient with Proxy settings /
      * 
