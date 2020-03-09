@@ -4,15 +4,16 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-         {
+        {
             "type": "java",
             "name": "Debug (Launch)-NvclAnalyticalServicesApplication",
             "request": "launch",
             "stopOnEntry": false,
             "mainClass": "org.auscope.nvcl.server.NvclAnalyticalServicesApplication",
-            "vmArgs": "",
+            "vmArgs": "-Djava.net.preferIPv4Stack=true",
             "args": "",
-            "projectName": "NVCLAnalyticalServices"
+            "projectName": "NVCLAnalyticalServices",
+            "cwd": "${workspaceFolder}",
         },
         {
             "type": "java",

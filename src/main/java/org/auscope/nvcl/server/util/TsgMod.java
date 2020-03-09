@@ -54,7 +54,7 @@ public class TsgMod {
             logger.debug("TsgMod:parseOneBatchScript: " + h);
             if (script.indexOf("outputFormat = Complex") >= 0) {
                 // TSA script
-                int queryno = 21, nmix = 3;
+                int queryno = 23, nmix = 3;
                 // Extract nmix from script if there is any.
                 Pattern pattern = Pattern.compile("nmix ?= ?([0-9]*),");
                 Matcher matcher = pattern.matcher(script);

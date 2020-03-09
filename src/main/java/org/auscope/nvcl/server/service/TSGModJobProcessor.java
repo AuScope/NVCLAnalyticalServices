@@ -159,7 +159,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             logger.debug(holeIdentifier);
             // if (!holeIdentifier.contains("WTB5")) // 44653"))
             //   continue;
-            /////////////////////////
+            // ///////////////////////
             try {
                 String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDatasetCollection(nvclDataServiceUrl, holeIdentifier);
                 Document responseDoc = Utility.buildDomFromString(responseString);
@@ -414,8 +414,8 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String filePath = dataPath + this.jobid;
             Utility.createDirectorys(filePath);
             String fileFullPath = filePath + "/" + holeIdentifier;
-            scalarArray.writeScalarCSV(fileFullPath + "-scalar.csv");
-            scalarArray.writeDownSampledScalarCSV(fileFullPath + "-scalarDownSampled-" + host + ".csv");
+            scalarArray.writeScalarCSV(fileFullPath + "-tsgScalar.csv");
+            scalarArray.writeDownSampledScalarCSV(fileFullPath + "-tsgScalarDownSampled-" + host + ".csv");
             scalarArray = null;
         } catch (Exception e) {
             logger.error("Exception: on getDownSampledData general failure "+e);
