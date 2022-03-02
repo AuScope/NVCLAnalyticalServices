@@ -32,6 +32,15 @@ jobs:
         with:
           name: java-app
           path: '${{ github.workspace }}/build/libs/*.jar'
+      
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'nvclanalytics'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8BFD000597B644B0AA7F50917FC68C4F }}
+          package: '${{ github.workspace }}/build/libs/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
