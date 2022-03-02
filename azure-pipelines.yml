@@ -24,5 +24,4 @@ steps:
 - task: PublishPipelineArtifact@1
   inputs:
     targetPath: '$(Pipeline.Workspace)/build/libs/'
-    artifact: '*.jar'
     publishLocation: 'pipeline'
