@@ -16,7 +16,12 @@ public class TsgMod {
     static {
         // note: library name is case sensitive and should be TsgMod.dll in windows and
         // libTsgMod.so in linux
-        System.loadLibrary("TsgMod");
+        try {
+            System.loadLibrary("TsgMod");
+        }
+        catch (Exception ex) {
+            logger.error(ex.toString());
+        }
         logger.info("TsgMod:load c lib from " + System.getProperty("java.library.path"));
 
     }
