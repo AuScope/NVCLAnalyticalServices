@@ -90,7 +90,9 @@ public class NVCLAnalyticalRequestSvc {
 	    SimpleMailMessage msg = new SimpleMailMessage();
 	    //http://auscope-portal-dev.arrc.csiro.au/gmap.html?nvclanid=8f664b74ed93bd5892307a0b4fb20dee
 	    String jobResultVisualUrl = config.getPortalURL() + "?nvclanid=" + messageVo.getJobid();
-	    
+		String jobResultDownloadUrl = config.getWebappURL() + "downloadNVCLJobResult.do?jobid=" + messageVo.getJobid();
+		String jobResultTsgDownloadUrl = config.getWebappURL() + "downloadTsgJobData.do?jobid=" + messageVo.getJobid();
+
 	    try {
 	        msg.setTo(messageVo.getEmail());
 	        
@@ -101,7 +103,11 @@ public class NVCLAnalyticalRequestSvc {
 	        	+ " is ready for collect.\n  "
 	        	+ "The result link is :\n"
 	        	+  jobResultUrl + "\n"
-	        	+ "The job started at " + jobStartTime + " and ended at " + jobEndTime + "\n"	        	
+	        	+ "The job started at " + jobStartTime + " and ended at " + jobEndTime + "\n"	        
+				+ "The NVCL-Job download link is :\n"
+	        	+  jobResultDownloadUrl + "\n"
+				+ "The TSG-Job download link is :\n"
+	        	+  jobResultTsgDownloadUrl + "\n"
 	        	+ "The visualization result link is :\n"
 	        	+ jobResultVisualUrl + "\n"
 	        	+"This link will remain available for download for "
