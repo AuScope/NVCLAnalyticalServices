@@ -11,6 +11,7 @@ sourceCompatibility = '11'
 bootJar {
     baseName = 'NVCLAnalyticalServices'
     version =  '1.1.2'
+	archiveFileName.set("app.jar")
 }
 repositories {
 	mavenCentral()
