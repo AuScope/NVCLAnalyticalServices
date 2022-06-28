@@ -1,5 +1,6 @@
 package org.auscope.nvcl.server;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,6 +11,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.listener.SimpleMessageListenerContainer;
 import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -29,7 +31,7 @@ import org.auscope.nvcl.server.vo.ConfigVo;
 @Configuration
 public class NvclAnalyticalServicesApplication {
 
-    private JavaMailSenderImpl mailSender = null;
+    private JavaMailSender mailSender = null;
     private JmsTemplate jmsTemplate = null;
     private NVCLAnalyticalMessageConverter nvclAnalyticalMessageConverter = null;
     private ConfigVo config = null;
@@ -103,19 +105,7 @@ public class NvclAnalyticalServicesApplication {
         else
             return this.jmsTemplate;
     }
-
-    @Bean
-    @DependsOn({"createConfig"})
-    @ConfigurationProperties(prefix = "smtp")
-    public JavaMailSenderImpl mailSender(){
-        if (this.mailSender==null) {
-            this.mailSender = new JavaMailSenderImpl();
-            return this.mailSender;
-        }
-        else
-            return this.mailSender;
-    }
-
+    
     @Bean
     @DependsOn({"createConfig"})
     public ActiveMQQueue nvclSubmitDestination(){
@@ -168,7 +158,6 @@ public class NvclAnalyticalServicesApplication {
             this.nvclAnalyticalRequestSvc.setJmsTemplate(jmsTemplate(connectionFactory));
             this.nvclAnalyticalRequestSvc.setStatus(nvclStatusDestination());
             this.nvclAnalyticalRequestSvc.setResult(nvclResultDestination());
-            this.nvclAnalyticalRequestSvc.setMailSender(mailSender());
             this.nvclAnalyticalRequestSvc.setConfig(createConfig());
             this.nvclAnalyticalRequestSvc.setDataAccess(dataAccess());
             return this.nvclAnalyticalRequestSvc;

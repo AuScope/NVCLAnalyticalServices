@@ -30,3 +30,5 @@ activemq-data/
 NVCLAnalyticalServices.log
 cache/
 data/
+
+*.gz
