@@ -166,8 +166,8 @@ public class IJobProcessor extends Thread {
 			int pages = 0 ;			
 			if (this.filter.indexOf("ogc:Intersects") < 0) {
 				//normal filter use 1.1.0
-				startIndex = -1;
-				maxFeatures = -1;
+				startIndex = 0;
+				maxFeatures = 10000;
 				wfsVersion = "1.1.0";
 				pageCount = maxFeatures;
 			} else {
