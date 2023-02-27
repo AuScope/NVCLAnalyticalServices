@@ -46,10 +46,14 @@ public class DataAccess {
 		return result;
 	}
 
+	private String makeHoleIdentifierFileSystemSafe(String inputName) {
+		return inputName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
+	}
+
 	public String getDatasetCollection(String nvclDataServiceUrl, String holeIdentifier)
 			throws ConnectException, ConnectTimeoutException, UnknownHostException, Exception {
 		String host = makeHostnameFileSystemSafe(Utility.getHost(nvclDataServiceUrl));
-		File f = new File(cachePath + "//" + getDatasetCollectionPath + "//" + host + "//" + holeIdentifier);
+		File f = new File(cachePath + "//" + getDatasetCollectionPath + "//" + host + "//" + makeHoleIdentifierFileSystemSafe(holeIdentifier));
 		if (f.exists() && !f.isDirectory()) {
 			logger.debug("Read dataset info from cache for hole " + host + ":" + holeIdentifier);
 			return FileUtils.readFileToString(f,Charset.defaultCharset());
