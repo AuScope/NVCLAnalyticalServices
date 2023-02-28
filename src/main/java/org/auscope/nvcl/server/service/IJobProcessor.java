@@ -209,8 +209,8 @@ public class IJobProcessor extends Thread {
 						}
 						String nvclCollection = csvLine[iNvclCollection];
 						String holeUrl = csvLine[iIndentifier];
-						logger.debug("Found NVCL hole with URI :" + holeUrl );
 						if (holeUrl != null && "true".equalsIgnoreCase(nvclCollection)) {
+							logger.debug("Found NVCL hole with URI :" + holeUrl );
 							String[] urnBlocks = holeUrl.split("/borehole/");		// some uris do contain slashes so we need to look for the feature type borehole part
 							if (urnBlocks.length > 1) {
 								String holeIdentifier = urnBlocks[urnBlocks.length - 1];
