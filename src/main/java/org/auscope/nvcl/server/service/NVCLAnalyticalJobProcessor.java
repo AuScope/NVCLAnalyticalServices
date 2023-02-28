@@ -67,8 +67,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 XPathExpression expr = Utility.compileXPathExpr("DatasetCollection/Dataset/Logs/Log");
                 NodeList nodeList = (NodeList) expr.evaluate(responseDoc, XPathConstants.NODESET);
                 if ( nodeList.getLength() == 0) {
-                    logger.debug("getDataCollection: No dataset for serviceUrl:" + nvclDataServiceUrl + " :boreholeid:" + holeIdentifier);                                            
-                    continue;
+                    throw new Exception("getDataCollection: No dataset found for serviceUrl: " + nvclDataServiceUrl + " with holeid: " + holeIdentifier);
                 }                
                 XPathExpression exprLogID = Utility.compileXPathExpr("LogID");
                 XPathExpression exprLogName = Utility.compileXPathExpr("logName");
@@ -123,9 +122,8 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 }
 
             }catch (Exception ex) {
-                // if Exception happened, log it and let it continue for the next borehole.
-                logger.warn(String.format("Exception:NVCLAnalyticalJobProcessor::processStage2 for '%s' failed", nvclDataServiceUrl));
                 String resultMsg = "Error:" + ex.toString();
+                logger.debug(resultMsg);
                 boreholeVo.setStatus(1); //error status;
                 jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
             } 
