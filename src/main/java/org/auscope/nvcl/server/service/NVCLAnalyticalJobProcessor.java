@@ -115,7 +115,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                     if (!Utility.stringIsBlankorNull(logName)) {
                         resultMsg = "log named : " + this.logName + " doesn't exist in this dataset";
                     } else {
-                        resultMsg = "log produced by algorithm with id \"" + this.algorithmOutputID + "\" doesn't exist in this dataset";
+                        resultMsg = "log produced by the selected algorithm doesn't exist in this dataset";
                     }
                     boreholeVo.setStatus(1); //error status;
                     jobResultVo.addErrorBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
