@@ -57,7 +57,7 @@ public class NVCLAnalyticalQueueBrowser {
                     AnalyticalJobVo jmsMsgVo = new AnalyticalJobVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    logger.debug("Message " + count + " : " + message);
+                    //logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;   
                         // convert long to date
@@ -115,7 +115,7 @@ public class NVCLAnalyticalQueueBrowser {
                     AnalyticalJobVo jmsMsgVo = new AnalyticalJobVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    logger.debug("Message " + count + " : " + message);
+                    //logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         // convert long to date
@@ -175,7 +175,7 @@ public class NVCLAnalyticalQueueBrowser {
                     //AnalyticalJobResultVo jmsMsgVo = new AnalyticalJobResultVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    logger.debug("Message " + count + " : " + message);
+                    //logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
@@ -220,7 +220,7 @@ public class NVCLAnalyticalQueueBrowser {
                     //AnalyticalJobResultVo jmsMsgVo = new AnalyticalJobResultVo();
                     count++;
                     Message message = (Message) messages.nextElement();
-                    logger.debug("Message " + count + " : " + message);
+                    //logger.debug("Message " + count + " : " + message);
                     if (message instanceof MapMessage) {
                         MapMessage mapMessage = (MapMessage) message;
                         String jobResult = mapMessage.getString("jobResult");
