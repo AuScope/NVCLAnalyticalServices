@@ -160,20 +160,20 @@ public class IJobProcessor extends Thread {
 			String outputFormat = "csv";
 			String responseString;
 			int startIndex = 0;
-			int maxFeatures = 10000;
+			int maxFeatures = 1000;
 			int pageCount = maxFeatures;
 			int totalCount = 0;
 			int pages = 0 ;			
 			if (this.filter.indexOf("ogc:Intersects") < 0) {
 				//normal filter use 1.1.0
 				startIndex = 0;
-				maxFeatures = 10000;
+				maxFeatures = 1000;
 				wfsVersion = "1.1.0";
 				pageCount = maxFeatures;
 			} else {
 				//polygon filter use 1.0.0
 				startIndex = 0;
-				maxFeatures = 10000;
+				maxFeatures = 1000;
 				wfsVersion = "1.0.0";	
 				pageCount = maxFeatures;
 			}
