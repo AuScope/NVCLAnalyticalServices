@@ -265,7 +265,7 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 } 
             } //logid loop
             if(!isHit) {
-                resultMsg = "Miss: "+boreholeVo.getHoleIdentifier()+" " + this.classification + " with value " + logicalOp + " threshhold " + String.valueOf(value)+ " " +units + " NOT found";
+                resultMsg = "Miss: "+boreholeVo.getHoleIdentifier()+" " + this.classification + " with value " + String.valueOf(units.equalsIgnoreCase("pct")?ratio:count) + " " + logicalOp + " threshhold " + String.valueOf(value)+ " " +units + " NOT found";
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 logger.info(resultMsg);
