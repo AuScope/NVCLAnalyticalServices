@@ -158,11 +158,12 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
             String holeIdentifier = boreholeVo.getHoleIdentifier();                    boreholeVo.setStatus(1); //error status;
 
             boolean isHit = false;
+            Float count = 0.0f;
+            float ratio = (float) 0.0;              
             for(String logid : boreholeVo.logidList) {
                 totalProcessedLogid++;
                 logger.debug("Stage3:process:boreholeid: " + holeIdentifier + " logid: " + logid);
                 try {
-                	
                     String responseString = NVCLAnalyticalRequestSvc.dataAccess.getDownSampledDataMethod(nvclDataServiceUrl, logid, span, startDepth, endDepth, "csv");
                  
                     String csvLine;
@@ -177,35 +178,34 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
 
                         List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));   
                         String depth = cells.get(0);
-                        Float count =  0.0f;
+                        Float count0 =  0.0f;
                         String csvClassfication;
                         if (this.isdecimalTypeScalar == false) {
-                            count = Float.parseFloat(cells.get(3));
+                            count0 = Float.parseFloat(cells.get(3));
                             csvClassfication = cells.get(1);
                         } else {
-                            count = Float.parseFloat(cells.get(1));
+                            count0 = Float.parseFloat(cells.get(1));
                             csvClassfication="averageValue";
                             //get the float;
                         }
                         Float countSum = 0.0f ;
                         if (depthMap.get(depth) != null) {
-                            countSum= depthMap.get(depth) + count;
+                            countSum= depthMap.get(depth) + count0;
                         } else {
-                            countSum = 0 + count;
+                            countSum = 0 + count0;
                         }
                         depthMap.put(depth, countSum);
                         if( !depthClassificationMap.containsKey(depth)) {
                             depthClassificationMap.put(depth, (float) 0.0);
                         }
                         if (csvClassfication.equalsIgnoreCase(classification)) {
-                            depthClassificationMap.put(depth, count);
+                            depthClassificationMap.put(depth, count0);
                         } 
                     }
 
-                    String depthKey;
-                    Float count = 0.0f;
+                    String depthKey;                  
                     Float countSum;
-                    float ratio = (float) 0.0;
+
                     /* Now, iterate over the map's contents, sorted by key. */
                     for (Entry<String, Float> entry : depthClassificationMap.entrySet()) {
                         depthKey = entry.getKey();

@@ -143,10 +143,11 @@ public class DataAccess {
 		// this result will not be cached as it will change regularly and is only performed once per serviceUrl anyway
 		int retryCount = 0;
 		boolean isSuccess = false;
+		String result = "";
 		while( retryCount < 5 && isSuccess == false) {
 			try{
 				retryCount += 1;
-				String result = this.httpServiceCaller.getMethodResponseAsString(method);
+				result = this.httpServiceCaller.getMethodResponseAsString(method);
 				isSuccess = true;
 			} catch (Exception e) {
 				logger.debug("RETRY: makeWFSGetFeaturePostMethod: "+retryCount);
