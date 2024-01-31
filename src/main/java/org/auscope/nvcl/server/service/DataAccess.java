@@ -141,7 +141,21 @@ public class DataAccess {
 		System.out.println(method.toString());
 
 		// this result will not be cached as it will change regularly and is only performed once per serviceUrl anyway
-		String result = this.httpServiceCaller.getMethodResponseAsString(method);
+		int retryCount = 0;
+		boolean isSuccess = false;
+		while( retryCount < 5 && isSuccess == false) {
+			try{
+				retryCount += 1;
+				String result = this.httpServiceCaller.getMethodResponseAsString(method);
+				isSuccess = true;
+			} catch (Exception e) {
+				logger.debug("RETRY: makeWFSGetFeaturePostMethod: "+retryCount);
+				Thread.sleep(30 * 1000);
+			}
+		}
+		if (isSuccess == false) {
+			throw new Exception("Giveup try after 5 times");
+		}
 		method.releaseConnection();
 		return result;
 	}
