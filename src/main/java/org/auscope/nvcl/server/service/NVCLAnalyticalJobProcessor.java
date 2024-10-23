@@ -251,7 +251,8 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                       }
                     }
                     if (isHit) {
-                            resultMsg = "Hit: "+boreholeVo.getHoleUrl()+" " + this.classification + " with value " + String.valueOf(units.equalsIgnoreCase("pct")?ratio:count) + " " + logicalOp + " threshhole " + String.valueOf(value) + " " +units;
+                            String vv = String.valueOf(units.equalsIgnoreCase("pct")?ratio:count);
+                            resultMsg = vv + ",Hit: "+boreholeVo.getHoleUrl()+" " + this.classification + " with value " + vv + " " + logicalOp + " threshhole " + String.valueOf(value) + " " +units;
                             boreholeVo.setStatus(2); //hit status;
                             jobResultVo.addBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                             logger.info(resultMsg);
@@ -265,7 +266,8 @@ public class NVCLAnalyticalJobProcessor  extends IJobProcessor{
                 } 
             } //logid loop
             if(!isHit) {
-                resultMsg = "Miss: "+boreholeVo.getHoleIdentifier()+" " + this.classification + " with value " + String.valueOf(units.equalsIgnoreCase("pct")?ratio:count) + " " + logicalOp + " threshhold " + String.valueOf(value)+ " " +units + " NOT found";
+                String vv = String.valueOf(units.equalsIgnoreCase("pct")?ratio:count);
+                resultMsg = vv + ",Miss: "+boreholeVo.getHoleIdentifier()+" " + this.classification + " with value " + vv  + " " + logicalOp + " threshhold " + String.valueOf(value)+ " " +units + " NOT found";
                 boreholeVo.setStatus(3); //Failed status;
                 jobResultVo.addFailedBoreholes(new BoreholeResultVo(boreholeVo.getHoleUrl(),resultMsg ));
                 logger.info(resultMsg);
