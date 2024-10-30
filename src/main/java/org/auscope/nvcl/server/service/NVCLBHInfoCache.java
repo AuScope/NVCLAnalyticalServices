@@ -38,7 +38,7 @@ public class NVCLBHInfoCache {
                     }
                     bhURI = csvLine[iIndentifier];
                     if (bhURI != null) {
-                        this.bhInfoMap.put(bhURI,bhInfo);
+                        this.bhInfoMap.put(bhURI.substring(bhURI.indexOf("://")+3),bhInfo);
                     }					
                 }
                 logger.info("NVCLBHInfoCache:Successed on loading NVCLBHInfoCache, and size is :" + this.bhInfoMap.size());
