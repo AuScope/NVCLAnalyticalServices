@@ -2,10 +2,12 @@ package org.auscope.nvcl.server.service;
 
 import java.io.File;
 import java.net.ConnectException;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -24,6 +26,7 @@ public class DataAccess {
 	private static final String getScalarData = "getScalarData";
 	private static final String getDownSampScalarData = "getDownSampScalarData";
 	private String cachePath;
+	private String bhInfoUrl;
 	protected NVCLDataServiceMethodMaker nvclMethodMaker;
 	protected HttpServiceCaller httpServiceCaller;
 
@@ -34,7 +37,13 @@ public class DataAccess {
 	public void setCachePath(String cachePath) {
 		this.cachePath = cachePath;
 	}
+	public String getbhInfoUrl() {
+		return bhInfoUrl;
+	}
 
+	public void setbhInfoUrl(String bhInfoUrl) {
+		this.bhInfoUrl = bhInfoUrl;
+	}
 	public DataAccess() {
 		super();
 		this.nvclMethodMaker = new NVCLDataServiceMethodMaker();
@@ -160,5 +169,18 @@ public class DataAccess {
 		method.releaseConnection();
 		return result;
 	}
+
+    public String getNVCLBHInfoCSV() {
+		HttpGet method;
+		String result = null;
+		try {
+			method = (HttpGet) nvclMethodMaker.getMethod(this.bhInfoUrl);
+			result = this.httpServiceCaller.getMethodResponseAsString(method);
+			method.releaseConnection();		
+		} catch (Exception e) {
+			logger.debug("ERROR: getNVCLBHInfoCSV:");
+		}
+		return result;
+    }
 
 }

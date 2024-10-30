@@ -409,7 +409,13 @@ public class NVCLDataServiceMethodMaker {
 
         return method;
     }
-
+    public HttpRequestBase getMethod(String serviceUrl) throws URISyntaxException {
+        HttpGet method = new HttpGet();
+        URIBuilder builder = new URIBuilder(urlPathConcat(serviceUrl));
+        //attach them to the method
+        method.setURI(builder.build());
+        return method;
+    }
     /**
      * When triggered, the wfs download service will call the Observations and Measurements WFS request, get the GeoSciML? output and compress it into a zip
      * file for download. The user will have to first make a download request and come back to check the download status. When the download is completed, a link

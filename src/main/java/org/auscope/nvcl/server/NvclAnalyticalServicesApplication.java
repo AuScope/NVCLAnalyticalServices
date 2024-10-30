@@ -24,6 +24,7 @@ import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
 import org.auscope.nvcl.server.service.NVCLAnalyticalMessageConverter;
 import org.auscope.nvcl.server.service.NVCLAnalyticalQueueBrowser;
 import org.auscope.nvcl.server.service.NVCLAnalyticalRequestSvc;
+import org.auscope.nvcl.server.service.NVCLBHInfoCache;
 import org.auscope.nvcl.server.service.TSGScriptCache;
 import org.auscope.nvcl.server.vo.ConfigVo;
 
@@ -41,6 +42,7 @@ public class NvclAnalyticalServicesApplication {
     private ActiveMQQueue nvclResultDestination = null;
     private NVCLAnalyticalRequestSvc nvclAnalyticalRequestSvc;
     private DataAccess dataAccess = null;
+    private NVCLBHInfoCache bhInfoCache = null;    
     private NVCLAnalyticalQueueBrowser nvclAnalyticalQueueBrowser = null;
     private MessageListenerAdapter nvclAnalyticalRequestListener = null;
     private SimpleMessageListenerContainer nvclAnalyticalRequestContainer = null;
@@ -79,7 +81,6 @@ public class NvclAnalyticalServicesApplication {
         }
         else return this.tsgscripts;
     }
-
 
     @Bean
     @DependsOn({"createConfig"})
@@ -139,18 +140,30 @@ public class NvclAnalyticalServicesApplication {
             return this.nvclResultDestination;
     }
 
-    @Bean
+    @Bean("dataAccess")
     @DependsOn({"createConfig"})
     public DataAccess dataAccess(){
         if (this.dataAccess==null) {
             this.dataAccess = new DataAccess();
             this.dataAccess.setCachePath(this.config.getDataCachePath());
+            this.dataAccess.setbhInfoUrl(this.config.getbhInfoUrl());            
             return this.dataAccess;
         }
         else
             return this.dataAccess;
     }
+    
     @Bean
+    @DependsOn({"dataAccess","createConfig","nvclAnalyticalRequestSvc"})
+	public NVCLBHInfoCache bhInfoCache() {
+        if (this.bhInfoCache==null) {
+            this.bhInfoCache = new NVCLBHInfoCache();
+            return this.bhInfoCache;
+        }
+        else return this.bhInfoCache;
+    }
+
+    @Bean("nvclAnalyticalRequestSvc")
     @DependsOn({"createConfig"})
     public NVCLAnalyticalRequestSvc nvclAnalyticalRequestSvc(ConnectionFactory connectionFactory){
         if (this.nvclAnalyticalRequestSvc==null) {

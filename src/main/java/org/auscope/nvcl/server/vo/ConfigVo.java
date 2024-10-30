@@ -33,7 +33,10 @@ public class ConfigVo {
 
     @Value("${dataCachePath}")
     private String dataCachePath;
-    
+
+    @Value("${bhInfoUrl}")
+    private String bhInfoUrl;   
+     
     @Value("${tsg.downsample.minInterval}")
     private float minDownSampleInterval;
     
@@ -94,4 +97,10 @@ public class ConfigVo {
 	public void setSparkeyDataPath(String sparkeyDataPath) {
 		this.sparkeyDataPath = sparkeyDataPath;
 	}
+    public String getbhInfoUrl() {
+        return bhInfoUrl;
+    }
+    public void setbhInfoUrl(String bhInfoUrl) {
+        this.bhInfoUrl = bhInfoUrl;
+    }    
 }
