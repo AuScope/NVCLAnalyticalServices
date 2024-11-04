@@ -1,7 +1,10 @@
 package org.auscope.nvcl.server.web.controllers;
 
 import java.awt.Menu;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,6 +23,9 @@ import javax.xml.transform.TransformerException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
+import org.apache.http.message.BufferedHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.auscope.nvcl.server.service.NVCLAnalyticalGateway;
@@ -34,12 +40,16 @@ import org.auscope.nvcl.server.vo.AnalyticalJobResultVo;
 import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.BoreholeResultVo;
 import org.auscope.nvcl.server.vo.TSGJobVo;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 /**
  * restful Controller that handles all {@link Menu}-related requests
@@ -417,16 +427,79 @@ public class RestMenuController {
         response.setContentType("application/json");
         return jsonObjectMapper.writeValueAsString(publishStatus);
     }
-    /**
+
+
+    public String BHCsvToGeoJson(String name, String csv) {
+
+        String record[];
+        JSONArray jaFeatures = new JSONArray();
+        float lat;
+        float lng;
+        JSONObject joFeatureCollection = new JSONObject();
+        joFeatureCollection.put("type","FeatureCollection");
+        joFeatureCollection.put("name",name);
+        JSONObject joCrs = new JSONObject();
+        joCrs.put("type","name");
+        JSONObject joCrsProp = new JSONObject();
+        joCrsProp.put("name","urn:ogc:def:crs:OGC:1.3:CRS84");
+        joCrs.put("properties",joCrsProp);
+        joFeatureCollection.put("crs",joCrs);
+
+        CSVReader reader = new CSVReader(new StringReader(csv));
+
+        try{
+            record = reader.readNext();//skip the header
+            while ((record = reader.readNext()) != null) {
+                lng = Float.parseFloat(record[8]);
+                lat = Float.parseFloat(record[7]);
+                JSONArray jaCoord = new JSONArray();
+                jaCoord.put(lng);
+                jaCoord.put(lat);
+
+                JSONObject joGeometry = new JSONObject();
+                joGeometry.put("type","Point");
+                joGeometry.put("coordinates",jaCoord);
+
+                JSONObject joProperties = new JSONObject();
+                joProperties.put("BoreholeID", record[0]);
+                joProperties.put("countSum", record[1]);
+                joProperties.put("Message", record[2]);
+                joProperties.put("State", record[3]);
+                joProperties.put("DatasetName", record[4]);
+                joProperties.put("BoreholeName", record[5]);
+                joProperties.put("StartDepth", record[9]);
+                joProperties.put("EndDepth", record[10]);
+                joProperties.put("FileModifiedDate", record[11]);
+                joProperties.put("DownloadLink", record[12]);
+
+                JSONObject joFeature = new JSONObject();
+                joFeature.put("type","Feature");
+                joFeature.put("geometry", joGeometry);
+                joFeature.put("properties",joProperties);
+                jaFeatures.put(joFeature);
+            }
+            reader.close();
+        } catch( Exception e) {
+            e.printStackTrace();
+        }
+        joFeatureCollection.put("features",jaFeatures);        
+        return joFeatureCollection.toString();
+    }
+   /**
      * Downloads results of NVCL processing job
      * @param jobId
      *            job id NVCL processing job
+     * @param format
+     * 
      * @param returns results as a byte stream encoded in zip format, containing csv files
      * @throws Exception
      */     
+
     @RequestMapping("/downloadNVCLJobResult.do")
-    public void downloadNVCLJobResult(@RequestParam("jobid") String jobId, HttpServletResponse response) throws Exception {
-       // AnalyticalJobResults results = this.dataService2_0.getProcessingResults(jobId);
+    public void downloadNVCLJobResult(
+        @RequestParam("jobid") String jobId,
+        @RequestParam(required = false, value = "format",defaultValue = "csv") String format,
+        HttpServletResponse response) throws Exception {
 
         if (Utility.stringIsBlankorNull(jobId)) {
             return;
@@ -443,36 +516,61 @@ public class RestMenuController {
                 jobResultVo = (AnalyticalJobResultVo) it1.next();
             }
         } 
-        response.setContentType("application/zip");
-        response.setHeader("Content-Disposition","inline; filename=nvclanalytics-" + jobId + ".zip;");
-        ZipOutputStream zout = new ZipOutputStream(response.getOutputStream());
 
+        StringWriter sWriter = new StringWriter();
+        CSVWriter csvOut = new CSVWriter(sWriter, ',');
+        String[] csvHeader = {"BoreholeID","countSum","Message","State","DatasetName","BoreholeName","BoreholeURI","Latitude","Longitude","StartDepth","EndDepth","FileModifiedDate","DownloadLink"};
+        csvOut.writeNext(csvHeader);
+        String bhUrl = "";
+        String bhInfo = "";
+        String csvLine = "";
+        String jsonString = "";
         try{
-            zout.putNextEntry(new ZipEntry("passIds.csv"));
             for (BoreholeResultVo borehole : jobResultVo.boreholes) {
-                zout.write((borehole.toString() + '\n').getBytes());
+                bhUrl = borehole.getId().trim();
+                bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
+                bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
+                if (bhInfo.length()<=0)
+                    continue;
+                csvLine = borehole.toString()+","+bhInfo;
+                csvOut.writeNext(csvLine.split(","));
             }
-            zout.closeEntry();
-
-            zout.putNextEntry(new ZipEntry("failIds.csv"));
             for (BoreholeResultVo borehole : jobResultVo.failedBoreholes) {
-                zout.write((borehole.toString() + '\n').getBytes());
+                bhUrl = borehole.getId().trim();
+                bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
+                bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
+                if (bhInfo.length()<=0)
+                    continue;
+                csvLine = borehole.toString()+","+bhInfo;
+                csvOut.writeNext(csvLine.split(","));
             }
-            zout.closeEntry();
-
-            zout.putNextEntry(new ZipEntry("errorIds.csv"));
             for (BoreholeResultVo borehole :jobResultVo.errorBoreholes) {
-                zout.write((borehole.toString() + '\n').getBytes());
+                bhUrl = borehole.getId().trim();
+                bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
+                bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
+                if (bhInfo.length()<=0)
+                    continue;
+                csvLine = borehole.toString()+","+bhInfo;
+                csvOut.writeNext(csvLine.split(","));
             }
-            zout.closeEntry();
-
-            zout.finish();
-            zout.flush();
+            if (format.equals("json")) {
+                String fileName = "nvclanalytics-" + jobId + ".geojson";
+                response.setContentType("application/json");
+                response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+                jsonString = BHCsvToGeoJson(fileName, sWriter.toString());
+                response.getWriter().write(jsonString);
+            } else {
+                String fileName = "nvclanalytics-" + jobId + ".csv";
+                response.setContentType("text/csv");
+                response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+                response.getWriter().write(sWriter.toString());
+            }
+        } catch (Exception e) {
+            logger.error("Exception occurred in downloadNVCLJobResult : " + e);
         } finally {
-            zout.close();
+            csvOut.close();
         }
     }
-
     //Download TsgModJob's scalar csv.
     @RequestMapping("/downloadTsgJobData.do")
     public void downloadTsgJobData(@RequestParam("jobid") String jobId, HttpServletResponse response) throws Exception {

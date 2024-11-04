@@ -10,12 +10,14 @@ import java.io.StringReader;
 
 public class NVCLBHInfoCache {
 	private static final Logger logger = LogManager.getLogger(NVCLBHInfoCache.class);
+    private boolean bLoad = false;
     public HashMap<String, String> bhInfoMap = new HashMap<String, String>();
 	public NVCLBHInfoCache() {
 		super();
-		load();
 	}
     public void load() {
+        if (bLoad)
+            return;
         this.bhInfoMap.clear();
         try {
             String responseString = NVCLAnalyticalRequestSvc.dataAccess.getNVCLBHInfoCSV();
@@ -45,6 +47,7 @@ public class NVCLBHInfoCache {
             }
             reader.close();
             reader = null;
+            this.bLoad = true;
         }catch (Exception ex) {
             logger.error("NVCLBHInfoCache:Failed to load NVCLBHInfoCache");
         }

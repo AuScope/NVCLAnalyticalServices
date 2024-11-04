@@ -154,7 +154,7 @@ public class NvclAnalyticalServicesApplication {
     }
     
     @Bean
-    @DependsOn({"dataAccess","createConfig","nvclAnalyticalRequestSvc"})
+    @DependsOn({"createConfig"})
 	public NVCLBHInfoCache bhInfoCache() {
         if (this.bhInfoCache==null) {
             this.bhInfoCache = new NVCLBHInfoCache();
@@ -173,6 +173,8 @@ public class NvclAnalyticalServicesApplication {
             this.nvclAnalyticalRequestSvc.setResult(nvclResultDestination());
             this.nvclAnalyticalRequestSvc.setConfig(createConfig());
             this.nvclAnalyticalRequestSvc.setDataAccess(dataAccess());
+            this.nvclAnalyticalRequestSvc.setNVCLBHInfoCache(bhInfoCache());
+            NVCLAnalyticalRequestSvc.bhInfoCache.load();
             return this.nvclAnalyticalRequestSvc;
         }
         else

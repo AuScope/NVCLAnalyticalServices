@@ -13,7 +13,6 @@ import org.auscope.nvcl.server.vo.AnalyticalJobVo;
 import org.auscope.nvcl.server.vo.ConfigVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.mail.MailException;
 
 /**
  * NVCLAnalyticalRequestSvc trigger actual services that perform the
@@ -156,4 +155,10 @@ public class NVCLAnalyticalRequestSvc {
 	public void setResult(Destination result) {
 		this.result = result;
 	}
+
+	public static NVCLBHInfoCache bhInfoCache;
+
+	public void setNVCLBHInfoCache(NVCLBHInfoCache bhInfoCache) {
+		NVCLAnalyticalRequestSvc.bhInfoCache = bhInfoCache;
+	}	
 }
