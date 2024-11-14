@@ -530,7 +530,7 @@ public class RestMenuController {
                 bhUrl = borehole.getId().trim();
                 bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
                 bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
-                if (bhInfo.length()<=0)
+                if (bhInfo == null || bhInfo.length()<=0)
                     continue;
                 csvLine = borehole.toString()+","+bhInfo;
                 csvOut.writeNext(csvLine.split(","));
@@ -539,7 +539,7 @@ public class RestMenuController {
                 bhUrl = borehole.getId().trim();
                 bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
                 bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
-                if (bhInfo.length()<=0)
+                if (bhInfo == null || bhInfo.length()<=0)
                     continue;
                 csvLine = borehole.toString()+","+bhInfo;
                 csvOut.writeNext(csvLine.split(","));
@@ -548,7 +548,7 @@ public class RestMenuController {
                 bhUrl = borehole.getId().trim();
                 bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
                 bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
-                if (bhInfo.length()<=0)
+                if (bhInfo == null || bhInfo.length()<=0)
                     continue;
                 csvLine = borehole.toString()+","+bhInfo;
                 csvOut.writeNext(csvLine.split(","));
