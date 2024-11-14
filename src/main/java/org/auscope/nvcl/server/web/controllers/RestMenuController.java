@@ -544,15 +544,16 @@ public class RestMenuController {
                 csvLine = borehole.toString()+","+bhInfo;
                 csvOut.writeNext(csvLine.split(","));
             }
-            for (BoreholeResultVo borehole :jobResultVo.errorBoreholes) {
-                bhUrl = borehole.getId().trim();
-                bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
-                bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
-                if (bhInfo == null || bhInfo.length()<=0)
-                    continue;
-                csvLine = borehole.toString()+","+bhInfo;
-                csvOut.writeNext(csvLine.split(","));
-            }
+            // No countSum value to save
+            // for (BoreholeResultVo borehole :jobResultVo.errorBoreholes) {
+            //     bhUrl = borehole.getId().trim();
+            //     bhUrl = bhUrl.substring(bhUrl.indexOf("://")+3);
+            //     bhInfo = NVCLAnalyticalRequestSvc.bhInfoCache.bhInfoMap.get(bhUrl);
+            //     if (bhInfo == null || bhInfo.length()<=0)
+            //         continue;
+            //     csvLine = borehole.toString()+","+bhInfo;
+            //     csvOut.writeNext(csvLine.split(","));
+            // }
             if (format.equals("json")) {
                 String fileName = "nvclanalytics-" + jobId + ".geojson";
                 response.setContentType("application/json");
