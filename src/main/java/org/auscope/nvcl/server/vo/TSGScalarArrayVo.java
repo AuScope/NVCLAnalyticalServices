@@ -232,15 +232,15 @@ public class TSGScalarArrayVo {
 
         return isHit;
     }
-    public double queryMaxCountSum() {
-        double valueMax = 0.0;
+    public Integer queryMaxCountSum() {
+        Integer countMax = 0;
         /* Now, iterate over the map's contents, sorted by key. */
         for (TSGScalarVo spectralData : downSampledScalarArray) {
-            double value = spectralData.getValue();
-            if (value>valueMax){
-                valueMax = value;
+            Integer count = spectralData.getCount();
+            if (count>countMax){
+                countMax = count;
             }
         }
-        return valueMax;
+        return countMax;
     }    
 }

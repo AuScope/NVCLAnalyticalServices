@@ -41,7 +41,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
     private String tsgScript;
     private String dataPath;
     private String wvLogname = "Reflectance";
-    private double countSumMax = 0.0;
+    private Integer countSumMax = 0;
     
 	    
     /**
