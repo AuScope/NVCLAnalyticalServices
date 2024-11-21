@@ -41,6 +41,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
     private String tsgScript;
     private String dataPath;
     private String wvLogname = "Reflectance";
+    private double countSumMax = 0.0;
     
 	    
     /**
@@ -416,6 +417,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             String fileFullPath = filePath + "/" + holeIdentifier;
             scalarArray.writeScalarCSV(fileFullPath + "-tsgScalar.csv");
             scalarArray.writeDownSampledScalarCSV(fileFullPath + "-tsgScalarDownSampled-" + host + ".csv");
+            this.countSumMax = scalarArray.queryMaxCountSum();
             scalarArray = null;
         } catch (Exception e) {
             logger.error("Exception: on getDownSampledData general failure "+e);
@@ -441,7 +443,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
             resultMsg = "InitMessage:";
             break;            
         }
-        return resultMsg;
+        return  String.valueOf(this.countSumMax) + ","+ resultMsg;
 
     }
 }
