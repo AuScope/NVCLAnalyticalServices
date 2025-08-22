@@ -6,11 +6,11 @@ plugins {
 
 
 group = 'org.auscope.nvcl'
+version =  '1.1.2'
 
 sourceCompatibility = '17'
 bootJar {
-    baseName = 'NVCLAnalyticalServices'
-    version =  '1.1.2'
+    archiveBaseName = 'NVCLAnalyticalServices'
 	archiveFileName.set("app.jar")
 }
 repositories {
