@@ -63,7 +63,7 @@ public class DataAccess {
 			throws ConnectException, ConnectTimeoutException, UnknownHostException, Exception {
 		String host = makeHostnameFileSystemSafe(Utility.getHost(nvclDataServiceUrl));
 		File f = new File(cachePath + "//" + getDatasetCollectionPath + "//" + host + "//" + makeHoleIdentifierFileSystemSafe(holeIdentifier));
-		if (f.exists() && !f.isDirectory()) {
+		if (f.exists() && !f.isDirectory() && f.length()> 300) {
 			logger.debug("Read dataset info from cache for hole " + host + ":" + holeIdentifier);
 			return FileUtils.readFileToString(f,Charset.defaultCharset());
 		} else {
