@@ -53,4 +53,5 @@ jobs:
           app-name: 'nvclanalytics'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8BFD000597B644B0AA7F50917FC68C4F }}
-          package: ./artifact/*.
+          package: ./artifact/*.jar
+
