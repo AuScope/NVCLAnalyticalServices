@@ -88,44 +88,49 @@ public class TSGScalarArrayVo {
     }
     
     public int downSample() {
-        int size = (int) ((ceilingDepth - floorDepth)/ interval) +1;
-        for (int i=0;i<size;i++) {
-            float downSampledDepth = floorDepth + i*interval;
-            downSampledScalarArray.add(new TSGScalarVo(String.valueOf(downSampledDepth), true, 0,0));
+        // Align floorDepth to the nearest lower multiple of interval
+        float alignedFloor = (float)(Math.floor(floorDepth / interval) * interval);
+        float alignedCeiling = (float)(Math.ceil(ceilingDepth / interval) * interval);
+        int size = (int)((alignedCeiling - alignedFloor) / interval);
+
+        // Initialize bins
+        for (int i = 0; i < size; i++) {
+            float downSampledDepth = alignedFloor + i * interval;
+            downSampledScalarArray.add(new TSGScalarVo(downSampledDepth,downSampledDepth+interval));
         }
         logger.debug("InitDownSampledScalarArraySize=" + downSampledScalarArray.size());
-        
-        float depth;
-        double value;
-        for (TSGScalarVo scalar : scalarArray) {
-            depth = scalar.getDepth();
-            value = scalar.getValue();
-            //logger.debug(depth + "    " + value + "    " + scalar.isMask());
 
-            if (!scalar.isMask()) //skip the masked one.
-                continue;            
-            int index = (int)((depth-floorDepth)/interval);
-            if (index >= size)
-            	logger.error("TSGScalarArrayVo:Exception: terrible array sequence!!!!");
-                
+        // Accumulate values into bins
+        for (TSGScalarVo scalar : scalarArray) {
+            float depth = scalar.getDepth();
+            double value = scalar.getValue();
+
+            if (!scalar.isMask()) continue;
+
+            int index = (int)((depth - alignedFloor) / interval);
+            if (index < 0 || index >= size) {
+                logger.error("TSGScalarArrayVo:Exception: depth out of bin range: " + depth);
+                continue;
+            }
+
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(index);
             double sumValue = downSampledScalar.getValue() + value;
             downSampledScalar.setValue(sumValue);
-            downSampledScalar.setCount(downSampledScalar.getCount() +1);
+            downSampledScalar.setCount(downSampledScalar.getCount() + 1);
         }
-        
-        for (int i=0;i<size;i++) {
+
+        // Finalize averages
+        for (int i = 0; i < size; i++) {
             TSGScalarVo downSampledScalar = downSampledScalarArray.get(i);
             if (downSampledScalar.getCount() == 0) {
                 downSampledScalar.setValue(Double.NaN);
             } else {
                 downSampledScalar.setValue(downSampledScalar.getValue() / downSampledScalar.getCount());
             }
-            //logger.debug("Bin:" + downSampledScalar.getDepthS() + ":value:" + downSampledScalar.getValue()  + ":count:"  + downSampledScalar.getCount() );                      
         }
+
         logger.debug("TSGScalarArrayVo:downSample:totalSize=" + downSampledScalarArray.size());
         return downSampledScalarArray.size();
-        
     }
     
     public int writeScalarCSV(String fileName) {
@@ -156,21 +161,16 @@ public class TSGScalarArrayVo {
         return scalarArray.size();        
     }
     public int writeDownSampledScalarCSV(String fileName) {
-        CSVWriter writer;
-        try {
-            writer = new CSVWriter(new FileWriter(fileName));
-            writer.writeNext("depth,value,count".split(","));
-            float depth;
-            double value = 0.0;    
-            int count = 0;
+        if (downSampledScalarArray == null || downSampledScalarArray.isEmpty()) {
+            logger.warn("No data to write to CSV: downSampledScalarArray is empty.");
+            return 0;
+        }
+        try (CSVWriter writer = new CSVWriter(new FileWriter(fileName))) {
+            writer.writeNext(new String[]{"startdepth", "enddepth", "value", "count"});
             for (TSGScalarVo scalar : downSampledScalarArray) {
-                depth = scalar.getDepth();
-                value = scalar.getValue();
-                count = scalar.getCount();
-                String record = depth + "," + value + "," + count ;
-                writer.writeNext(record.split(","));
-            }
-            writer.close();     
+                String[] row = {String.valueOf(scalar.getDepth()),String.valueOf(scalar.getEndDepth()),String.valueOf(scalar.getValue()),String.valueOf(scalar.getCount())};
+                writer.writeNext(row);
+            }  
         } catch (IOException e) {
         	logger.error("failed to write CSV "+fileName+"Exception was:"+e);
         }                

@@ -9,6 +9,7 @@ package org.auscope.nvcl.server.vo;
 public class TSGScalarVo {
     private String depthS;
     private float depth;
+    private float endDepth;
     private boolean mask;//1 is valid, 0 is skip
     private int     color;
     private double value;
@@ -32,7 +33,16 @@ public class TSGScalarVo {
             this.mask = false;
         }
         this.setCount(count);
-    }    
+    }  
+    public TSGScalarVo(float startDepth,float endDepth) {
+        this.depthS = String.valueOf(startDepth);
+        this.depth = startDepth;
+        this.endDepth = endDepth;
+        this.mask = true;
+        this.value = 0;
+        this.count=0;
+    } 
+      
     public String getDepthS() {
         return depthS;
     }
@@ -68,6 +78,13 @@ public class TSGScalarVo {
     }
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public float getEndDepth() {
+        return endDepth;
+    }
+    public void setEndDepth(float endDepth) {
+        this.endDepth = endDepth;
     }
   
 }
