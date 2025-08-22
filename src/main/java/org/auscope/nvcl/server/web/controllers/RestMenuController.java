@@ -132,7 +132,7 @@ public class RestMenuController {
             return  new AnalyticalJobResponse("ERROR" , errMsg);            
         }
         
-        if (filter == null || filter.isEmpty() || filter.equals("undefined")) {
+        if (Utility.stringIsBlankorNull(filter) || filter.equals("undefined")) {
             filter ="<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
 
@@ -326,7 +326,7 @@ public class RestMenuController {
             email = email.toLowerCase();
         }
 
-        if (Utility.stringIsBlankorNull(filter)) {
+        if (Utility.stringIsBlankorNull(filter) || filter.equals("undefined")) {
             filter = "<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
         
