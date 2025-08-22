@@ -109,7 +109,10 @@ public class TSGScalarArrayVo {
 
             int index = (int)((depth - alignedFloor) / interval);
             if (index < 0 || index >= size) {
-                logger.error("TSGScalarArrayVo:Exception: depth out of bin range: " + depth);
+                logger.error("TSGScalarArrayVo:Exception: depth out of bin range. Range is " + floorDepth + " to "
+                        + ceilingDepth + " aligned to " + alignedFloor + "to" + alignedCeiling
+                        + " and requested value is " + depth + " calculated index value is " + index
+                        + " which is larger than maximum " + size);
                 continue;
             }
 

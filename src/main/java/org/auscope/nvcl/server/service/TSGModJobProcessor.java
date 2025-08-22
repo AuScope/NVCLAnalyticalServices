@@ -331,38 +331,42 @@ public class TSGModJobProcessor  extends IJobProcessor{
             TSGScalarArrayVo scalarArray = new TSGScalarArrayVo(this.span);
         	if (!Utility.stringIsBlankorNull(finalMaskLogid))
         	{
+                String strMask = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, finalMaskLogid);
 
-	            String strMask = NVCLAnalyticalRequestSvc.dataAccess.getScalarData(nvclDataServiceUrl, finalMaskLogid);
+                int index = 0;
 
-	            String csvLine;
-	    
-	            BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask));
-	            // startDepth, endDepth, final_mask(could be null)
+                try (BufferedReader csvBuffer = new BufferedReader(new StringReader(strMask))) {
+                    String csvLine = csvBuffer.readLine(); // Skip header
 
-	            csvLine = csvBuffer.readLine();// skip the header
-        	
-	            int index = 0;
+                    while ((csvLine = csvBuffer.readLine()) != null) {
+                        List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
 
-	            try {	
-	                while ((csvLine = csvBuffer.readLine()) != null) {
+                        if (cells.size() < 3) {
+                            logger.warn("Skipping malformed line: " + csvLine);
+                            continue;
+                        }
 
-	                    List<String> cells = Arrays.asList(csvLine.split("\\s*,\\s*"));
-	                    String depth = cells.get(0);
-	                    boolean mask = false;
-	                  //Lingbo some of mask could be "null" as well beside "0" or "1" 
-	                    if (!cells.get(2).equalsIgnoreCase("0")){
-	                        mask = true;
-	                    }
-	                    scalarArray.add(new TSGScalarVo(depth,mask,tsgRV[index]));
-	                    depthMaskMap.put(depth, mask);
-	                    index++;
-	                }
-				}					
-				catch (Exception e) {
-	                logger.error("Exception: on getDownSampledData.parseCSV service url = "+nvclDataServiceUrl+" masklogid=" + finalMaskLogid);
-	            }
-	            csvBuffer = null;
-	            logger.debug(index + " lines of mask values read ");  
+                        String depth = cells.get(0);
+                        String maskValue = cells.get(2);
+                        boolean mask = maskValue != null && !maskValue.equalsIgnoreCase("0") && !maskValue.equalsIgnoreCase("null");
+
+                        if (index >= tsgRV.length) {
+                            logger.warn("Index out of bounds for tsgRV at line: " + csvLine);
+                            break;
+                        }
+
+                        scalarArray.add(new TSGScalarVo(depth, mask, tsgRV[index]));
+                        depthMaskMap.put(depth, mask);
+                        index++;
+                    }
+
+                } catch (Exception e) {
+                    logger.error("Exception while parsing CSV from service URL: " + nvclDataServiceUrl +
+                                ", maskLogId: " + finalMaskLogid, e);
+                }
+
+                logger.debug(index + " lines of mask values read.");
+
         	}
         	else if (!Utility.stringIsBlankorNull(domainlogid))
         	{
@@ -390,7 +394,7 @@ public class TSGModJobProcessor  extends IJobProcessor{
 	                } 
 	            }
 				catch (Exception e) {
-	                logger.error("Exception: on getDownSampledData.parseCSV service url = "+nvclDataServiceUrl+" domlogid=" + finalMaskLogid);
+	                logger.error("Exception: on getDownSampledData.parseCSV service url = "+nvclDataServiceUrl+" domlogid=" + finalMaskLogid+ " exception is "+e);
 	            }  
 	            csvBuffer = null;
 	            logger.debug(index + " lines of domain values read ");  
