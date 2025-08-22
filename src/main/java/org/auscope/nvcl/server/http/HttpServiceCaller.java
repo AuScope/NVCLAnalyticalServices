@@ -59,24 +59,30 @@ public class HttpServiceCaller {
      * @return
      * @throws Exception
      */
-    public String getMethodResponseAsString(HttpRequestBase method, HttpClient client) throws ConnectException,
-            UnknownHostException, ConnectTimeoutException, Exception {
-        //invoke the method
+    public String getMethodResponseAsString(HttpRequestBase method, HttpClient client) {
+    try {
         HttpResponse httpResponse = this.invokeTheMethod(method, client);
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        String reasonPhrase = httpResponse.getStatusLine().getReasonPhrase();
 
-        //get the reponse before we close the connection
-        //String response = method.getResponseBodyAsString();
-
-        String response = responseToString(httpResponse.getEntity().getContent());
-
-        //release the connection
+        if (statusCode >= 200 && statusCode < 300) {
+            try (InputStream contentStream = httpResponse.getEntity().getContent()) {
+                String response = responseToString(contentStream);
+                logger.trace("Text response from server:\n" + response);
+                return response;
+            }
+        } else {
+            logger.warn("HTTP request failed with status code " + statusCode + ": " + reasonPhrase);
+            return "";
+        }
+    } catch (Exception e) {
+        logger.error("Exception during HTTP request: " + e.getMessage(), e);
+        return "";
+    } finally {
         method.releaseConnection();
-
-        logger.trace("XML response from server:");
-        logger.trace("\n" + response);
-        //return it
-        return response;
     }
+}
+
 
     /**
      * Invokes a method and returns the binary response as a stream. (Creates a new HttpClient for use with this request)
@@ -128,19 +134,29 @@ public class HttpServiceCaller {
      *            The client that will be used
      * @return
      */
-    public byte[] getMethodResponseAsBytes(HttpRequestBase method, HttpClient client) throws Exception {
-        //invoke the method
-        HttpResponse httpResponse = this.invokeTheMethod(method, client);
+    public byte[] getMethodResponseAsBytes(HttpRequestBase method, HttpClient client) {
+        try {
+            HttpResponse httpResponse = this.invokeTheMethod(method, client);
+            int statusCode = httpResponse.getStatusLine().getStatusCode();
+            String reasonPhrase = httpResponse.getStatusLine().getReasonPhrase();
 
-        //get the response before we close the connection
-        byte[] response = IOUtils.toByteArray(httpResponse.getEntity().getContent());
-
-        //release the connection
-        method.releaseConnection();
-
-        //return it
-        return response;
+            if (statusCode >= 200 && statusCode < 300) {
+                try (InputStream contentStream = httpResponse.getEntity().getContent()) {
+                    return IOUtils.toByteArray(contentStream);
+                }
+            } else {
+                logger.warn("HTTP request failed with status code " + statusCode + ": " + reasonPhrase);
+                return new byte[0];
+            }
+        } catch (Exception e) {
+            logger.error("Exception during HTTP request: " + e.getMessage(), e);
+            return new byte[0];
+        } finally {
+            method.releaseConnection();
+        }
     }
+
+
 
     public HttpResponse getMethodResponseAsHttpResponse(HttpRequestBase method) throws Exception {
         return this.invokeTheMethod(method, null);
