@@ -132,7 +132,7 @@ public class RestMenuController {
             return  new AnalyticalJobResponse("ERROR" , errMsg);            
         }
         
-        if (filter == null || filter.isEmpty()) {
+        if (filter == null || filter.isEmpty() || filter.equals("undefined")) {
             filter ="<ogc:Filter><PropertyIsEqualTo> <PropertyName>gsmlp:nvclCollection</PropertyName> <Literal>true</Literal> </PropertyIsEqualTo></ogc:Filter>";
         }
 
