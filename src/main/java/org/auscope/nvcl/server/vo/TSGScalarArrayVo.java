@@ -91,7 +91,7 @@ public class TSGScalarArrayVo {
         // Align floorDepth to the nearest lower multiple of interval
         float alignedFloor = (float)(Math.floor(floorDepth / interval) * interval);
         float alignedCeiling = (float)(Math.ceil(ceilingDepth / interval) * interval);
-        int size = (int)((alignedCeiling - alignedFloor) / interval);
+        int size = Math.round((alignedCeiling - alignedFloor) / interval);
 
         // Initialize bins
         for (int i = 0; i < size; i++) {
@@ -106,8 +106,10 @@ public class TSGScalarArrayVo {
             double value = scalar.getValue();
 
             if (!scalar.isMask()) continue;
+   
+			int index = (int)((depth - alignedFloor) / interval + 1e-6); // small epsilon to avoid rounding errors
+			if (index >= size) index = size - 1;
 
-            int index = (int)((depth - alignedFloor) / interval);
             if (index < 0 || index >= size) {
                 logger.error("TSGScalarArrayVo:Exception: depth out of bin range. Range is " + floorDepth + " to "
                         + ceilingDepth + " aligned to " + alignedFloor + "to" + alignedCeiling
