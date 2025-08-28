@@ -45,7 +45,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
-          path: ./artifact/
+          path: ${{ github.workspace }}
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
@@ -53,6 +53,7 @@ jobs:
           app-name: 'nvclanalytics'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_8BFD000597B644B0AA7F50917FC68C4F }}
-          package: ./artifact/*.jar
+          package: '*.jar'
+
 
 
