@@ -537,7 +537,7 @@ public class NVCLDataServiceMethodMaker {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		sb.append(String.format("<GetFeature service=\"WFS\" version=\"%1$s\"", wfsVersion)); // WFS_VERSION));
+		sb.append(String.format("<GetFeature xmlns:ogc=\"http://www.opengis.net/ogc\" service=\"WFS\" version=\"%1$s\"", wfsVersion)); // WFS_VERSION));
 
 		if (maxFeatures > 0) {
 			sb.append(" maxFeatures=\"" + Integer.toString(maxFeatures) + "\"");
@@ -573,6 +573,7 @@ public class NVCLDataServiceMethodMaker {
 		if (filterString != null) {
 			sb.append(filterString.replaceAll("<[a-z]*:", "<").replaceAll("</[a-z]*:", "</"));
 		}
+		sb.append("<ogc:SortBy><ogc:SortProperty><ogc:PropertyName>nvclCollection</ogc:PropertyName><ogc:SortOrder>DESC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy>");
 		sb.append("</Query>\n");
 		sb.append("</GetFeature>");
 
