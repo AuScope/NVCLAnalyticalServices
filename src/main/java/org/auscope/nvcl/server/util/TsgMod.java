@@ -49,6 +49,7 @@ public class TsgMod {
 
     public Boolean parseTSAScript(String tsaFilePath, String script, float[] wvl, int wavelenthscount, float[][] spv,
             int specCount) {
+        Boolean result = false;
         if (script == null) {
             return false;
         }
@@ -82,7 +83,7 @@ public class TsgMod {
                 qtx = null;
                 tsaScalarArray.writeScalarCSV(tsaFilePath);
                 tsaScalarArray = null;
-                return true;
+                result = true;
                 /* queryno = 11
                  * qtx={ "tsgresult": "SWIR TSA", "level": "Mineral", "status": "Ok", "nmix": 0,
                  * "srss": 156.114932, "index": [15, 5], "prop": [0.553905, 0.446095] }
@@ -94,15 +95,14 @@ public class TsgMod {
             logger.error("Exception:parseTSAScript");
             logger.error(ex.toString());
         }
-        return false;
+        return result;
 
     }
 
     public boolean parseTSGScript(double[] rv, String script, float[] wvl, int wavelenthscount, float[] spv,
-            int samplecount, float value, float pctBench) {
+            int samplecount) {
         int nsp = samplecount;/// * 99 sample count*/
         int nch = wavelenthscount;// 531;/*wvl count*/
-        int cc = 0;
         try {
 
             if (script == null) {
@@ -116,12 +116,6 @@ public class TsgMod {
                 // checkHandle(h);
                 int ret = scalarCalcMany(h, rv, spv, null, null, nch, nsp);
                 System.out.println("scalarCalcMany:" + ret);
-                for (int i = 0; i < nsp; i++) {
-                    if (!Double.isNaN(rv[i])) {
-                        if (rv[i] > value)
-                            cc++;
-                    }
-                }
 
             } else {
                 logger.error("TsgMod:Handle: is wrong ");
@@ -135,8 +129,7 @@ public class TsgMod {
             logger.error(ex.toString());
         }
 
-        float pct = (float) cc / (float) nsp;
-        return (pct > pctBench) ? true : false;
+        return true ;
     }
 
 }
