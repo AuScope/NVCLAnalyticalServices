@@ -23,6 +23,6 @@ smtp.password=<email password>
 smtp.useauth=false
 # smtp.enabledebug turns on email debuging, this can help with email server configuration issues
 smtp.enabledebug=false
-activemq.brokerurl= tcp://<HOSTNAME>:<PORT>
+spring.activemq.broker-url=vm://embedded?brokerConfig=xbean:classpath:activemq.xml
 # path to store cached data downloads
 dataCachePath = <CACHE_PATH>

@@ -23,7 +23,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation group: 'org.apache.activemq', name:'activemq-kahadb-store'
+    implementation "org.apache.activemq:activemq-broker"
+    implementation 'org.apache.activemq:activemq-kahadb-store'
+    implementation "org.apache.activemq:activemq-spring"
+    implementation "org.apache.activemq:activemq-client"
+    implementation "org.apache.xbean:xbean-spring"
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     implementation group: 'com.spotify.sparkey', name: 'sparkey', version: '2.3.1'
